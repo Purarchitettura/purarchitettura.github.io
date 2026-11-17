@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Perizie Private</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Perizie Private">
+<style>
+/* Stile purarchitettura.it: fondo bianco, Arial, titoli maiuscoli spaziati, accento oro, pulsanti a pillola */
+:root{--bg:#fff;--surface:#fff;--soft:#f6f4ef;--ink:#333;--muted:#7a7a7a;--faint:#a9a9a9;--line:#e4e1da;--gold:#84754e;--gold-ink:#fff;--gold-soft:#f1ede3;--danger:#a33a2c;--ok:#4d6b3c;--warn-bg:#f7f1e1;--warn-ink:#6b5a2e;--f:Arial,"Helvetica Neue",Helvetica,sans-serif;color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161513;--surface:#1e1d1a;--soft:#24221e;--ink:#e8e5de;--muted:#a8a399;--faint:#7d786e;--line:#34312b;--gold:#b8a676;--gold-ink:#161513;--gold-soft:#2b2820;--danger:#e08a7d;--ok:#a6c48f;--warn-bg:#2b2820;--warn-ink:#e3d3a6;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#161513;--surface:#1e1d1a;--soft:#24221e;--ink:#e8e5de;--muted:#a8a399;--faint:#7d786e;--line:#34312b;--gold:#b8a676;--gold-ink:#161513;--gold-soft:#2b2820;--danger:#e08a7d;--ok:#a6c48f;--warn-bg:#2b2820;--warn-ink:#e3d3a6;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f);-webkit-text-size-adjust:100%;padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+[hidden],.hidden{display:none!important}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:960px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+
+header.top{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:10;padding-top:env(safe-area-inset-top)}
+.top-in{display:flex;align-items:center;gap:12px;min-height:62px;padding-block:8px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;min-width:0;flex:1 1 auto;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.mark{width:34px;height:32px;flex:none}
+.word{display:grid;line-height:1.15;min-width:0}
+.word b{font-weight:400;font-size:18px;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.word b span{color:var(--gold)}
+.word small{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 20px;border:1px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);font-size:12px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+.btn:hover{background:var(--ink);color:var(--bg)}
+.btn.gold{border-color:var(--gold);color:var(--gold)}.btn.gold:hover{background:var(--gold);color:var(--gold-ink)}
+.btn.solid{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}.btn.solid:hover{filter:brightness(.93)}
+.btn.quiet{border-color:var(--line);color:var(--muted)}.btn.quiet:hover{background:var(--soft);color:var(--ink)}
+.btn.danger{border-color:var(--danger);color:var(--danger)}.btn.danger:hover{background:var(--danger);color:#fff}
+.btn.small{min-height:32px;padding:0 13px;font-size:10.5px}
+.btn.icon{padding:0;width:34px;min-height:34px}
+
+.eyebrow{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin:0}
+h1.title{font-weight:400;font-size:clamp(24px,5vw,34px);letter-spacing:.16em;text-transform:uppercase;margin:6px 0 0;line-height:1.2}
+.rule{width:64px;height:1px;background:var(--gold);border:0;margin:16px 0 0}
+.lead{color:var(--muted);max-width:64ch;margin:12px 0 0;font-size:15px}
+.hero{padding-block:30px 8px}
+
+/* elenco perizie */
+.list{display:grid;gap:12px;margin-top:24px}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:center;border:1px solid var(--line);background:var(--surface);padding:16px 18px;cursor:pointer;text-align:left;width:100%}
+.item:hover{border-color:var(--gold)}
+.item b{font-weight:400;font-size:17px;overflow-wrap:anywhere}
+.item small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.item .val{font-size:15px;color:var(--gold);white-space:nowrap}
+.empty{border:1px dashed var(--line);padding:28px;text-align:center;color:var(--muted);margin-top:24px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+
+/* schede di sezione */
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-top:18px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.tab{flex:none;background:none;border:0;border-bottom:2px solid transparent;padding:12px 12px 10px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);cursor:pointer;white-space:nowrap}
+.tab .n{color:var(--gold);margin-right:6px}
+.tab.on{color:var(--ink);border-bottom-color:var(--gold)}
+.tab.done::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ok);margin-left:7px;vertical-align:middle}
+section.pane{padding-block:22px 10px}
+.card{border:1px solid var(--line);background:var(--surface);padding:22px;margin-bottom:16px}
+.card h2{display:flex;align-items:baseline;gap:12px;margin:0 0 18px;font-weight:400;font-size:13px;letter-spacing:.24em;text-transform:uppercase}
+.card h2:after{content:"";flex:1;height:1px;background:var(--line);align-self:center}
+.hint{font-size:13.5px;color:var(--muted);margin:-6px 0 14px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:12px 16px}
+.grid .wide{grid-column:1/-1}
+label.f{display:block;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.fld{min-width:0}
+input[type=text],input[type=email],input[type=tel],input[type=date],input[type=number],select,textarea{display:block;width:100%;min-width:0;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:0;padding:10px 11px;min-height:46px}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+textarea{min-height:90px;resize:vertical;line-height:1.55}
+input.num{text-align:right;font-variant-numeric:tabular-nums}
+.chk{display:flex;gap:12px;align-items:flex-start;padding:12px 4px;border-top:1px solid var(--line);cursor:pointer}
+.chk:first-child{border-top:0}
+.chk input{flex:0 0 20px;width:20px;height:20px;margin:2px 0 0;accent-color:var(--gold)}
+.chk .t{flex:1;min-width:0}
+.chk .t input{margin-top:8px;min-height:40px;font-size:15px}
+
+/* righe ripetibili */
+.rows{display:grid;gap:12px}
+.row{border:1px solid var(--line);padding:14px;position:relative;background:var(--bg)}
+.row .rhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.row .rhead b{font-weight:400;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+.addrow{margin-top:12px}
+.sum{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);margin-top:14px;padding-top:12px;font-size:15px}
+.sum b{font-weight:400;color:var(--gold);font-size:18px}
+
+/* tabelle di calcolo */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line)}
+table.t{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+table.t th,table.t td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+table.t th{font-weight:400;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:var(--soft)}
+table.t td:first-child,table.t th:first-child{text-align:left;white-space:normal}
+table.t tr.tot td{font-weight:700;border-top:2px solid var(--gold)}
+.result{border:1px solid var(--gold);background:var(--gold-soft);padding:20px;margin-bottom:16px}
+.result .big{font-size:clamp(26px,6vw,36px);letter-spacing:.04em;color:var(--gold);margin:4px 0}
+.result small{color:var(--muted)}
+.notice{background:var(--warn-bg);color:var(--warn-ink);border-left:2px solid var(--gold);padding:12px 16px;font-size:14px;line-height:1.6;margin-bottom:16px}
+.notice.err{border-left-color:var(--danger)}
+.notice.ok{border-left-color:var(--ok)}
+
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:10px 0 calc(10px + env(safe-area-inset-bottom));z-index:5}
+.bar .in{display:flex;gap:10px;align-items:center}
+.bar .in .grow{flex:1;font-size:12px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#toast{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));max-width:860px;margin:auto;background:var(--ink);color:var(--bg);padding:13px 16px;font-size:14px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;z-index:20}
+#toast.show{opacity:1;transform:none}
+dialog{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:22px;max-width:min(520px,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(30,28,22,.45)}
+dialog h3{margin:0 0 10px;font-weight:400;font-size:14px;letter-spacing:.2em;text-transform:uppercase}
+dialog .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+@media(max-width:560px){.word small{display:none}.card{padding:16px}.bar .in .grow{display:none}.bar .btn{flex:1;padding:0 10px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <button class="brand" type="button" id="goHome" aria-label="Elenco delle perizie">
+      <svg class="mark" viewBox="72 75 435 407" aria-hidden="true"><rect x="72" y="75" width="435" height="407" fill="#84754e"/><polygon points="290,75 507,482 72,482" fill="#fff"/><polygon points="290,277 397,482 180,482" fill="#84754e"/></svg>
+      <span class="word"><b>Perizie <span>Private</span></b><small>Purarchitettura · stima del valore di mercato</small></span>
+    </button>
+    <a class="btn quiet small" href="../" title="Torna a PuraStrumenti">Strumenti</a>
+  </div>
+</header>
+<main class="wrap" id="app"></main>
+<div class="bar" id="bar" hidden><div class="wrap in">
+  <span class="grow" id="saved"></span>
+  <button type="button" class="btn quiet" id="btnBackup">Backup</button>
+  <button type="button" class="btn solid" id="btnWord">Relazione Word</button>
+</div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="fileImport" accept="application/json,.json" hidden>
+
+<script>
+"use strict";
+/* =====================================================================
+   PERIZIE PRIVATE — stima del valore di mercato con il metodo del confronto
+   di mercato (MCA). I dati restano SOLO su questo dispositivo (IndexedDB
+   "perizie-private"); «Backup» salva un file .json da conservare.
+   REGOLE PER GLI AGGIORNAMENTI: mai cancellare o rinominare l'archivio
+   IndexedDB né i campi esistenti delle perizie; si possono solo aggiungere
+   campi nuovi (con valori predefiniti per le perizie già salvate).
+   Il sito ospita anche altre app: chiavi locali con prefisso "pp_",
+   copie offline con prefisso "pp-".
+   ===================================================================== */
+const VERSIONE = "1.0 · 17/11/2026";
+const $ = id => document.getElementById(id);
+function h(tag, attrs, ...kids){
+  const e=document.createElement(tag);
+  for(const [k,v] of Object.entries(attrs||{})){
+    if(v==null||v===false) continue;
+    if(k==="class") e.className=v; else if(k==="text") e.textContent=v;
+    else if(k.startsWith("on")) e.addEventListener(k.slice(2),v);
+    else if(k==="value") e.value=v; else if(k==="checked") e.checked=!!v;
+    else e.setAttribute(k,v===true?"":v);
+  }
+  for(const c of kids.flat(9)){ if(c==null||c===false) continue; e.append(c.nodeType?c:document.createTextNode(String(c))); }
+  return e;
+}
+let toastT; function toast(m,ms){ const t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),ms||3200); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function oggi(){ const d=new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
+function itData(iso){ if(!iso) return ""; const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(iso); return m?`${m[3]}/${m[2]}/${m[1]}`:iso; }
+/* numeri: accetta "1.234,56", "1234,56", "1234.56" */
+function num(v){ if(v==null) return NaN; if(typeof v==="number") return v; let s=String(v).trim().replace(/[€\s]/g,""); if(!s) return NaN; if(s.includes(",")) s=s.replace(/\./g,"").replace(",","."); else if(/^-?\d{1,3}(\.\d{3})+$/.test(s)) s=s.replace(/\./g,""); const n=Number(s); return isFinite(n)?n:NaN; }
+function has(v){ return isFinite(num(v)); }
+function n0(v){ const n=num(v); return isFinite(n)?n:0; }
+const fmt=(n,d=0)=>isFinite(n)?n.toLocaleString("it-IT",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
+const eur=(n,d=0)=>isFinite(n)?"€ "+fmt(n,d):"—";
+function arrotonda(v,passo){ const p=n0(passo)||1; return Math.round(v/p)*p; }
+
+/* ---------- importi in lettere (euro interi) ---------- */
+function inLettere(n){
+  n=Math.round(Math.abs(n));
+  if(n===0) return "zero";
+  const u=["","uno","due","tre","quattro","cinque","sei","sette","otto","nove","dieci","undici","dodici","tredici","quattordici","quindici","sedici","diciassette","diciotto","diciannove"];
+  const d=["","","venti","trenta","quaranta","cinquanta","sessanta","settanta","ottanta","novanta"];
+  function c999(x){
+    let s=""; const c=Math.floor(x/100), r=x%100;
+    if(c) s+=(c===1?"cento":u[c]+"cento");
+    if(c && Math.floor(r/10)===8) s=s.slice(0,-1);   // centottanta
+    if(r<20) s+=u[r];
+    else { let t=d[Math.floor(r/10)]; const k=r%10; if(k===1||k===8) t=t.slice(0,-1); s+=t+u[k]; }
+    return s;
+  }
+  const mld=Math.floor(n/1e9), mln=Math.floor(n%1e9/1e6), mil=Math.floor(n%1e6/1e3), r=n%1e3;
+  let s="";
+  if(mld) s+=(mld===1?"unmiliardo":c999(mld)+"miliardi");
+  if(mln) s+=(mln===1?"unmilione":c999(mln)+"milioni");
+  if(mil) s+=(mil===1?"mille":c999(mil)+"mila");
+  if(r) s+=c999(r);
+  return s;
+}
+
+/* ---------- archivio sul dispositivo ---------- */
+const DB={
+  db:null,
+  open(){ return this.db?Promise.resolve(this.db):new Promise((ok,ko)=>{ const r=indexedDB.open("perizie-private",1); r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains("perizie")) r.result.createObjectStore("perizie",{keyPath:"id"}); }; r.onsuccess=()=>{ this.db=r.result; ok(this.db); }; r.onerror=()=>ko(r.error); }); },
+  async tx(mode,fn){ const db=await this.open(); return new Promise((ok,ko)=>{ const t=db.transaction("perizie",mode); const st=t.objectStore("perizie"); let out; Promise.resolve(fn(st)).then(v=>out=v); t.oncomplete=()=>ok(out); t.onerror=()=>ko(t.error); }); },
+  all(){ return this.tx("readonly",st=>new Promise(ok=>{ const r=st.getAll(); r.onsuccess=()=>ok(r.result||[]); })); },
+  put(p){ return this.tx("readwrite",st=>{ st.put(JSON.parse(JSON.stringify(p))); }); },
+  del(id){ return this.tx("readwrite",st=>{ st.delete(id); }); }
+};
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+
+/* ---------- modello della perizia ---------- */
+const DOC_STD=[
+  ["provenienza","Atto di provenienza"],["visura","Visura catastale"],["planimetria","Planimetria catastale"],["mappa","Estratto di mappa"],
+  ["titoli","Titoli edilizi (licenze, concessioni, permessi, DIA/SCIA/CILA, condoni)"],["agibilita","Agibilità / abitabilità"],["ape","Attestato di prestazione energetica (APE)"],
+  ["condominio","Regolamento condominiale, tabelle millesimali e spese"],["impianti","Dichiarazioni di conformità degli impianti"],["altro","Altro"]
+];
+const MANUT=[["1","1 · Scadente"],["2","2 · Mediocre"],["3","3 · Normale"],["4","4 · Buono"],["5","5 · Ottimo"]];
+/* Coefficienti di partenza (rapporti mercantili) secondo il D.P.R. 138/1998, Allegato C: sempre modificabili. */
+const TIPI_SUP=[
+  ["principale","Vani principali e accessori diretti",1],
+  ["acc_com","Accessori comunicanti (cantina, soffitta, ripostiglio)",0.5],
+  ["acc_noncom","Accessori non comunicanti (cantina, soffitta)",0.25],
+  ["balcone","Balconi e terrazze comunicanti (fino a 25 m²)",0.3],
+  ["balcone_ecc","Balconi e terrazze comunicanti (oltre 25 m²)",0.1],
+  ["balcone_nc","Balconi e terrazze non comunicanti (fino a 25 m²)",0.15],
+  ["giardino","Giardino / area scoperta (fino alla superficie dei vani)",0.1],
+  ["giardino_ecc","Giardino / area scoperta (eccedenza)",0.02],
+  ["garage","Autorimessa / posto auto",""],
+  ["altro","Altro",""]
+];
+function nuovaPerizia(){
+  const t=new Date().toISOString();
+  return {
+    id:uid(), creata:t, modificata:t, formato:1,
+    incarico:{ numero:"", committente:"", cf:"", recapiti:"", indirizzoCommittente:"", scopo:"compravendita", scopoAltro:"", dataIncarico:oggi(), dataSopralluogo:"", dataValutazione:oggi(), presenti:"",
+      perito:lsGet("pp_perito")||"", qualifica:lsGet("pp_qualifica")||"", contattiPerito:lsGet("pp_contatti")||"" },
+    documenti:{ voci:Object.fromEntries(DOC_STD.map(([k])=>[k,{ok:false,note:""}])), note:"" },
+    immobile:{ indirizzo:"", civico:"", cap:"", comune:"", provincia:"", piano:"", interno:"", scala:"", tipologia:"", descrizione:"", confini:"", anno:"", manutenzione:"3", impianti:"", classeEnergetica:"", ascensore:"", bagni:"", note:"" },
+    catasto:[{ id:uid(), catasto:"Fabbricati", comune:"", sezione:"", foglio:"", particella:"", sub:"", categoria:"", classe:"", consistenza:"", superficie:"", rendita:"" }],
+    titolarita:[{ id:uid(), intestatario:"", diritto:"Proprietà", quota:"100", provenienza:"Compravendita", notaio:"", repertorio:"", raccolta:"", dataAtto:"", trascrizione:"" }],
+    conformita:{ ante67:"", titoli:"", urbanistica:"", urbanisticaNote:"", catastale:"", catastaleNote:"", vincoli:"", servitu:"", convenzioni:"", condominio:"", occupazione:"", occupazioneNote:"" },
+    superfici:[{ id:uid(), descrizione:"Abitazione", tipo:"principale", lorda:"", coeff:"1" }],
+    mercato:{ segmento:"", fonti:"", note:"" },
+    mca:{ comparabili:[], parametri:{ saggioAnnuo:"", rapportoPiano:"", costoBagno:"", deprezzamentoBagno:"", costoManutenzione:"", arrotondamento:"1000", soglia:"5" }, extra:[] },
+    conclusione:{ detrazioni:[], considerazioni:"", assunzioni:"", luogo:"" }
+  };
+}
+function nuovoComparabile(){ return { id:uid(), fonte:"Atto di compravendita", riferimento:"", indirizzo:"", data:"", prezzo:"", superficie:"", piano:"", bagni:"", manutenzione:"3", note:"", extra:{} }; }
+/* compatibilità: aggiunge i campi mancanti alle perizie salvate con versioni precedenti */
+function completa(p){ const b=nuovaPerizia(); (function fill(t,s){ for(const k of Object.keys(s)){ if(t[k]===undefined) t[k]=JSON.parse(JSON.stringify(s[k])); else if(s[k]&&typeof s[k]==="object"&&!Array.isArray(s[k])&&t[k]&&typeof t[k]==="object") fill(t[k],s[k]); } })(p,b); return p; }
+
+/* ---------- calcoli ---------- */
+function supCommerciale(p){ return p.superfici.reduce((a,r)=>a+n0(r.lorda)*n0(r.coeff),0); }
+function mesiTra(a,b){ if(!a||!b) return NaN; const da=new Date(a), db=new Date(b); return (db-da)/(864e5*30.4375); }
+function calcolaMCA(p){
+  const P=p.mca.parametri, comps=p.mca.comparabili.filter(c=>has(c.prezzo)&&has(c.superficie)&&n0(c.superficie)>0);
+  const dv=p.incarico.dataValutazione||oggi();
+  const sog={ S:supCommerciale(p), L:num(p.immobile.piano), N:num(p.immobile.bagni), M:num(p.immobile.manutenzione), extra:Object.fromEntries(p.mca.extra.map(x=>[x.id,num(x.soggetto)])) };
+  const out={ sog, comps, righe:[], avvisi:[], dv, ok:false };
+  if(!(sog.S>0)) out.avvisi.push("Manca la superficie commerciale dell'immobile da stimare (sezione Superfici).");
+  if(comps.length<3) out.avvisi.push(`Servono almeno 3 comparabili completi di prezzo e superficie: ora ${comps.length}.`);
+  if(!comps.length||!(sog.S>0)) return out;
+  const i=num(P.saggioAnnuo), rP=num(P.rapportoPiano), cB=num(P.costoBagno), dB=n0(P.deprezzamentoBagno), cM=num(P.costoManutenzione);
+  const pSup=Math.min(...comps.map(c=>n0(c.prezzo)/n0(c.superficie)));
+  const car=[];
+  car.push({ k:"data", nome:"Data del contratto", unita:"mesi", attiva:isFinite(i),
+    pm:c=>n0(c.prezzo)*i/100/12, diff:c=>mesiTra(c.data,dv), nota:isFinite(i)?`saggio annuo ${fmt(i,2)}%`:"saggio annuo non indicato" });
+  car.push({ k:"sup", nome:"Superficie commerciale", unita:"m²", attiva:true,
+    pm:()=>pSup, diff:c=>sog.S-n0(c.superficie), nota:`prezzo medio minimo ${eur(pSup,2)}/m²` });
+  car.push({ k:"piano", nome:"Livello di piano", unita:"piani", attiva:isFinite(rP)&&isFinite(sog.L),
+    pm:c=>n0(c.prezzo)*rP/100, diff:c=>sog.L-num(c.piano), nota:isFinite(rP)?`rapporto ${fmt(rP,2)}% per piano`:"rapporto non indicato" });
+  car.push({ k:"bagni", nome:"Servizi igienici", unita:"n.", attiva:isFinite(cB)&&isFinite(sog.N),
+    pm:()=>cB*(1-dB/100), diff:c=>sog.N-num(c.bagni), nota:isFinite(cB)?`costo ${eur(cB)} − deprezzamento ${fmt(dB,0)}%`:"costo non indicato" });
+  car.push({ k:"manut", nome:"Stato di manutenzione", unita:"livelli", attiva:isFinite(cM)&&isFinite(sog.M),
+    pm:c=>cM*n0(c.superficie), diff:c=>sog.M-num(c.manutenzione), nota:isFinite(cM)?`${eur(cM,2)}/m² per livello`:"costo non indicato" });
+  for(const x of p.mca.extra){ const pm=num(x.prezzo); car.push({ k:"x_"+x.id, nome:x.nome||"Caratteristica", unita:x.unita||"", attiva:isFinite(pm)&&isFinite(sog.extra[x.id]),
+    pm:()=>pm, diff:c=>sog.extra[x.id]-num((c.extra||{})[x.id]), nota:isFinite(pm)?`${eur(pm)} per ${x.unita||"unità"}`:"prezzo non indicato" }); }
+  for(const ch of car){
+    const r={ ...ch, valori:[] };
+    for(const c of comps){
+      let pm=NaN, df=NaN, adj=0;
+      if(ch.attiva){ pm=ch.pm(c); df=ch.diff(c); if(!isFinite(df)){ out.avvisi.push(`${ch.nome}: dato mancante per il comparabile «${c.indirizzo||c.riferimento||"senza nome"}» (aggiustamento 0).`); df=NaN; } adj=isFinite(pm)&&isFinite(df)?pm*df:0; }
+      r.valori.push({ pm, df, adj });
+    }
+    out.righe.push(r);
+  }
+  out.corretti=comps.map((c,j)=>n0(c.prezzo)+out.righe.reduce((a,r)=>a+r.valori[j].adj,0));
+  const mn=Math.min(...out.corretti), mx=Math.max(...out.corretti);
+  out.divergenza=mn>0?(mx-mn)/mn*100:NaN;
+  out.media=out.corretti.reduce((a,b)=>a+b,0)/out.corretti.length;
+  out.passo=n0(P.arrotondamento)||1;
+  out.detrazioni=p.conclusione.detrazioni.reduce((a,d)=>a+n0(d.importo),0);
+  out.valore=arrotonda(out.media-out.detrazioni,out.passo);
+  out.unitario=out.valore/sog.S;
+  const soglia=n0(P.soglia)||5;
+  out.attendibile=isFinite(out.divergenza)&&out.divergenza<=soglia;
+  out.soglia=soglia;
+  if(isFinite(out.divergenza)&&!out.attendibile) out.avvisi.push(`Divergenza tra i prezzi corretti ${fmt(out.divergenza,1)}%: supera la soglia del ${fmt(soglia,1)}%. Verificare comparabili e parametri.`);
+  out.ok=comps.length>=3&&out.corretti.every(v=>v>0);
+  return out;
+}
+
+/* ---------- stato e salvataggio ---------- */
+let corrente=null, sezione="incarico", saveT=null;
+function salvaPresto(){
+  if(!corrente) return; corrente.modificata=new Date().toISOString();
+  $("saved").textContent="Salvataggio…";
+  clearTimeout(saveT); saveT=setTimeout(async()=>{ try{ await DB.put(corrente); $("saved").textContent="Salvata su questo dispositivo · "+new Date().toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"}); }catch(e){ $("saved").textContent="Salvataggio non riuscito"; toast("Salvataggio non riuscito: "+e.message,6000); } },400);
+}
+addEventListener("pagehide",()=>{ if(corrente&&saveT){ clearTimeout(saveT); DB.put(corrente); } });
+
+/* ---------- campi collegati ai dati ---------- */
+function fld(label, obj, key, opt={}){
+  let el;
+  if(opt.type==="select"){ el=h("select",{ onchange:()=>{ obj[key]=el.value; salvaPresto(); opt.on&&opt.on(); } }, opt.options.map(([v,l])=>h("option",{value:v},l))); el.value=obj[key]??""; }
+  else if(opt.type==="area"){ el=h("textarea",{ rows:opt.rows||3, placeholder:opt.ph||null, oninput:()=>{ obj[key]=el.value; salvaPresto(); opt.on&&opt.on(); } }); el.value=obj[key]||""; }
+  else { el=h("input",{ type:opt.type||"text", class:opt.num?"num":null, inputmode:opt.num?"decimal":(opt.type==="email"?"email":null), placeholder:opt.ph||null, autocomplete:"off",
+      oninput:()=>{ obj[key]=el.value; salvaPresto(); opt.on&&opt.on(); } }); el.value=obj[key]??""; }
+  return h("div",{ class:"fld"+(opt.wide?" wide":"") }, h("label",{ class:"f" }, label), el);
+}
+const SINO=[["","—"],["si","Sì"],["no","No"]];
+const CONF=[["","—"],["conforme","Conforme"],["parziale","Parzialmente conforme"],["non conforme","Non conforme"],["non verificata","Non verificata"]];
+
+/* ---------- viste ---------- */
+const SEZIONI=[
+  ["incarico","Incarico"],["documenti","Documenti"],["immobile","Immobile"],["catasto","Catasto e titolarità"],["conformita","Conformità e vincoli"],
+  ["superfici","Superfici"],["comparabili","Comparabili"],["valutazione","Valutazione"],["conclusione","Conclusione"]
+];
+function nomePerizia(p){ const i=p.immobile; return [p.incarico.numero, [i.indirizzo,i.civico].filter(Boolean).join(" "), i.comune].filter(Boolean).join(" · ")||"Perizia senza nome"; }
+
+async function vistaElenco(){
+  corrente=null; $("bar").hidden=true;
+  const app=$("app"); app.replaceChildren();
+  const elenco=(await DB.all()).sort((a,b)=>String(b.modificata).localeCompare(String(a.modificata)));
+  app.append(h("section",{class:"hero"},
+    h("p",{class:"eyebrow"},"Studio Purarchitettura · Perizie"),
+    h("h1",{class:"title"},"Perizie private"),
+    h("hr",{class:"rule"}),
+    h("p",{class:"lead"},"Stima del valore di mercato con il metodo del confronto di mercato (MCA) e relazione in Word. Le perizie restano solo su questo dispositivo: usa «Backup» per conservarne una copia."),
+    h("div",{class:"toolbar"},
+      h("button",{class:"btn solid",type:"button",onclick:async()=>{ const p=nuovaPerizia(); await DB.put(p); apri(p); }},"Nuova perizia"),
+      h("button",{class:"btn quiet",type:"button",onclick:()=>$("fileImport").click()},"Importa backup"))));
+  if(!elenco.length){ app.append(h("div",{class:"empty"},"Nessuna perizia su questo dispositivo.")); return; }
+  const l=h("div",{class:"list"});
+  for(const p of elenco){
+    completa(p);
+    const r=calcolaMCA(p);
+    l.append(h("button",{class:"item",type:"button",onclick:()=>apri(p)},
+      h("div",null,h("b",null,nomePerizia(p)),h("small",null,[p.incarico.committente,"modificata "+itData(p.modificata)].filter(Boolean).join(" · "))),
+      h("span",{class:"val"}, r.ok?eur(r.valore):"in compilazione")));
+  }
+  app.append(l);
+  app.append(h("p",{class:"lead",style:"font-size:12px;margin-top:26px"},"Versione "+VERSIONE));
+}
+
+function apri(p){ corrente=completa(p); sezione=lsGet("pp_sez_"+p.id)||"incarico"; $("bar").hidden=false; $("saved").textContent="Salvata su questo dispositivo"; render(); scrollTo(0,0); }
+
+function completata(k,p){
+  switch(k){
+    case "incarico": return !!(p.incarico.committente&&p.incarico.dataValutazione&&p.incarico.perito);
+    case "documenti": return Object.values(p.documenti.voci).some(v=>v.ok);
+    case "immobile": return !!(p.immobile.indirizzo&&p.immobile.comune&&p.immobile.descrizione);
+    case "catasto": return p.catasto.some(c=>c.foglio&&c.particella)&&p.titolarita.some(t=>t.intestatario);
+    case "conformita": return !!(p.conformita.urbanistica&&p.conformita.catastale);
+    case "superfici": return supCommerciale(p)>0;
+    case "comparabili": return calcolaMCA(p).comps.length>=3;
+    case "valutazione": return calcolaMCA(p).ok;
+    case "conclusione": return !!p.conclusione.considerazioni;
+  }
+  return false;
+}
+
+function render(){
+  const p=corrente, app=$("app"); app.replaceChildren();
+  app.append(h("section",{class:"hero",style:"padding-top:22px"},
+    h("p",{class:"eyebrow"},"Perizia"+(p.incarico.numero?" n. "+p.incarico.numero:"")),
+    h("h1",{class:"title",style:"font-size:clamp(20px,4.4vw,28px)"},[p.immobile.indirizzo,p.immobile.civico].filter(Boolean).join(" ")||"Nuova perizia"),
+    h("p",{class:"lead",style:"margin-top:6px"},[p.immobile.comune,p.incarico.committente].filter(Boolean).join(" · ")||"Compila le sezioni nell'ordine che preferisci: il salvataggio è automatico.")));
+  const tabs=h("nav",{class:"tabs","aria-label":"Sezioni della perizia"}, SEZIONI.map(([k,l],i)=>h("button",{ type:"button", class:"tab"+(k===sezione?" on":"")+(completata(k,p)?" done":""), onclick:()=>{ sezione=k; lsSet("pp_sez_"+p.id,k); render(); } }, h("span",{class:"n"},String(i+1).padStart(2,"0")), l)));
+  app.append(tabs);
+  const pane=h("section",{class:"pane"}); app.append(pane);
+  ({incarico:secIncarico,documenti:secDocumenti,immobile:secImmobile,catasto:secCatasto,conformita:secConformita,superfici:secSuperfici,comparabili:secComparabili,valutazione:secValutazione,conclusione:secConclusione})[sezione](pane,p);
+  const i=SEZIONI.findIndex(s=>s[0]===sezione);
+  pane.append(h("div",{class:"toolbar",style:"justify-content:space-between"},
+    i>0?h("button",{class:"btn quiet",type:"button",onclick:()=>{ sezione=SEZIONI[i-1][0]; lsSet("pp_sez_"+p.id,sezione); render(); scrollTo(0,0); }},"← "+SEZIONI[i-1][1]):h("span"),
+    i<SEZIONI.length-1?h("button",{class:"btn gold",type:"button",onclick:()=>{ sezione=SEZIONI[i+1][0]; lsSet("pp_sez_"+p.id,sezione); render(); scrollTo(0,0); }},SEZIONI[i+1][1]+" →"):h("span")));
+  const on=tabs.querySelector(".on"); if(on) on.scrollIntoView({block:"nearest",inline:"center"});
+}
+const card=(titolo,...kids)=>h("div",{class:"card"},h("h2",null,titolo),...kids);
+
+function secIncarico(el,p){
+  const I=p.incarico, ricorda=()=>{ lsSet("pp_perito",I.perito); lsSet("pp_qualifica",I.qualifica); lsSet("pp_contatti",I.contattiPerito); };
+  el.append(card("Incarico",h("div",{class:"grid"},
+    fld("N. o codice perizia",I,"numero"),
+    fld("Scopo della stima",I,"scopo",{type:"select",options:[["compravendita","Compravendita"],["divisione","Divisione"],["successione","Successione / donazione"],["garanzia","Garanzia / finanziamento"],["contenzioso","Contenzioso"],["patrimoniale","Valutazione patrimoniale"],["altro","Altro"]],on:()=>render()}),
+    I.scopo==="altro"?fld("Scopo (specificare)",I,"scopoAltro"):null,
+    fld("Data incarico",I,"dataIncarico",{type:"date"}),
+    fld("Data sopralluogo",I,"dataSopralluogo",{type:"date"}),
+    fld("Data di riferimento della stima",I,"dataValutazione",{type:"date"}),
+    fld("Presenti al sopralluogo",I,"presenti",{wide:true}))));
+  el.append(card("Committente",h("div",{class:"grid"},
+    fld("Nome e cognome / ragione sociale",I,"committente",{on:()=>{}}),
+    fld("Codice fiscale / P. IVA",I,"cf"),
+    fld("Recapiti (telefono, email)",I,"recapiti"),
+    fld("Indirizzo",I,"indirizzoCommittente"))));
+  el.append(card("Perito",h("p",{class:"hint"},"Intestazione della relazione. Resta memorizzata su questo dispositivo per le perizie successive."),h("div",{class:"grid"},
+    fld("Nome del perito",I,"perito",{on:ricorda,ph:"es. Geom. Nome Cognome"}),
+    fld("Qualifica / iscrizione albo",I,"qualifica",{on:ricorda}),
+    fld("Studio, indirizzo e contatti",I,"contattiPerito",{on:ricorda,wide:true}))));
+}
+function secDocumenti(el,p){
+  const box=h("div");
+  for(const [k,l] of DOC_STD){
+    const v=p.documenti.voci[k]||(p.documenti.voci[k]={ok:false,note:""});
+    const note=h("input",{type:"text",placeholder:"Note (data, estremi, osservazioni)",value:v.note,oninput:()=>{ v.note=note.value; salvaPresto(); }});
+    const cb=h("input",{type:"checkbox",checked:v.ok,onchange:()=>{ v.ok=cb.checked; salvaPresto(); }});
+    box.append(h("label",{class:"chk"},cb,h("span",{class:"t"},l,note)));
+  }
+  el.append(card("Documentazione esaminata",h("p",{class:"hint"},"Spunta i documenti acquisiti: compariranno nella relazione."),box,
+    h("div",{style:"margin-top:12px"},fld("Note sulla documentazione",p.documenti,"note",{type:"area"}))));
+}
+function secImmobile(el,p){
+  const M=p.immobile;
+  el.append(card("Ubicazione",h("div",{class:"grid"},
+    fld("Indirizzo",M,"indirizzo"),fld("Civico",M,"civico"),fld("CAP",M,"cap",{num:false}),fld("Comune",M,"comune"),fld("Provincia",M,"provincia"),
+    fld("Scala",M,"scala"),fld("Interno",M,"interno"),fld("Piano (terra = 0)",M,"piano",{num:true,on:()=>{}}))));
+  el.append(card("Descrizione",h("div",{class:"grid"},
+    fld("Tipologia",M,"tipologia",{ph:"es. appartamento in condominio, villetta a schiera"}),
+    fld("Anno di costruzione",M,"anno"),
+    fld("Stato di manutenzione",M,"manutenzione",{type:"select",options:MANUT}),
+    fld("Servizi igienici (n.)",M,"bagni",{num:true}),
+    fld("Ascensore",M,"ascensore",{type:"select",options:SINO}),
+    fld("Classe energetica",M,"classeEnergetica"),
+    fld("Descrizione e consistenza",M,"descrizione",{type:"area",wide:true,rows:4,ph:"Composizione dei locali, piani, finiture, pertinenze"}),
+    fld("Impianti e finiture",M,"impianti",{type:"area",wide:true}),
+    fld("Confini",M,"confini",{type:"area",wide:true}),
+    fld("Note",M,"note",{type:"area",wide:true}))));
+}
+function righe(el,lista,titolo,campi,nuova,dopo){
+  const box=h("div",{class:"rows"});
+  const draw=()=>{ box.replaceChildren(...lista.map((r,i)=>h("div",{class:"row"},
+    h("div",{class:"rhead"},h("b",null,titolo+" "+(i+1)),h("button",{class:"btn danger small",type:"button",onclick:()=>{ if(!confirm("Eliminare questa riga?")) return; lista.splice(i,1); salvaPresto(); draw(); dopo&&dopo(); }},"Elimina")),
+    h("div",{class:"grid"},campi(r))))); };
+  draw();
+  el.append(box,h("button",{class:"btn gold small addrow",type:"button",onclick:()=>{ lista.push(nuova()); salvaPresto(); draw(); dopo&&dopo(); }},"+ Aggiungi"));
+}
+function secCatasto(el,p){
+  const c1=card("Identificazione catastale");
+  righe(c1,p.catasto,"Unità",r=>[
+    fld("Catasto",r,"catasto",{type:"select",options:[["Fabbricati","Fabbricati"],["Terreni","Terreni"]]}),
+    fld("Comune censuario",r,"comune"),fld("Sezione",r,"sezione"),fld("Foglio",r,"foglio"),fld("Particella",r,"particella"),fld("Subalterno",r,"sub"),
+    fld("Categoria / qualità",r,"categoria"),fld("Classe",r,"classe"),fld("Consistenza",r,"consistenza"),fld("Superficie catastale (m²)",r,"superficie",{num:true}),fld("Rendita / reddito (€)",r,"rendita",{num:true})
+  ],()=>({ id:uid(), catasto:"Fabbricati", comune:"", sezione:"", foglio:"", particella:"", sub:"", categoria:"", classe:"", consistenza:"", superficie:"", rendita:"" }));
+  el.append(c1);
+  const c2=card("Titolarità e provenienza");
+  righe(c2,p.titolarita,"Titolare",r=>[
+    fld("Intestatario",r,"intestatario"),fld("Diritto",r,"diritto",{type:"select",options:[["Proprietà","Proprietà"],["Nuda proprietà","Nuda proprietà"],["Usufrutto","Usufrutto"],["Superficie","Diritto di superficie"],["Altro","Altro"]]}),
+    fld("Quota (%)",r,"quota",{num:true}),fld("Provenienza",r,"provenienza",{type:"select",options:[["Compravendita","Compravendita"],["Successione","Successione"],["Donazione","Donazione"],["Divisione","Divisione"],["Assegnazione","Assegnazione"],["Altro","Altro"]]}),
+    fld("Notaio",r,"notaio"),fld("Repertorio",r,"repertorio"),fld("Raccolta",r,"raccolta"),fld("Data atto",r,"dataAtto",{type:"date"}),fld("Trascrizione",r,"trascrizione")
+  ],()=>({ id:uid(), intestatario:"", diritto:"Proprietà", quota:"", provenienza:"Compravendita", notaio:"", repertorio:"", raccolta:"", dataAtto:"", trascrizione:"" }));
+  el.append(c2);
+}
+function secConformita(el,p){
+  const C=p.conformita;
+  el.append(card("Conformità urbanistica",h("div",{class:"grid"},
+    fld("Costruito prima del 1° settembre 1967",C,"ante67",{type:"select",options:SINO}),
+    fld("Esito",C,"urbanistica",{type:"select",options:CONF}),
+    fld("Titoli edilizi",C,"titoli",{type:"area",wide:true,ph:"Elenco dei titoli con numero e data"}),
+    fld("Note e difformità",C,"urbanisticaNote",{type:"area",wide:true}))));
+  el.append(card("Conformità catastale",h("div",{class:"grid"},
+    fld("Esito",C,"catastale",{type:"select",options:CONF}),
+    fld("Note e difformità",C,"catastaleNote",{type:"area",wide:true}))));
+  el.append(card("Vincoli, servitù e stato di occupazione",h("div",{class:"grid"},
+    fld("Stato di occupazione",C,"occupazione",{type:"select",options:[["","—"],["libero","Libero"],["proprietario","Occupato dal proprietario"],["locato","Locato"],["altro","Altro"]]}),
+    fld("Note sull'occupazione (contratto, scadenza, canone)",C,"occupazioneNote"),
+    fld("Vincoli (paesaggistici, storici, urbanistici)",C,"vincoli",{type:"area",wide:true}),
+    fld("Servitù",C,"servitu",{type:"area",wide:true}),
+    fld("Convenzioni (edilizia convenzionata, PEEP)",C,"convenzioni",{type:"area",wide:true}),
+    fld("Condominio (spese, insoluti, delibere)",C,"condominio",{type:"area",wide:true}))));
+}
+function secSuperfici(el,p){
+  const tot=h("b"); const upd=()=>{ tot.textContent=fmt(supCommerciale(p),2)+" m²"; };
+  const c=card("Consistenza e superficie commerciale",h("p",{class:"hint"},"Superfici lorde misurate e coefficienti di ragguaglio. Scegliendo il tipo viene proposto il coefficiente del D.P.R. 138/1998 (Allegato C), sempre modificabile; per autorimesse e altre superfici indicalo tu."));
+  righe(c,p.superfici,"Superficie",r=>{
+    const coeff=fld("Coefficiente",r,"coeff",{num:true,on:upd});
+    const tipo=fld("Tipo",r,"tipo",{type:"select",options:TIPI_SUP.map(([v,l])=>[v,l]),on:()=>{ const t=TIPI_SUP.find(x=>x[0]===r.tipo); if(t&&t[2]!==""){ r.coeff=String(t[2]).replace(".",","); coeff.querySelector("input").value=r.coeff; } else if(t){ r.coeff=""; coeff.querySelector("input").value=""; } salvaPresto(); upd(); }});
+    return [fld("Descrizione",r,"descrizione"),tipo,fld("Superficie lorda (m²)",r,"lorda",{num:true,on:upd}),coeff];
+  },()=>({ id:uid(), descrizione:"", tipo:"altro", lorda:"", coeff:"" }),upd);
+  c.append(h("div",{class:"sum"},h("span",null,"Superficie commerciale"),tot)); upd();
+  el.append(c);
+}
+function secComparabili(el,p){
+  const P=p.mca.parametri;
+  el.append(h("div",{class:"notice"},"Metodo del confronto di mercato (MCA): servono almeno 3 compravendite recenti di immobili dello stesso segmento, con prezzo, data e superficie commerciale calcolata con gli stessi coefficienti dell'immobile da stimare."));
+  el.append(card("Segmento di mercato",h("div",{class:"grid"},
+    fld("Segmento (zona, tipologia, destinazione)",p.mercato,"segmento",{type:"area",wide:true}),
+    fld("Fonti dei dati",p.mercato,"fonti",{type:"area",wide:true,ph:"es. atti di compravendita, banche dati, agenzie"}),
+    fld("Note",p.mercato,"note",{type:"area",wide:true}))));
+  const c=card("Comparabili");
+  righe(c,p.mca.comparabili,"Comparabile",r=>[
+    fld("Fonte",r,"fonte",{type:"select",options:[["Atto di compravendita","Atto di compravendita"],["Banca dati","Banca dati"],["Altro","Altro"]]}),
+    fld("Riferimento (notaio, rep., data)",r,"riferimento"),
+    fld("Indirizzo",r,"indirizzo"),
+    fld("Data del contratto",r,"data",{type:"date"}),
+    fld("Prezzo (€)",r,"prezzo",{num:true}),
+    fld("Superficie commerciale (m²)",r,"superficie",{num:true}),
+    fld("Piano",r,"piano",{num:true}),
+    fld("Servizi igienici (n.)",r,"bagni",{num:true}),
+    fld("Stato di manutenzione",r,"manutenzione",{type:"select",options:MANUT}),
+    ...p.mca.extra.map(x=>{ r.extra=r.extra||{}; return fld((x.nome||"Caratteristica")+(x.unita?` (${x.unita})`:""),r.extra,x.id,{num:true}); }),
+    fld("Note",r,"note",{wide:true})
+  ],nuovoComparabile);
+  el.append(c);
+  el.append(card("Prezzi marginali",h("p",{class:"hint"},"Parametri per gli aggiustamenti. Una caratteristica senza parametro non viene considerata. Il prezzo marginale della superficie è calcolato in automatico (prezzo medio minimo dei comparabili)."),h("div",{class:"grid"},
+    fld("Variazione annua dei prezzi (%)",P,"saggioAnnuo",{num:true,ph:"es. −2 se i prezzi calano"}),
+    fld("Livello di piano: rapporto per piano (%)",P,"rapportoPiano",{num:true}),
+    fld("Costo di un bagno (€)",P,"costoBagno",{num:true}),
+    fld("Deprezzamento del bagno (%)",P,"deprezzamentoBagno",{num:true}),
+    fld("Manutenzione: costo per livello (€/m²)",P,"costoManutenzione",{num:true}),
+    fld("Arrotondamento del valore (€)",P,"arrotondamento",{num:true}),
+    fld("Soglia di divergenza accettabile (%)",P,"soglia",{num:true}))));
+  const cx=card("Altre caratteristiche (facoltative)",h("p",{class:"hint"},"Per caratteristiche non previste (es. posto auto, giardino, vista): indica il prezzo marginale per unità e il valore dell'immobile da stimare; i valori dei comparabili si inseriscono nelle loro schede."));
+  righe(cx,p.mca.extra,"Caratteristica",x=>[fld("Nome",x,"nome"),fld("Unità di misura",x,"unita",{ph:"es. n., m², punti"}),fld("Prezzo marginale (€ per unità)",x,"prezzo",{num:true}),fld("Valore dell'immobile da stimare",x,"soggetto",{num:true})],()=>({ id:uid(), nome:"", unita:"", prezzo:"", soggetto:"" }),()=>render());
+  el.append(cx);
+}
+function tabellaMCA(r,p){
+  const comps=r.comps, head=["",...comps.map((c,i)=>"C"+(i+1))];
+  const t1=[ ["Indirizzo",...comps.map(c=>c.indirizzo||"—")], ["Data contratto",...comps.map(c=>itData(c.data)||"—")], ["Prezzo",...comps.map(c=>eur(n0(c.prezzo)))], ["Superficie (m²)",...comps.map(c=>fmt(n0(c.superficie),2))], ["Prezzo unitario (€/m²)",...comps.map(c=>fmt(n0(c.prezzo)/n0(c.superficie),2))] ];
+  const t2=r.righe.filter(x=>x.attiva).map(x=>[x.nome+" · "+x.nota,...x.valori.map(v=>isFinite(v.df)?`${fmt(v.df,x.k==="data"?1:2)} × ${fmt(v.pm,2)} = ${fmt(v.adj,0)}`:"0")]);
+  const t3=[["Prezzo corretto",...r.corretti.map(v=>eur(v))]];
+  return { head, t1, t2, t3 };
+}
+function htmlTable(head,rows,totRows){
+  return h("div",{class:"tw"},h("table",{class:"t"},h("thead",null,h("tr",null,head.map(x=>h("th",null,x)))),h("tbody",null,rows.map(r=>h("tr",null,r.map(c=>h("td",null,c)))),(totRows||[]).map(r=>h("tr",{class:"tot"},r.map(c=>h("td",null,c)))))));
+}
+function secValutazione(el,p){
+  const r=calcolaMCA(p);
+  for(const a of r.avvisi) el.append(h("div",{class:"notice err"},a));
+  if(!r.comps.length||!(r.sog.S>0)){ el.append(h("div",{class:"empty"},"Il calcolo compare quando ci sono la superficie commerciale e almeno un comparabile con prezzo e superficie.")); return; }
+  el.append(h("div",{class:"result"},h("small",null,"VALORE DI MERCATO STIMATO"),h("div",{class:"big"},eur(r.valore)),
+    h("small",null,`${eur(r.unitario,2)}/m² su ${fmt(r.sog.S,2)} m² commerciali · media prezzi corretti ${eur(r.media)}`+(r.detrazioni?` − detrazioni ${eur(r.detrazioni)}`:"")+` · arrotondamento a ${eur(r.passo)}`)));
+  el.append(h("div",{class:"notice "+(r.attendibile?"ok":"err")},`Divergenza percentuale assoluta tra i prezzi corretti: ${fmt(r.divergenza,2)}% (soglia ${fmt(r.soglia,1)}%) — ${r.attendibile?"stima attendibile":"verificare comparabili e parametri"}.`));
+  const T=tabellaMCA(r,p);
+  el.append(card("Comparabili",htmlTable(T.head,T.t1)));
+  el.append(card("Aggiustamenti (differenza × prezzo marginale)",h("p",{class:"hint"},"Differenza = immobile da stimare − comparabile. Per la data: mesi tra il contratto e la data di riferimento della stima."),htmlTable(T.head,T.t2,T.t3)));
+  el.append(card("Immobile da stimare",htmlTable(["Caratteristica","Valore"],[
+    ["Data di riferimento",itData(r.dv)],["Superficie commerciale (m²)",fmt(r.sog.S,2)],["Piano",isFinite(r.sog.L)?fmt(r.sog.L):"—"],["Servizi igienici",isFinite(r.sog.N)?fmt(r.sog.N):"—"],["Stato di manutenzione",(MANUT.find(m=>m[0]===String(p.immobile.manutenzione))||["","—"])[1]],
+    ...p.mca.extra.map(x=>[x.nome||"Caratteristica",isFinite(num(x.soggetto))?fmt(num(x.soggetto),2):"—"])])));
+}
+function secConclusione(el,p){
+  const C=p.conclusione, r=calcolaMCA(p);
+  const c=card("Detrazioni",h("p",{class:"hint"},"Costi da sottrarre al valore (regolarizzazioni urbanistiche o catastali, lavori indispensabili, spese condominiali insolute)."));
+  righe(c,C.detrazioni,"Detrazione",d=>[fld("Descrizione",d,"descrizione"),fld("Importo (€)",d,"importo",{num:true})],()=>({ id:uid(), descrizione:"", importo:"" }),()=>render());
+  el.append(c);
+  if(r.ok) el.append(h("div",{class:"result"},h("small",null,"VALORE DI MERCATO"),h("div",{class:"big"},eur(r.valore)),h("small",null,"euro "+inLettere(r.valore)+"/00")));
+  el.append(card("Conclusioni",h("div",{class:"grid"},
+    fld("Considerazioni finali",C,"considerazioni",{type:"area",wide:true,rows:5}),
+    fld("Assunzioni e limiti della stima",C,"assunzioni",{type:"area",wide:true,rows:4,ph:"es. misure, documentazione fornita, verifiche non eseguite"}),
+    fld("Luogo",C,"luogo"))));
+  el.append(h("div",{class:"toolbar"},h("button",{class:"btn danger small",type:"button",onclick:async()=>{ if(!confirm("Eliminare definitivamente questa perizia da questo dispositivo? Fai prima un backup se ti serve.")) return; await DB.del(p.id); toast("Perizia eliminata."); vistaElenco(); }},"Elimina perizia")));
+}
+
+/* ---------- backup ---------- */
+function scarica(blob,nome){ const a=h("a",{href:URL.createObjectURL(blob),download:nome}); document.body.append(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },2000); }
+function slug(s){ return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^\w]+/g,"_").replace(/^_|_$/g,"").slice(0,60)||"perizia"; }
+$("btnBackup").addEventListener("click",()=>{ if(!corrente) return; scarica(new Blob([JSON.stringify({app:"perizie-private",versione:1,perizia:corrente},null,1)],{type:"application/json"}),`Backup_${slug(nomePerizia(corrente))}_${oggi()}.json`); toast("Backup salvato: conservalo in Drive o sul computer."); });
+$("fileImport").addEventListener("change",async e=>{
+  const f=e.target.files[0]; e.target.value=""; if(!f) return;
+  try{ const j=JSON.parse(await f.text()); const p=j&&j.perizia; if(!p||!p.id||!p.incarico) throw new Error("file non riconosciuto");
+    const esist=(await DB.all()).find(x=>x.id===p.id);
+    if(esist&&!confirm("Questa perizia è già sul dispositivo. Sostituirla con il backup?")) return;
+    await DB.put(completa(p)); toast("Perizia importata."); apri(p);
+  }catch(err){ toast("Importazione non riuscita: "+err.message,5000); }
+});
+
+/* =====================================================================
+   RELAZIONE IN WORD (.docx), generata nell'app senza librerie esterne
+   ===================================================================== */
+const CRC_TABLE=(()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; } return t; })();
+function crc32(b){ let c=0xFFFFFFFF; for(let i=0;i<b.length;i++) c=CRC_TABLE[(c^b[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function makeZip(files){
+  const enc=new TextEncoder(), parts=[], central=[]; let off=0;
+  const d=new Date(), tm=(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1), dt=((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate();
+  for(const f of files){
+    const name=enc.encode(f.name), data=enc.encode(f.data), crc=crc32(data);
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0x0800,true); lh.setUint16(10,tm,true); lh.setUint16(12,dt,true); lh.setUint32(14,crc,true); lh.setUint32(18,data.length,true); lh.setUint32(22,data.length,true); lh.setUint16(26,name.length,true);
+    parts.push(new Uint8Array(lh.buffer),name,data);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true); ch.setUint16(8,0x0800,true); ch.setUint16(12,tm,true); ch.setUint16(14,dt,true); ch.setUint32(16,crc,true); ch.setUint32(20,data.length,true); ch.setUint32(24,data.length,true); ch.setUint16(28,name.length,true); ch.setUint32(42,off,true);
+    central.push(new Uint8Array(ch.buffer),name); off+=30+name.length+data.length;
+  }
+  const cd=central.reduce((a,b)=>a+b.length,0), end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true); end.setUint16(8,files.length,true); end.setUint16(10,files.length,true); end.setUint32(12,cd,true); end.setUint32(16,off,true);
+  return new Blob([...parts,...central,new Uint8Array(end.buffer)],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+}
+const xe=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"");
+function buildDocx(p){
+  const GOLD="84754E", INK="333333", MUTED="7A7A7A", LINE="D9D4C7";
+  const CW=9638; // larghezza utile in twip (A4, margini 2 cm)
+  const run=(t,o={})=>{ const pr=(o.b?"<w:b/>":"")+(o.i?"<w:i/>":"")+(o.caps?"<w:caps/>":"")+`<w:color w:val="${o.color||INK}"/>`+(o.sp?`<w:spacing w:val="${o.sp}"/>`:"")+`<w:sz w:val="${o.sz||20}"/><w:szCs w:val="${o.sz||20}"/>`;
+    return String(t??"").split("\n").map((ln,i)=>(i?`<w:r><w:rPr>${pr}</w:rPr><w:br/></w:r>`:"")+`<w:r><w:rPr>${pr}</w:rPr><w:t xml:space="preserve">${xe(ln)}</w:t></w:r>`).join(""); };
+  const par=(inner,o={})=>`<w:p><w:pPr>${o.keep?"<w:keepNext/>":""}${o.border?`<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="4" w:color="${GOLD}"/></w:pBdr>`:""}<w:spacing w:before="${o.before||0}" w:after="${o.after??100}"/>${o.jc?`<w:jc w:val="${o.jc}"/>`:""}</w:pPr>${inner}</w:p>`;
+  const P=(t,o={})=>par(run(t,o),o);
+  const H1=t=>par(run(t,{b:false,caps:true,sp:30,sz:22,color:GOLD}),{before:260,after:120,keep:true,border:true});
+  const H2=t=>par(run(t,{b:true,sz:19}),{before:140,after:60,keep:true});
+  const cell=(t,w,o={})=>`<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${o.fill?`<w:shd w:val="clear" w:color="auto" w:fill="${o.fill}"/>`:""}</w:tcPr><w:p><w:pPr><w:spacing w:before="20" w:after="20"/>${o.jc?`<w:jc w:val="${o.jc}"/>`:""}</w:pPr>${run(t,{sz:o.sz||17,b:o.b,color:o.color})}</w:p></w:tc>`;
+  const table=(rows,widths,o={})=>{ const tot=widths.reduce((a,b)=>a+b,0), ws=widths.map(w=>Math.round(w/tot*CW));
+    const b=`<w:tblBorders><w:top w:val="single" w:sz="4" w:color="${LINE}"/><w:bottom w:val="single" w:sz="4" w:color="${LINE}"/><w:insideH w:val="single" w:sz="4" w:color="${LINE}"/><w:left w:val="nil"/><w:right w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>`;
+    return `<w:tbl><w:tblPr><w:tblW w:w="${CW}" w:type="dxa"/>${b}<w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="70" w:type="dxa"/><w:right w:w="70" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${ws.map(w=>`<w:gridCol w:w="${w}"/>`).join("")}</w:tblGrid>`+
+      rows.map((r,ri)=>`<w:tr><w:trPr><w:cantSplit/>${ri===0&&o.head?"<w:tblHeader/>":""}</w:trPr>${r.map((c,ci)=>cell(c,ws[ci],{ fill:ri===0&&o.head?"F1EDE3":(o.totLast&&ri===rows.length-1?"F1EDE3":null), b:(ri===0&&o.head)||(o.totLast&&ri===rows.length-1), sz:ri===0&&o.head?15:17, color:ri===0&&o.head?MUTED:INK, jc:ci>0&&o.right?"right":null })).join("")}</w:tr>`).join("")+`</w:tbl>`+P("",{after:60}); };
+  const kv=rows=>table(rows.filter(r=>r[1]!==undefined&&r[1]!==null&&String(r[1]).trim()!==""),[34,66]);
+
+  const I=p.incarico, M=p.immobile, C=p.conformita, r=calcolaMCA(p);
+  const scopi={compravendita:"compravendita",divisione:"divisione",successione:"successione / donazione",garanzia:"garanzia / finanziamento",contenzioso:"contenzioso",patrimoniale:"valutazione patrimoniale",altro:I.scopoAltro||"altro"};
+  const ubic=[[M.indirizzo,M.civico].filter(Boolean).join(" "),[M.cap,M.comune].filter(Boolean).join(" ")+(M.provincia?` (${M.provincia})`:"")].filter(s=>s.trim()).join(", ");
+  const B=[];
+  B.push(par(run("RELAZIONE DI STIMA",{caps:true,sp:40,sz:34,color:INK}),{after:40}));
+  B.push(par(run("Valore di mercato · metodo del confronto di mercato (MCA)",{sz:20,color:MUTED}),{after:200,border:true}));
+  B.push(kv([["Perizia n.",I.numero],["Immobile",ubic],["Committente",I.committente],["Data di riferimento",itData(I.dataValutazione)],["Perito",[I.perito,I.qualifica].filter(Boolean).join(" · ")]]));
+
+  B.push(H1("1. Incarico"));
+  B.push(P(`Il sottoscritto ${I.perito||"「DA FORNIRE」"}${I.qualifica?", "+I.qualifica:""}, su incarico di ${I.committente||"「DA FORNIRE」"}${I.dataIncarico?" conferito in data "+itData(I.dataIncarico):""}, ha redatto la presente relazione allo scopo di determinare il più probabile valore di mercato dell'immobile descritto di seguito, ai fini di ${scopi[I.scopo]||I.scopo}, alla data del ${itData(I.dataValutazione)||"「DA FORNIRE」"}.`));
+  B.push(kv([["Committente",I.committente],["C.F. / P. IVA",I.cf],["Recapiti",I.recapiti],["Indirizzo",I.indirizzoCommittente],["Data sopralluogo",itData(I.dataSopralluogo)],["Presenti al sopralluogo",I.presenti]]));
+
+  B.push(H1("2. Documentazione esaminata"));
+  const docs=DOC_STD.filter(([k])=>p.documenti.voci[k]&&p.documenti.voci[k].ok);
+  if(docs.length) docs.forEach(([k,l])=>B.push(P("•  "+l+(p.documenti.voci[k].note?" — "+p.documenti.voci[k].note:""),{after:40})));
+  else B.push(P("Nessun documento indicato.",{color:MUTED}));
+  if(p.documenti.note) B.push(P(p.documenti.note,{before:80}));
+
+  B.push(H1("3. Identificazione dell'immobile"));
+  B.push(kv([["Ubicazione",ubic],["Scala / interno / piano",[M.scala&&"scala "+M.scala,M.interno&&"int. "+M.interno,M.piano!==""&&M.piano!=null&&"piano "+M.piano].filter(Boolean).join(", ")],["Tipologia",M.tipologia],["Anno di costruzione",M.anno],["Stato di manutenzione",(MANUT.find(m=>m[0]===String(M.manutenzione))||["",""])[1]],["Servizi igienici",M.bagni],["Ascensore",{si:"Sì",no:"No"}[M.ascensore]],["Classe energetica",M.classeEnergetica]]));
+  if(M.descrizione){ B.push(H2("Descrizione e consistenza")); B.push(P(M.descrizione)); }
+  if(M.impianti){ B.push(H2("Impianti e finiture")); B.push(P(M.impianti)); }
+  if(M.confini){ B.push(H2("Confini")); B.push(P(M.confini)); }
+  if(M.note){ B.push(P(M.note)); }
+  const cat=p.catasto.filter(c=>c.foglio||c.particella||c.categoria);
+  if(cat.length){ B.push(H2("Dati catastali")); B.push(table([["Catasto","Comune","Fg.","Part.","Sub","Cat.","Cl.","Consist.","Sup. m²","Rendita €"],...cat.map(c=>[c.catasto,[c.comune,c.sezione&&"sez. "+c.sezione].filter(Boolean).join(" "),c.foglio,c.particella,c.sub,c.categoria,c.classe,c.consistenza,c.superficie,c.rendita])],[11,15,6,8,6,7,5,10,9,10],{head:true})); }
+  const tit=p.titolarita.filter(t=>t.intestatario);
+  if(tit.length){ B.push(H2("Titolarità e provenienza")); B.push(table([["Intestatario","Diritto","Quota","Provenienza","Atto"],...tit.map(t=>[t.intestatario,t.diritto,t.quota?t.quota+"%":"",t.provenienza,[t.notaio&&"Notaio "+t.notaio,t.repertorio&&"rep. "+t.repertorio,t.raccolta&&"racc. "+t.raccolta,t.dataAtto&&"del "+itData(t.dataAtto),t.trascrizione&&"trascr. "+t.trascrizione].filter(Boolean).join(", ")])],[22,13,8,14,43],{head:true})); }
+
+  B.push(H1("4. Conformità, vincoli e occupazione"));
+  B.push(kv([["Costruito prima del 1/9/1967",{si:"Sì",no:"No"}[C.ante67]],["Conformità urbanistica",C.urbanistica],["Titoli edilizi",C.titoli],["Note urbanistiche",C.urbanisticaNote],["Conformità catastale",C.catastale],["Note catastali",C.catastaleNote],["Stato di occupazione",{libero:"Libero",proprietario:"Occupato dal proprietario",locato:"Locato",altro:"Altro"}[C.occupazione]],["Note sull'occupazione",C.occupazioneNote],["Vincoli",C.vincoli],["Servitù",C.servitu],["Convenzioni",C.convenzioni],["Condominio",C.condominio]]));
+
+  B.push(H1("5. Consistenza"));
+  const sup=p.superfici.filter(s=>has(s.lorda));
+  if(sup.length) B.push(table([["Superficie","Lorda m²","Coeff.","Commerciale m²"],...sup.map(s=>[s.descrizione||(TIPI_SUP.find(t=>t[0]===s.tipo)||["","",""])[1],fmt(n0(s.lorda),2),fmt(n0(s.coeff),2),fmt(n0(s.lorda)*n0(s.coeff),2)]),["Superficie commerciale","","",fmt(supCommerciale(p),2)]],[52,16,12,20],{head:true,right:true,totLast:true}));
+  B.push(P("Superfici lorde ragguagliate con i coefficienti indicati (riferimento: D.P.R. 138/1998, Allegato C, salvo diversa indicazione del perito).",{sz:16,color:MUTED}));
+
+  B.push(H1("6. Analisi di mercato"));
+  if(p.mercato.segmento) B.push(kv([["Segmento di mercato",p.mercato.segmento],["Fonti",p.mercato.fonti],["Note",p.mercato.note]]));
+  if(r.comps.length){
+    B.push(table([["","Indirizzo","Data","Prezzo €","Sup. m²","€/m²","Piano","Bagni","Manut."],...r.comps.map((c,i)=>["C"+(i+1),c.indirizzo+(c.riferimento?"\n"+c.riferimento:""),itData(c.data),fmt(n0(c.prezzo)),fmt(n0(c.superficie),2),fmt(n0(c.prezzo)/n0(c.superficie),0),c.piano,c.bagni,c.manutenzione]),["Stima",ubic,itData(r.dv),"",fmt(r.sog.S,2),"",M.piano,M.bagni,M.manutenzione]],[8,27,13,11,9,8,7,7,8],{head:true}));
+  }
+
+  B.push(H1("7. Valutazione"));
+  B.push(P("La stima è svolta con il metodo del confronto di mercato (Market Comparison Approach), secondo gli standard internazionali di valutazione (IVS) e il Codice delle valutazioni immobiliari: il prezzo di ciascun comparabile è corretto con aggiustamenti pari alla differenza tra le caratteristiche dell'immobile da stimare e quelle del comparabile, moltiplicata per il prezzo marginale della caratteristica."));
+  if(r.comps.length&&r.sog.S>0){
+    const att=r.righe.filter(x=>x.attiva);
+    B.push(H2("Prezzi marginali"));
+    B.push(table([["Caratteristica","Criterio"],...att.map(x=>[x.nome,x.nota])],[35,65],{head:true}));
+    B.push(H2("Tabella di valutazione"));
+    const cols=r.comps.map((c,i)=>"C"+(i+1)), w=[30,...cols.map(()=>70/cols.length)];
+    B.push(table([["",...cols],["Prezzo",...r.comps.map(c=>fmt(n0(c.prezzo)))],...att.map(x=>[x.nome,...x.valori.map(v=>fmt(v.adj))]),["Prezzo corretto",...r.corretti.map(v=>fmt(v))]],w,{head:true,right:true,totLast:true}));
+    B.push(H2("Dettaglio degli aggiustamenti"));
+    B.push(table([["Caratteristica",...cols],...att.map(x=>[x.nome+(x.unita?` (${x.unita})`:""),...x.valori.map(v=>isFinite(v.df)?`${fmt(v.df,x.k==="data"?1:2)} × ${fmt(v.pm,2)}`:"—")])],w,{head:true,right:true}));
+    B.push(kv([["Media dei prezzi corretti",eur(r.media)],["Divergenza percentuale assoluta",fmt(r.divergenza,2)+"% (soglia "+fmt(r.soglia,1)+"%)"+(r.attendibile?"":" — oltre la soglia")],...p.conclusione.detrazioni.filter(d=>has(d.importo)).map(d=>["Detrazione: "+(d.descrizione||"—"),"− "+eur(n0(d.importo))]),["Arrotondamento",eur(r.passo)]]));
+  } else B.push(P("「DA FORNIRE」 comparabili e superficie commerciale per il calcolo.",{color:MUTED}));
+  for(const a of r.avvisi) B.push(P("Nota: "+a,{sz:16,color:"A33A2C"}));
+
+  B.push(H1("8. Conclusione"));
+  if(r.ok){
+    B.push(P("Sulla base di quanto esposto, il più probabile valore di mercato dell'immobile alla data del "+itData(r.dv)+" è pari a:",{after:80}));
+    B.push(par(run(eur(r.valore),{b:true,sz:30,color:GOLD})+run("   (euro "+inLettere(r.valore)+"/00)",{sz:20}),{after:160,jc:"left"}));
+  } else B.push(P("Valore non determinato: completare i dati della valutazione.",{color:"A33A2C"}));
+  if(p.conclusione.considerazioni) B.push(P(p.conclusione.considerazioni));
+  if(p.conclusione.assunzioni){ B.push(H2("Assunzioni e limiti")); B.push(P(p.conclusione.assunzioni)); }
+  B.push(P([p.conclusione.luogo,itData(oggi())].filter(Boolean).join(", "),{before:300}));
+  B.push(par(run("Il perito",{color:MUTED}),{before:200,jc:"right",after:0}));
+  B.push(par(run(I.perito||"",{b:true}),{jc:"right",after:600}));
+  B.push(par(run("_______________________________",{color:MUTED}),{jc:"right"}));
+
+  const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+  const sect=`<w:sectPr><w:headerReference w:type="default" r:id="rIdHdr"/><w:footerReference w:type="default" r:id="rIdFtr"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1418" w:right="1134" w:bottom="1134" w:left="1134" w:header="567" w:footer="510" w:gutter="0"/></w:sectPr>`;
+  const documentXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document ${NS}><w:body>${B.join("")}${sect}</w:body></w:document>`;
+  const tab=`<w:r><w:tab/></w:r>`;
+  const header=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr ${NS}>`+par(run(I.perito||"",{b:true,sz:18})+tab+run("RELAZIONE DI STIMA",{sz:15,color:GOLD,sp:20}),{after:0}).replace("<w:pPr>",`<w:pPr><w:tabs><w:tab w:val="right" w:pos="${CW}"/></w:tabs>`)+par(run(I.contattiPerito||"",{sz:14,color:MUTED}),{border:true,after:0})+`</w:hdr>`;
+  const fld=c=>`<w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:instrText xml:space="preserve"> ${c} </w:instrText></w:r><w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:t>1</w:t></w:r><w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:fldChar w:fldCharType="end"/></w:r>`;
+  const footer=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:ftr ${NS}><w:p><w:pPr><w:tabs><w:tab w:val="right" w:pos="${CW}"/></w:tabs><w:spacing w:after="0"/></w:pPr>${run(nomePerizia(p),{sz:14,color:MUTED})}${tab}${run("Pag. ",{sz:14,color:MUTED})}${fld("PAGE")}${run(" di ",{sz:14,color:MUTED})}${fld("NUMPAGES")}</w:p></w:ftr>`;
+  const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/><w:sz w:val="20"/><w:szCs w:val="20"/><w:color w:val="${INK}"/><w:lang w:val="it-IT"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="100" w:line="264" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style><w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/><w:tblPr><w:tblInd w:w="0" w:type="dxa"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style></w:styles>`;
+  const settings=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:updateFields w:val="true"/><w:defaultTabStop w:val="708"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>`;
+  const rels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rIdSettings" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/><Relationship Id="rIdHdr" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/><Relationship Id="rIdFtr" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/></Relationships>`;
+  const now=new Date().toISOString().replace(/\.\d+Z$/,"Z");
+  const core=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${xe("Relazione di stima - "+nomePerizia(p))}</dc:title><dc:creator>${xe(I.perito)}</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${now}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${now}</dcterms:modified></cp:coreProperties>`;
+  const types=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/><Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>`;
+  const root=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>`;
+  return makeZip([{name:"[Content_Types].xml",data:types},{name:"_rels/.rels",data:root},{name:"docProps/core.xml",data:core},{name:"word/document.xml",data:documentXml},{name:"word/_rels/document.xml.rels",data:rels},{name:"word/styles.xml",data:styles},{name:"word/settings.xml",data:settings},{name:"word/header1.xml",data:header},{name:"word/footer1.xml",data:footer}]);
+}
+$("btnWord").addEventListener("click",async()=>{
+  if(!corrente) return;
+  const r=calcolaMCA(corrente);
+  if(!r.ok&&!confirm("La valutazione non è completa (servono almeno 3 comparabili e la superficie). Creare comunque la relazione?")) return;
+  const blob=buildDocx(corrente), nome=`Relazione_di_stima_${slug(nomePerizia(corrente))}.docx`;
+  let file=null; try{ file=new File([blob],nome,{type:blob.type}); }catch(e){}
+  if(file&&navigator.canShare&&navigator.canShare({files:[file]})&&/Android|iPhone|iPad/i.test(navigator.userAgent)){ try{ await navigator.share({files:[file],title:nome}); return; }catch(e){ if(e.name==="AbortError") return; } }
+  scarica(blob,nome); toast("Relazione Word scaricata: "+nome,4500);
+});
+
+/* ---------- avvio ---------- */
+$("goHome").addEventListener("click",()=>{ if(corrente&&saveT){ clearTimeout(saveT); DB.put(corrente); } vistaElenco(); });
+vistaElenco().catch(e=>{ $("app").replaceChildren(h("div",{class:"notice err",style:"margin-top:24px"},"Archivio del dispositivo non disponibile: "+e.message+". In navigazione privata i dati non possono essere salvati.")); });
+if("serviceWorker" in navigator && location.protocol==="https:") navigator.serviceWorker.register("sw.js",{scope:"./"}).catch(()=>{});
+</script>
+</body>
+</html>
