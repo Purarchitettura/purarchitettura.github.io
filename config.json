@@ -43,6 +43,18 @@
       ]
     },
     {
+      "id": "foto-perizie",
+      "nome": "Foto Perizie",
+      "descrizione": "Foto delle perizie con punto di ripresa sulla planimetria, gruppi di sopralluogo e rapporto fotografico PDF o Word.",
+      "url": "https://purarchitettura.github.io/foto-perizie/",
+      "tipo": "app",
+      "sezione": "App dello studio",
+      "gruppi": [
+        "*"
+      ],
+      "sigla": "FP"
+    },
+    {
       "id": "scheda-sopralluogo",
       "nome": "Scheda sopralluogo perizie",
       "descrizione": "Scheda sopralluogo CRIF: richiesta di documentazione integrativa al cliente, firme e PDF da condividere via email o WhatsApp.",
