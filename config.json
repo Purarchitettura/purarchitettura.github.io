@@ -65,6 +65,18 @@
         "*"
       ],
       "sigla": "SP"
+    },
+    {
+      "id": "perizie-private",
+      "nome": "Perizie Private",
+      "descrizione": "Stima del valore di mercato per clienti privati con il metodo del confronto (MCA) e relazione di stima in Word. Dati solo sul dispositivo.",
+      "url": "https://purarchitettura.github.io/perizie-private/",
+      "tipo": "app",
+      "sezione": "App dello studio",
+      "gruppi": [
+        "*"
+      ],
+      "sigla": "PP"
     }
   ]
 }
