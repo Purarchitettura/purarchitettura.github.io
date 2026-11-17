@@ -199,10 +199,10 @@ footer span{display:block}
     <input type="date" id="dataFirma">
     <div class="sig">
       <div class="sighead"><span id="lblTecnico">Il Tecnico</span>
-        <span class="acts"><button type="button" class="btn gold small" id="btnFirmaCarica">Carica firma</button><button type="button" class="btn quiet small hidden" id="btnFirmaTogli">Rimuovi</button></span>
+        <span class="acts"><button type="button" class="btn gold small hidden" id="btnFirmaDrive">Accedi con Google</button><button type="button" class="btn quiet small" id="btnFirmaCarica">Carica firma</button><button type="button" class="btn quiet small hidden" id="btnFirmaTogli">Rimuovi</button></span>
         <input type="file" id="fileFirma" accept="image/png,image/jpeg,image/webp" hidden>
       </div>
-      <div class="auto-signature"><img id="firmaPerito" alt="Timbro e firma del perito selezionato" hidden><p class="none" id="firmaNone">Timbro e firma non ancora caricati su questo dispositivo. Premi «Carica firma» e scegli l'immagine (una volta sola: resta salvata qui).</p></div>
+      <div class="auto-signature"><img id="firmaPerito" alt="Timbro e firma del perito selezionato" hidden><p class="none" id="firmaNone">Timbro e firma non ancora su questo dispositivo.</p></div>
       <div class="sighead"><span>Il richiedente mutuo o persona presente al sopralluogo</span><button type="button" class="btn quiet small" data-clear="cli">Cancella</button></div>
       <div class="sigbox"><canvas id="sigCli"></canvas><div class="ph" id="phCli">Firma qui con il dito</div></div>
     </div>
@@ -675,33 +675,101 @@ function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
 
 /* Timbro e firma del perito: NON sono nel file pubblicato.
-   Si caricano una volta per dispositivo e restano solo in questo browser. */
+   Si scaricano dalla cartella Drive privata «Foto Perizie - Archivio / Firme periti»
+   (file firma-FS.png, firma-NG.png, …) con l'accesso Google, solo per gli account che hanno
+   accesso alla cartella; poi restano salvati in questo browser e funzionano anche senza rete.
+   Resta possibile caricarli a mano da un file («Carica firma»). */
 const LS_FIRMA = "schedaSopralluogo.firma.";
+const LS_FIRMA_DRIVE = "schedaSopralluogo.firmaDrive.";
+const LS_GOOGLE = "schedaSopralluogo.google";
+const GOOGLE = {
+  CLIENT_ID: "928829848704-58or7nc56lbmsmt2qhp8rblqfb302ihh.apps.googleusercontent.com",
+  FIRME_FOLDER_ID: "1vJV1xa64QFuj3oY9k2n-Yxdc_erKJYD2",
+  SCOPE: "https://www.googleapis.com/auth/drive.readonly"
+};
+const GAuth = {
+  token(){ try{ const o=JSON.parse(lsGet(LS_GOOGLE)||"null"); if(o && o.exp>Date.now()+60000) return o.tok; }catch(e){} return null; },
+  start(){
+    saveDraft();
+    const state=Math.random().toString(36).slice(2)+Date.now().toString(36);
+    lsSet(LS_GOOGLE+".state",state);
+    location.href="https://accounts.google.com/o/oauth2/v2/auth?"+new URLSearchParams({ client_id:GOOGLE.CLIENT_ID, redirect_uri:location.origin+location.pathname, response_type:"token", scope:GOOGLE.SCOPE, include_granted_scopes:"true", state, prompt:"select_account" });
+  },
+  readRedirect(){
+    const h=location.hash||""; if(!/access_token=|error=/.test(h)) return;
+    const p=new URLSearchParams(h.slice(1));
+    history.replaceState(null,"",location.pathname+location.search);
+    if(p.get("error")){ toast("Accesso Google non completato."); return; }
+    if(p.get("state")!==lsGet(LS_GOOGLE+".state")){ toast("Risposta di accesso non valida: riprova."); return; }
+    lsDel(LS_GOOGLE+".state");
+    lsSet(LS_GOOGLE, JSON.stringify({ tok:p.get("access_token"), exp:Date.now()+(+p.get("expires_in")||3600)*1000 }));
+  }
+};
+function immagineFirma(blob){
+  return new Promise((ok,ko)=>{
+    const url=URL.createObjectURL(blob), im=new Image();
+    im.onload=()=>{
+      const max=900, sc=Math.min(1,max/im.width), w=Math.round(im.width*sc), h=Math.round(im.height*sc);
+      const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+      const c=cv.getContext("2d"); c.fillStyle="#fff"; c.fillRect(0,0,w,h); c.drawImage(im,0,0,w,h);
+      URL.revokeObjectURL(url); ok(cv.toDataURL("image/jpeg",0.88));
+    };
+    im.onerror=()=>{ URL.revokeObjectURL(url); ko(new Error("Immagine non leggibile.")); };
+    im.src=url;
+  });
+}
+/* Esito: "ok" già aggiornata, "scaricata", "accesso" serve l'accesso Google, "assente", "negato", "errore", "offline" */
+async function firmaDaDrive(key){
+  if(!navigator.onLine) return "offline";
+  const tok=GAuth.token(); if(!tok) return "accesso";
+  const H={ Authorization:"Bearer "+tok };
+  try{
+    const q=`'${GOOGLE.FIRME_FOLDER_ID}' in parents and trashed=false and name contains 'firma-${key}.'`;
+    const r=await fetch("https://www.googleapis.com/drive/v3/files?"+new URLSearchParams({ q, orderBy:"modifiedTime desc", fields:"files(id,name,modifiedTime,mimeType)", supportsAllDrives:"true", includeItemsFromAllDrives:"true" }),{ headers:H });
+    if(r.status===401){ lsDel(LS_GOOGLE); return "accesso"; }
+    if(r.status===403||r.status===404) return "negato";
+    if(!r.ok) return "errore";
+    const f=((await r.json()).files||[]).find(x=>/^image\//.test(x.mimeType||""));
+    if(!f) return "assente";
+    const firma=f.id+"|"+f.modifiedTime;
+    if(lsGet(LS_FIRMA_DRIVE+key)===firma && lsGet(LS_FIRMA+key)) return "ok";
+    const b=await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&supportsAllDrives=true`,{ headers:H });
+    if(!b.ok) return b.status===401 ? (lsDel(LS_GOOGLE),"accesso") : "errore";
+    const uri=await immagineFirma(await b.blob());
+    lsSet(LS_FIRMA+key,uri);
+    if(lsGet(LS_FIRMA+key)!==uri) return "errore";
+    lsSet(LS_FIRMA_DRIVE+key,firma);
+    return "scaricata";
+  }catch(e){ return navigator.onLine ? "errore" : "offline"; }
+}
+let firmaStato="";
+async function aggiornaFirma(avvisa){
+  const key=peritoKey(), nome=(PERITI[key]||{}).nome||key;
+  firmaStato=await firmaDaDrive(key);
+  if(key!==peritoKey()) return;              // nel frattempo è stato scelto un altro perito
+  refreshTexts();
+  const msg={ scaricata:`Firma di ${nome} scaricata da Drive.`,
+    assente:`Nella cartella Drive «Firme periti» non c'è la firma di ${nome} (file firma-${key}.png).`,
+    negato:"Questo account Google non ha accesso alla cartella delle firme.",
+    errore:"Firma non scaricata da Drive: riprova più tardi." }[firmaStato];
+  if(msg && (avvisa || firmaStato==="scaricata")) toast(msg,5000);
+}
 function peritoKey(){ return PERITI[$("perito").value] ? $("perito").value : "FS"; }
 function firmaCorrente(){ return lsGet(LS_FIRMA+peritoKey()) || ""; }
 function caricaFirma(file){
   if(!file) return;
   if(!/^image\//.test(file.type)){ toast("Scegliere un'immagine (PNG o JPG)."); return; }
-  const fr=new FileReader();
-  fr.onload=()=>{
-    const im=new Image();
-    im.onload=()=>{
-      const max=900, sc=Math.min(1,max/im.width), w=Math.round(im.width*sc), h=Math.round(im.height*sc);
-      const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
-      const c=cv.getContext("2d"); c.fillStyle="#fff"; c.fillRect(0,0,w,h); c.drawImage(im,0,0,w,h);
-      const uri=cv.toDataURL("image/jpeg",0.88);
-      lsSet(LS_FIRMA+peritoKey(),uri);
-      if(lsGet(LS_FIRMA+peritoKey())!==uri){ toast("Non è stato possibile salvare la firma su questo dispositivo (memoria del browser piena o bloccata).",6000); return; }
-      refreshTexts(); toast("Firma di "+perito().nome+" salvata su questo dispositivo.");
-    };
-    im.onerror=()=>toast("Immagine non leggibile.");
-    im.src=fr.result;
-  };
-  fr.readAsDataURL(file);
+  const key=peritoKey();
+  immagineFirma(file).then(uri=>{
+    lsSet(LS_FIRMA+key,uri);
+    if(lsGet(LS_FIRMA+key)!==uri){ toast("Non è stato possibile salvare la firma su questo dispositivo (memoria del browser piena o bloccata).",6000); return; }
+    lsDel(LS_FIRMA_DRIVE+key);
+    refreshTexts(); toast("Firma di "+(PERITI[key]||{}).nome+" salvata su questo dispositivo.");
+  }).catch(e=>toast(e.message));
 }
 function togliFirma(){
   if(!confirm("Rimuovere da questo dispositivo timbro e firma di "+perito().nome+"?")) return;
-  lsDel(LS_FIRMA+peritoKey()); refreshTexts(); toast("Firma rimossa da questo dispositivo.");
+  lsDel(LS_FIRMA+peritoKey()); lsDel(LS_FIRMA_DRIVE+peritoKey()); refreshTexts(); toast("Firma rimossa da questo dispositivo.");
 }
 
 function oggiISO(){ const d=new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
@@ -744,6 +812,14 @@ function refreshTexts(){
   if(f){ if($("firmaPerito").getAttribute("src")!==f) $("firmaPerito").src=f; $("firmaPerito").hidden=false; $("firmaNone").hidden=true; }
   else { $("firmaPerito").removeAttribute("src"); $("firmaPerito").hidden=true; $("firmaNone").hidden=false; }
   $("btnFirmaCarica").textContent=f?"Sostituisci firma":"Carica firma";
+  const serveAccesso=!GAuth.token();
+  $("btnFirmaDrive").classList.toggle("hidden",!serveAccesso || !!f);
+  if(!f) $("firmaNone").textContent = serveAccesso
+    ? `Timbro e firma di ${p.nome} non ancora su questo dispositivo. Premi «Accedi con Google» per scaricarli dalla cartella Drive delle perizie (solo account autorizzati), oppure «Carica firma» per sceglierli da un file.`
+    : firmaStato==="offline" ? `Timbro e firma di ${p.nome} non ancora su questo dispositivo: si scaricano da Drive appena torna la rete.`
+    : firmaStato==="assente" ? `Su Drive non c'è ancora la firma di ${p.nome}: caricala nella cartella «Firme periti» come firma-${peritoKey()}.png, oppure premi «Carica firma».`
+    : firmaStato==="negato" ? `Questo account Google non ha accesso alla cartella delle firme. Premi «Carica firma» per sceglierla da un file.`
+    : `Scaricamento della firma di ${p.nome} da Drive…`;
   $("btnFirmaTogli").classList.toggle("hidden",!f);
   $("firmaPerito").alt="Timbro e firma di "+p.nome;
   $("headerPerizia").textContent="Perizia n. "+($("nPerizia").value.trim()||"—");
@@ -1020,6 +1096,7 @@ function apriWa(){
 }
 
 /* ---------- avvio ---------- */
+GAuth.readRedirect();
 buildUI();
 makePad("cli","sigCli","phCli");
 loadDraft();
@@ -1035,6 +1112,10 @@ $("btnNew").addEventListener("click",nuova);
 $("btnFirmaCarica").addEventListener("click",()=>$("fileFirma").click());
 $("fileFirma").addEventListener("change",e=>{ caricaFirma(e.target.files[0]); e.target.value=""; });
 $("btnFirmaTogli").addEventListener("click",togliFirma);
+$("btnFirmaDrive").addEventListener("click",()=>GAuth.start());
+$("perito").addEventListener("change",()=>{ firmaStato=""; aggiornaFirma(false); });
+addEventListener("online",()=>aggiornaFirma(false));
+aggiornaFirma(false);
 /* Funzionamento senza rete in cantiere: service worker limitato a questa cartella. */
 if("serviceWorker" in navigator && location.protocol==="https:"){ navigator.serviceWorker.register("sw.js",{scope:"./"}).catch(()=>{}); }
 if(!window.jspdf){ toast("Libreria PDF non caricata: il file è incompleto.",8000); }
