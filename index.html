@@ -275,7 +275,7 @@ function Card(s) {
   const own = isOwnApp(s.url), isApp = s.tipo === 'app';
   return h('article', { class: 'card' },
     h('div', { class: 'card-head' },
-      h('div', { class: 'mono' + (isApp ? '' : ' link'), 'aria-hidden': 'true' }, initials(s.nome)),
+      h('div', { class: 'mono' + (isApp ? '' : ' link'), 'aria-hidden': 'true' }, (s.sigla || initials(s.nome))),
       h('div', { style: 'min-width:0' }, h('div', { class: 'kind' }, isApp ? 'App' : 'Collegamento'), h('h3', null, s.nome))),
     h('p', null, s.descrizione || ''),
     h('div', { class: 'acts' },
@@ -381,6 +381,7 @@ async function editScheda(s) {
   const cfg = STATE.draft || STATE.cfg;
   const f = {
     nome: h('input', { value: s?.nome || '', maxlength: 60 }),
+    sigla: h('input', { value: s?.sigla || '', maxlength: 3, placeholder: 'facoltativa', autocapitalize: 'characters' }),
     descr: h('textarea', { rows: 3, maxlength: 240 }),
     url: h('input', { type: 'url', value: s?.url || 'https://', inputmode: 'url' }),
     guida: h('input', { type: 'url', value: s?.guida || '', placeholder: 'facoltativo', inputmode: 'url' }),
@@ -402,12 +403,12 @@ async function editScheda(s) {
     if (!gruppi.length) return bad('Scegli almeno un gruppo che può vedere la scheda.');
     const d = draft(); const sez = f.sezione.value.trim() || 'Altro';
     if (!d.sezioni.includes(sez)) d.sezioni.push(sez);
-    const data = { id: s?.id || (norm(nome).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'scheda') + '-' + Date.now().toString(36).slice(-4), nome, descrizione: f.descr.value.trim(), url, guida: guida || undefined, tipo: f.tipo.value, sezione: sez, gruppi };
+    const data = { id: s?.id || (norm(nome).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'scheda') + '-' + Date.now().toString(36).slice(-4), nome, descrizione: f.descr.value.trim(), url, guida: guida || undefined, sigla: f.sigla.value.trim().toUpperCase() || undefined, tipo: f.tipo.value, sezione: sez, gruppi };
     const i = d.schede.findIndex(x => x.id === data.id); if (i >= 0) d.schede[i] = data; else d.schede.push(data);
     d.sezioni = d.sezioni.filter(x => d.schede.some(sc => sc.sezione === x));
     saveDraft(); toast('Scheda salvata (da pubblicare)');
   } });
-  await modal(s ? 'Modifica scheda' : 'Nuova scheda', h('div', { class: 'form' }, field('Nome', f.nome), field('Descrizione', f.descr, 'Una riga su a cosa serve'), field('Link', f.url), field('Guida', f.guida),
+  await modal(s ? 'Modifica scheda' : 'Nuova scheda', h('div', { class: 'form' }, field('Nome', f.nome), field('Sigla', f.sigla, 'Lettere nel riquadro della scheda (max 3). Vuota: iniziali del nome'), field('Descrizione', f.descr, 'Una riga su a cosa serve'), field('Link', f.url), field('Guida', f.guida),
     field('Tipo', f.tipo), field('Sezione', f.sezione, 'Scegli una sezione esistente o scrivine una nuova'), dl, field('Chi la vede', gc.el), err), acts);
 }
 async function editGruppo(g) {
