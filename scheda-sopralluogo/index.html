@@ -689,6 +689,8 @@ const GOOGLE = {
 };
 const GAuth = {
   token(){ try{ const o=JSON.parse(lsGet(LS_GOOGLE)||"null"); if(o && o.exp>Date.now()+60000) return o.tok; }catch(e){} return null; },
+  email(){ try{ return (JSON.parse(lsGet(LS_GOOGLE)||"null")||{}).email||""; }catch(e){ return ""; } },
+  setEmail(m){ try{ const o=JSON.parse(lsGet(LS_GOOGLE)||"null"); if(o&&m){ o.email=String(m).toLowerCase(); lsSet(LS_GOOGLE,JSON.stringify(o)); } }catch(e){} },
   start(){
     saveDraft();
     const state=Math.random().toString(36).slice(2)+Date.now().toString(36);
@@ -724,7 +726,13 @@ async function firmaDaDrive(key){
   const tok=GAuth.token(); if(!tok) return "accesso";
   const H={ Authorization:"Bearer "+tok };
   try{
-    const q=`'${GOOGLE.FIRME_FOLDER_ID}' in parents and trashed=false and name contains 'firma-${key}.'`;
+    if(!GAuth.email()){ try{ const a=await (await fetch("https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)",{ headers:H })).json(); GAuth.setEmail(a.user&&a.user.emailAddress); }catch(e){} }
+    // la cartella deve essere visibile all'account: senza accesso Drive risponde 404 (non un elenco vuoto)
+    const c=await fetch(`https://www.googleapis.com/drive/v3/files/${GOOGLE.FIRME_FOLDER_ID}?fields=id&supportsAllDrives=true`,{ headers:H });
+    if(c.status===401){ lsDel(LS_GOOGLE); return "accesso"; }
+    if(c.status===403||c.status===404) return "negato";
+    if(!c.ok) return "errore";
+    const q=`'${GOOGLE.FIRME_FOLDER_ID}' in parents and trashed=false and name = 'firma-${key}.png'`;
     const r=await fetch("https://www.googleapis.com/drive/v3/files?"+new URLSearchParams({ q, orderBy:"modifiedTime desc", fields:"files(id,name,modifiedTime,mimeType)", supportsAllDrives:"true", includeItemsFromAllDrives:"true" }),{ headers:H });
     if(r.status===401){ lsDel(LS_GOOGLE); return "accesso"; }
     if(r.status===403||r.status===404) return "negato";
@@ -750,7 +758,7 @@ async function aggiornaFirma(avvisa){
   refreshTexts();
   const msg={ scaricata:`Firma di ${nome} scaricata da Drive.`,
     assente:`Nella cartella Drive «Firme periti» non c'è la firma di ${nome} (file firma-${key}.png).`,
-    negato:"Questo account Google non ha accesso alla cartella delle firme.",
+    negato:`L'account Google ${GAuth.email()||"usato"} non ha accesso alla cartella delle firme.`,
     errore:"Firma non scaricata da Drive: riprova più tardi." }[firmaStato];
   if(msg && (avvisa || firmaStato==="scaricata")) toast(msg,5000);
 }
@@ -813,12 +821,13 @@ function refreshTexts(){
   else { $("firmaPerito").removeAttribute("src"); $("firmaPerito").hidden=true; $("firmaNone").hidden=false; }
   $("btnFirmaCarica").textContent=f?"Sostituisci firma":"Carica firma";
   const serveAccesso=!GAuth.token();
-  $("btnFirmaDrive").classList.toggle("hidden",!serveAccesso || !!f);
+  $("btnFirmaDrive").textContent = firmaStato==="negato" ? "Cambia account" : "Accedi con Google";
+  $("btnFirmaDrive").classList.toggle("hidden", !!f || !(serveAccesso || firmaStato==="negato"));
   if(!f) $("firmaNone").textContent = serveAccesso
     ? `Timbro e firma di ${p.nome} non ancora su questo dispositivo. Premi «Accedi con Google» per scaricarli dalla cartella Drive delle perizie (solo account autorizzati), oppure «Carica firma» per sceglierli da un file.`
     : firmaStato==="offline" ? `Timbro e firma di ${p.nome} non ancora su questo dispositivo: si scaricano da Drive appena torna la rete.`
     : firmaStato==="assente" ? `Su Drive non c'è ancora la firma di ${p.nome}: caricala nella cartella «Firme periti» come firma-${peritoKey()}.png, oppure premi «Carica firma».`
-    : firmaStato==="negato" ? `Questo account Google non ha accesso alla cartella delle firme. Premi «Carica firma» per sceglierla da un file.`
+    : firmaStato==="negato" ? `L'account Google ${GAuth.email()||"con cui sei entrato"} non ha accesso alla cartella delle firme. Premi «Cambia account» ed entra con un account autorizzato, oppure «Carica firma» per sceglierla da un file.`
     : `Scaricamento della firma di ${p.nome} da Drive…`;
   $("btnFirmaTogli").classList.toggle("hidden",!f);
   $("firmaPerito").alt="Timbro e firma di "+p.nome;
