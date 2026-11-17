@@ -142,15 +142,18 @@ dialog .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex
 "use strict";
 /* =====================================================================
    PERIZIE PRIVATE — stima del valore di mercato con il metodo del confronto
-   di mercato (MCA). I dati restano SOLO su questo dispositivo (IndexedDB
-   "perizie-private"); «Backup» salva un file .json da conservare.
+   di mercato (MCA), con la stessa struttura e gli stessi calcoli della
+   perizia sul portale CRIF (Due Diligence, Segmento di mercato, Dato
+   immobiliare, Tabella dei dati / dei prezzi marginali / di valutazione,
+   media ponderata, valore assicurabile).
+   I dati restano SOLO su questo dispositivo (IndexedDB "perizie-private");
+   «Backup» salva un file .json da conservare.
    REGOLE PER GLI AGGIORNAMENTI: mai cancellare o rinominare l'archivio
    IndexedDB né i campi esistenti delle perizie; si possono solo aggiungere
-   campi nuovi (con valori predefiniti per le perizie già salvate).
-   Il sito ospita anche altre app: chiavi locali con prefisso "pp_",
-   copie offline con prefisso "pp-".
+   campi nuovi. Le perizie salvate con versioni precedenti vengono completate
+   da migra() senza perdere nulla. Chiavi locali "pp_", copie offline "pp-".
    ===================================================================== */
-const VERSIONE = "1.1 · 17/11/2026";
+const VERSIONE = "2.0 · 17/11/2026";
 const $ = id => document.getElementById(id);
 function h(tag, attrs, ...kids){
   const e=document.createElement(tag);
@@ -167,36 +170,26 @@ function h(tag, attrs, ...kids){
 let toastT; function toast(m,ms){ const t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),ms||3200); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function oggi(){ const d=new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
-function itData(iso){ if(!iso) return ""; const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(iso); return m?`${m[3]}/${m[2]}/${m[1]}`:iso; }
-/* numeri: accetta "1.234,56", "1234,56", "1234.56" */
-function num(v){ if(v==null) return NaN; if(typeof v==="number") return v; let s=String(v).trim().replace(/[€\s]/g,""); if(!s) return NaN; if(s.includes(",")) s=s.replace(/\./g,"").replace(",","."); else if(/^-?\d{1,3}(\.\d{3})+$/.test(s)) s=s.replace(/\./g,""); const n=Number(s); return isFinite(n)?n:NaN; }
+function itData(iso){ if(!iso) return ""; const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(iso); if(m) return `${m[3]}/${m[2]}/${m[1]}`; const k=/^(\d{4})-(\d{2})$/.exec(iso); return k?`${k[2]}/${k[1]}`:iso; }
+/* numeri: accetta "1.234,56", "1234,56", "1234.56", "153.000" */
+function num(v){ if(v==null) return NaN; if(typeof v==="number") return v; let s=String(v).trim().replace(/[€%\s]/g,""); if(!s) return NaN; if(s.includes(",")) s=s.replace(/\./g,"").replace(",","."); else if(/^-?\d{1,3}(\.\d{3})+$/.test(s)) s=s.replace(/\./g,""); const n=Number(s); return isFinite(n)?n:NaN; }
 function has(v){ return isFinite(num(v)); }
 function n0(v){ const n=num(v); return isFinite(n)?n:0; }
-const fmt=(n,d=0)=>isFinite(n)?n.toLocaleString("it-IT",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
+const fmt=(n,d=0)=>isFinite(n)?n.toLocaleString("it-IT",{minimumFractionDigits:d,maximumFractionDigits:d,useGrouping:true}):"—";
+const fmtv=n=>isFinite(n)?(Math.abs(n-Math.round(n))<0.005?fmt(n,0):fmt(n,2)):"—";
 const eur=(n,d=0)=>isFinite(n)?"€ "+fmt(n,d):"—";
 function arrotonda(v,passo){ const p=n0(passo)||1; return Math.round(v/p)*p; }
+function mesiTra(a,b){ const A=/^(\d{4})-(\d{2})/.exec(a||""), B=/^(\d{4})-(\d{2})/.exec(b||""); if(!A||!B) return NaN; return (+B[1]-+A[1])*12+(+B[2]-+A[2]); }
 
 /* ---------- importi in lettere (euro interi) ---------- */
 function inLettere(n){
-  n=Math.round(Math.abs(n));
-  if(n===0) return "zero";
+  n=Math.round(Math.abs(n)); if(n===0) return "zero";
   const u=["","uno","due","tre","quattro","cinque","sei","sette","otto","nove","dieci","undici","dodici","tredici","quattordici","quindici","sedici","diciassette","diciotto","diciannove"];
   const d=["","","venti","trenta","quaranta","cinquanta","sessanta","settanta","ottanta","novanta"];
-  function c999(x){
-    let s=""; const c=Math.floor(x/100), r=x%100;
-    if(c) s+=(c===1?"cento":u[c]+"cento");
-    if(c && Math.floor(r/10)===8) s=s.slice(0,-1);   // centottanta
-    if(r<20) s+=u[r];
-    else { let t=d[Math.floor(r/10)]; const k=r%10; if(k===1||k===8) t=t.slice(0,-1); s+=t+u[k]; }
-    return s;
-  }
-  const mld=Math.floor(n/1e9), mln=Math.floor(n%1e9/1e6), mil=Math.floor(n%1e6/1e3), r=n%1e3;
-  let s="";
-  if(mld) s+=(mld===1?"unmiliardo":c999(mld)+"miliardi");
-  if(mln) s+=(mln===1?"unmilione":c999(mln)+"milioni");
-  if(mil) s+=(mil===1?"mille":c999(mil)+"mila");
-  if(r) s+=c999(r);
-  return s;
+  function c999(x){ let s=""; const c=Math.floor(x/100), r=x%100; if(c) s+=(c===1?"cento":u[c]+"cento"); if(c&&Math.floor(r/10)===8) s=s.slice(0,-1);
+    if(r<20) s+=u[r]; else { let t=d[Math.floor(r/10)]; const k=r%10; if(k===1||k===8) t=t.slice(0,-1); s+=t+u[k]; } return s; }
+  const mld=Math.floor(n/1e9), mln=Math.floor(n%1e9/1e6), mil=Math.floor(n%1e6/1e3), r=n%1e3; let s="";
+  if(mld) s+=(mld===1?"unmiliardo":c999(mld)+"miliardi"); if(mln) s+=(mln===1?"unmilione":c999(mln)+"milioni"); if(mil) s+=(mil===1?"mille":c999(mil)+"mila"); if(r) s+=c999(r); return s;
 }
 
 /* ---------- archivio sul dispositivo ---------- */
@@ -211,99 +204,167 @@ const DB={
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 
-/* ---------- modello della perizia ---------- */
+/* ---------- tabelle di riferimento (come sul portale CRIF) ---------- */
 const DOC_STD=[
-  ["provenienza","Atto di provenienza"],["visura","Visura catastale"],["planimetria","Planimetria catastale"],["mappa","Estratto di mappa"],
+  ["provenienza","Atto di provenienza"],["visura","Visura catastale"],["planimetria","Planimetria catastale"],["elaborato","Elaborato planimetrico / estratto di mappa"],
   ["titoli","Titoli edilizi (licenze, concessioni, permessi, DIA/SCIA/CILA, condoni)"],["agibilita","Agibilità / abitabilità"],["ape","Attestato di prestazione energetica (APE)"],
-  ["condominio","Regolamento condominiale, tabelle millesimali e spese"],["impianti","Dichiarazioni di conformità degli impianti"],["altro","Altro"]
+  ["condominio","Regolamento condominiale, tabelle millesimali e spese"],["impianti","Dichiarazioni di conformità degli impianti"],["foto","Fotografie"],["altro","Altro"]
 ];
-const MANUT=[["","—"],["1","1 · Scadente"],["2","2 · Mediocre"],["3","3 · Normale"],["4","4 · Buono"],["5","5 · Ottimo"]];
-/* Coefficienti di partenza (rapporti mercantili) secondo il D.P.R. 138/1998, Allegato C: sempre modificabili. */
-const TIPI_SUP=[
-  ["principale","Vani principali e accessori diretti",1],
-  ["acc_com","Accessori comunicanti (cantina, soffitta, ripostiglio)",0.5],
-  ["acc_noncom","Accessori non comunicanti (cantina, soffitta)",0.25],
-  ["balcone","Balconi e terrazze comunicanti (fino a 25 m²)",0.3],
-  ["balcone_ecc","Balconi e terrazze comunicanti (oltre 25 m²)",0.1],
-  ["balcone_nc","Balconi e terrazze non comunicanti (fino a 25 m²)",0.15],
-  ["giardino","Giardino / area scoperta (fino alla superficie dei vani)",0.1],
-  ["giardino_ecc","Giardino / area scoperta (eccedenza)",0.02],
-  ["garage","Autorimessa / posto auto",""],
-  ["altro","Altro",""]
-];
+/* superfici secondarie annesse e collegate: stesse voci della Tabella dei dati CRIF */
+const SEC=[["balcone","Balcone"],["terrazzo","Terrazzo"],["portico","Portico"],["sottotetto","Sottotetto"],["soffitta","Soffitta"],["cantina","Cantina"],["garage","Garage"],["box","Box auto"],["posto","Posto auto"],["giardino","Giardino"]];
+const PUNTI=[["","—"],["1","1"],["2","2"],["3","3"],["4","4"],["5","5"]];
+const SINO=[["","—"],["si","Sì"],["no","No"]];
+const CONF=[["","—"],["conforme","Conforme"],["parziale","Parzialmente conforme"],["non conforme","Non conforme"],["non verificata","Non verificata"]];
+
+function secVuote(){ return Object.fromEntries(SEC.map(([k])=>[k,{mq:"",r:""}])); }
 function nuovaPerizia(){
   const t=new Date().toISOString();
   return {
-    id:uid(), creata:t, modificata:t, formato:1,
-    incarico:{ numero:"", committente:"", cf:"", recapiti:"", indirizzoCommittente:"", scopo:"compravendita", scopoAltro:"", dataIncarico:oggi(), dataSopralluogo:"", dataValutazione:oggi(), presenti:"",
+    id:uid(), creata:t, modificata:t, formato:2,
+    incarico:{ numero:"", tipologia:"", finalita:"", committente:"", cf:"", recapiti:"", indirizzoCommittente:"", scopo:"compravendita", scopoAltro:"", dataIncarico:oggi(), dataSopralluogo:"", dataValutazione:oggi(), presenti:"",
       perito:lsGet("pp_perito")||"", qualifica:lsGet("pp_qualifica")||"", contattiPerito:lsGet("pp_contatti")||"" },
     documenti:{ voci:Object.fromEntries(DOC_STD.map(([k])=>[k,{ok:false,note:""}])), note:"" },
-    immobile:{ indirizzo:"", civico:"", cap:"", comune:"", provincia:"", piano:"", interno:"", scala:"", tipologia:"", descrizione:"", confini:"", anno:"", manutenzione:"3", impianti:"", classeEnergetica:"", ascensore:"", bagni:"", note:"" },
-    catasto:[{ id:uid(), catasto:"Fabbricati", comune:"", sezione:"", foglio:"", particella:"", sub:"", categoria:"", classe:"", consistenza:"", superficie:"", rendita:"" }],
-    titolarita:[{ id:uid(), intestatario:"", diritto:"Proprietà", quota:"100", provenienza:"Compravendita", notaio:"", repertorio:"", raccolta:"", dataAtto:"", trascrizione:"" }],
-    conformita:{ ante67:"", titoli:"", urbanistica:"", urbanisticaNote:"", catastale:"", catastaleNote:"", vincoli:"", servitu:"", convenzioni:"", condominio:"", occupazione:"", occupazioneNote:"" },
-    superfici:[{ id:uid(), descrizione:"Abitazione", tipo:"principale", lorda:"", coeff:"1" }],
-    mercato:{ segmento:"", fonti:"", note:"" },
-    mca:{ comparabili:[], supConfronto:"", parametri:{ saggioAnnuo:"", rapportoPiano:"", costoBagno:"", deprezzamentoBagno:"", costoManutenzione:"", arrotondamento:"1000", soglia:"5" }, extra:[] },
-    conclusione:{ detrazioni:[], considerazioni:"", assunzioni:"", luogo:"" }
+    immobile:{ nomeUnita:"", indirizzo:"", civico:"", cap:"", comune:"", provincia:"", piano:"", interno:"", scala:"", tipologia:"", descrizione:"", confini:"", anno:"", manutenzione:"", impianti:"", classeEnergetica:"", ascensore:"", bagni:"", note:"" },
+    catasto:[nuovoCatasto()],
+    titolarita:[nuovaTitolarita()],
+    convenzione:{ presente:"", riferimento:"", data:"", prezzoMax:"", prezzoAttualizzato:"", tipologia:"", note:"", pianoZona:"", altriVincoli:"", fuoriPiano:"", recupero:"", belleArti:"" },
+    conformita:{ ante67:"", titoli:"", urbanistica:"", urbanisticaNote:"", catastale:"", catastaleNote:"", interventi:[], vincoli:"", servitu:"", convenzioni:"", condominio:"", occupazione:"", occupazioneNote:"" },
+    segmento:{ zona:"", quartiere:"", contratto:"compravendita", destinazione:"residenziale", destAlternativa:"", tip1:"", tip2:"", tipoCostruzione:"", condizione:"", tipEdilizia:"", tipCostruttiva:"", dimensione:"",
+      compratori:"", venditori:"", motivo:"", intermediari:"", forma:"", prezzoMedio:"", fase:"", tempoVendita:"", filtering:"", scambi:"",
+      servizi:{ autostrada:"", commerciali:"", mezzi:"", strade:"", amministrative:"", ricreative:"", sanitarie:"", scolastiche:"", sportive:"" },
+      sp:"", sl:"", c:"", prezzoTerreno:"", note:"" },
+    dato:{ tipoMisura:"", elaborato:"", criterio:"", princ:"", volume:"", sec:secVuote(), est:{mq:"",r:""}, estCond:"", quotaCond:"",
+      anno:"", piani:"", dataScambio:oggi().slice(0,7), piano:"", vani:"", servizi:"", aria:"", impianti:"", manutEd:"", manutImm:"",
+      qual:{ inqAtm:"", inqEm:"", inqAcu:"", amianto:"", prospEd:"", prospImm:"", esposizione:"", panoramicita:"", luminosita:"", funzionalita:"", finiture:"" },
+      classeEnergetica:"", statoLocativo:"", canoneMercato:"", canone:"", scadenza:"" },
+    mca:{ comparabili:[], costi:{ servizio:"", manutImm:"", manutEd:"", aria:"" }, arrotondamento:"1000", soglia:"", extra:[] },
+    assicurabile:{ costoUnitario:"", righe:[] },
+    conclusione:{ detrazioni:[], giudizio:"", considerazioni:"", assunzioni:"", luogo:"" }
   };
 }
-function nuovoComparabile(){ return { id:uid(), fonte:"Atto di compravendita", riferimento:"", indirizzo:"", data:"", prezzo:"", superficie:"", piano:"", bagni:"", manutenzione:"3", peso:"", note:"", extra:{} }; }
-/* compatibilità: aggiunge i campi mancanti alle perizie salvate con versioni precedenti */
-function completa(p){ const b=nuovaPerizia(); (function fill(t,s){ for(const k of Object.keys(s)){ if(t[k]===undefined) t[k]=JSON.parse(JSON.stringify(s[k])); else if(s[k]&&typeof s[k]==="object"&&!Array.isArray(s[k])&&t[k]&&typeof t[k]==="object") fill(t[k],s[k]); } })(p,b); return p; }
+function nuovoCatasto(){ return { id:uid(), catasto:"Fabbricati", comune:"", sezione:"", foglio:"", particella:"", sub:"", zona:"", categoria:"", classe:"", consistenza:"", superficie:"", supEscl:"", rendita:"", conforme:"", diritto:"", annoApe:"", classeEnergetica:"", epgl:"", co2:"", dataApe:"", certificatore:"", codCertificatore:"", supRiscaldata:"" }; }
+function nuovaTitolarita(){ return { id:uid(), intestatario:"", diritto:"Proprietà", quota:"100", provenienza:"Compravendita", notaio:"", repertorio:"", raccolta:"", dataAtto:"", trascrizione:"", prezzo:"", usufrutto:"", quotaUsufrutto:"", nudaProprieta:"", quotaNuda:"", corrispondenza:"", manutenzioniSuccessive:"", conformeAtto:"", noteConformita:"" }; }
+function nuovoComparabile(){ return { id:uid(), fonte:"Atto di compravendita", riferimento:"", indirizzo:"", dataScambio:"", prezzo:"", princ:"", sec:Object.fromEntries(SEC.map(([k])=>[k,""])), est:"", servizi:"", manutImm:"", manutEd:"", piano:"", aria:"", peso:"", note:"", extra:{} }; }
 
-/* ---------- calcoli ---------- */
-function supCommerciale(p){ return p.superfici.reduce((a,r)=>a+n0(r.lorda)*n0(r.coeff),0); }
-function mesiTra(a,b){ if(!a||!b) return NaN; const da=new Date(a), db=new Date(b); return (db-da)/(864e5*30.4375); }
+/* ---------- migrazione: completa le perizie salvate con versioni precedenti ---------- */
+function riempi(t,s){ for(const k of Object.keys(s)){ if(t[k]===undefined) t[k]=JSON.parse(JSON.stringify(s[k])); else if(s[k]&&typeof s[k]==="object"&&!Array.isArray(s[k])&&t[k]&&typeof t[k]==="object") riempi(t[k],s[k]); } }
+function migra(p){
+  const prima=!p.dato;
+  const b=nuovaPerizia();
+  if(prima){
+    // dalla 1.x: superfici a righe → Dato immobiliare; parametri → indici di mercato e costi
+    const d=b.dato; const sup=p.superfici||[];
+    const mapTipo={ principale:"princ", garage:"garage", balcone:"balcone", balcone_ecc:"balcone", balcone_nc:"balcone", giardino:"giardino", giardino_ecc:"giardino", acc_com:"cantina", acc_noncom:"cantina" };
+    for(const r of sup){ const k=mapTipo[r.tipo]; if(k==="princ") d.princ=String(n0(d.princ)+n0(r.lorda)); else if(k){ d.sec[k].mq=String(n0(d.sec[k].mq)+n0(r.lorda)); if(!d.sec[k].r) d.sec[k].r=r.coeff||""; } }
+    d.piano=p.immobile?.piano??""; d.servizi=p.immobile?.bagni??""; d.anno=p.immobile?.anno??"";
+    p.dato=d;
+    const par=(p.mca&&p.mca.parametri)||{};
+    p.segmento=b.segmento;
+    if(p.mercato?.segmento) p.segmento.note=p.mercato.segmento;
+    if(has(par.saggioAnnuo)) p.segmento.sp=String(num(par.saggioAnnuo)/100).replace(".",",");
+    if(has(par.rapportoPiano)) p.segmento.sl=String(num(par.rapportoPiano)/100).replace(".",",");
+    p.mca=p.mca||{}; p.mca.costi=b.mca.costi;
+    if(has(par.costoBagno)) p.mca.costi.servizio=String(num(par.costoBagno)*(1-n0(par.deprezzamentoBagno)/100));
+    if(par.arrotondamento) p.mca.arrotondamento=par.arrotondamento;
+    for(const c of p.mca.comparabili||[]){ if(c.princ===undefined){ c.princ=c.superficie||""; c.servizi=c.bagni||""; c.dataScambio=(c.data||"").slice(0,7); c.sec=Object.fromEntries(SEC.map(([k])=>[k,""])); c.est=""; } }
+  }
+  riempi(p,b);
+  for(const c of p.catasto) riempi(c,nuovoCatasto());
+  for(const t of p.titolarita) riempi(t,nuovaTitolarita());
+  for(const c of p.mca.comparabili) riempi(c,nuovoComparabile());
+  return p;
+}
+
+/* ---------- superfici del Dato immobiliare ---------- */
+function rapporto(p,k){ return num(p.dato.sec[k]?.r); }
+function superfici(p){
+  const D=p.dato; let comm=n0(D.princ);
+  for(const [k] of SEC) comm+=n0(D.sec[k].mq)*n0(D.sec[k].r);
+  const conv=comm+n0(D.est.mq)*n0(D.est.r);
+  return { commerciale:comm, convenzionale:conv };
+}
+function supCommComp(p,c){ let s=n0(c.princ); for(const [k] of SEC){ const m=n0(c.sec?.[k]); if(m) s+=m*n0(rapporto(p,k)); } return s; }
+
+/* =====================================================================
+   CALCOLO MCA — stessa impostazione delle tabelle CRIF:
+   - Data: prezzo marginale = P × sp / 12, per mese di differenza
+   - Superficie principale: prezzo medio minimo P / superficie commerciale
+   - Superfici secondarie: prezzo della principale × rapporto mercantile
+   - Superficie esterna: prezzo medio del terreno (€/m²)
+   - Servizi, manutenzione immobile/edificio, aria condizionata: costo per unità
+   - Livello di piano: P × sl se il comparabile è più in basso, P × sl/(1+sl) se più in alto
+   - Valore: media ponderata dei prezzi corretti, arrotondata
+   ===================================================================== */
 function calcolaMCA(p){
-  const P=p.mca.parametri, comps=p.mca.comparabili.filter(c=>has(c.prezzo)&&has(c.superficie)&&n0(c.superficie)>0);
-  const dv=p.incarico.dataValutazione||oggi();
-  const supConf=num(p.mca.supConfronto);
-  const sog={ S:isFinite(supConf)&&supConf>0?supConf:supCommerciale(p), supDaConfronto:isFinite(supConf)&&supConf>0, L:num(p.immobile.piano), N:num(p.immobile.bagni), M:num(p.immobile.manutenzione), extra:Object.fromEntries(p.mca.extra.map(x=>[x.id,num(x.soggetto)])) };
-  const out={ sog, comps, righe:[], avvisi:[], dv, ok:false };
-  if(!(sog.S>0)) out.avvisi.push("Manca la superficie dell'immobile da stimare (sezione Superfici o «Superficie nel confronto»).");
-  if(comps.length<3) out.avvisi.push(`Servono almeno 3 comparabili completi di prezzo e superficie: ora ${comps.length}.`);
-  if(!comps.length||!(sog.S>0)) return out;
-  const i=num(P.saggioAnnuo), rP=num(P.rapportoPiano), cB=num(P.costoBagno), dB=n0(P.deprezzamentoBagno), cM=num(P.costoManutenzione);
-  const pSup=Math.min(...comps.map(c=>n0(c.prezzo)/n0(c.superficie)));
+  const S=p.segmento, D=p.dato, K=p.mca.costi;
+  const comps=p.mca.comparabili.filter(c=>has(c.prezzo)&&has(c.princ)&&n0(c.princ)>0);
+  const out={ comps, righe:[], avvisi:[], ok:false };
+  const sog={ data:D.dataScambio, princ:num(D.princ), sec:Object.fromEntries(SEC.map(([k])=>[k,n0(D.sec[k].mq)])), est:n0(D.est.mq), servizi:num(D.servizi), manutImm:num(D.manutImm), manutEd:num(D.manutEd), piano:num(D.piano), aria:num(D.aria),
+    extra:Object.fromEntries(p.mca.extra.map(x=>[x.id,num(x.soggetto)])) };
+  out.sog=sog;
+  if(!(sog.princ>0)) out.avvisi.push("Manca la superficie principale dell'immobile da stimare (Dato immobiliare).");
+  if(comps.length<3) out.avvisi.push(`Servono almeno 3 comparabili con prezzo e superficie principale: ora ${comps.length}.`);
+  if(!comps.length||!(sog.princ>0)) return out;
+  const sp=num(S.sp), sl=num(S.sl), pt=num(S.prezzoTerreno);
+  const medi=comps.map(c=>n0(c.prezzo)/supCommComp(p,c));
+  const pPrinc=Math.min(...medi);
+  out.pPrinc=pPrinc; out.prezziMedi=medi;
   const car=[];
-  car.push({ k:"data", nome:"Data del contratto", unita:"mesi", attiva:isFinite(i),
-    pm:c=>n0(c.prezzo)*i/100/12, diff:c=>mesiTra(c.data,dv), nota:isFinite(i)?`saggio annuo ${fmt(i,2)}%`:"saggio annuo non indicato" });
-  car.push({ k:"sup", nome:sog.supDaConfronto?"Superficie di confronto":"Superficie commerciale", unita:"m²", attiva:true,
-    pm:()=>pSup, diff:c=>sog.S-n0(c.superficie), nota:`prezzo medio minimo ${eur(pSup,2)}/m²` });
-  car.push({ k:"piano", nome:"Livello di piano", unita:"piani", attiva:isFinite(rP)&&isFinite(sog.L),
-    pm:c=>{ const s=rP/100; return sog.L-num(c.piano)>=0 ? n0(c.prezzo)*s : n0(c.prezzo)*s/(1+s); }, diff:c=>sog.L-num(c.piano), nota:isFinite(rP)?`saggio ${fmt(rP,2)}% per piano (P·s se il comparabile è più in basso, P·s/(1+s) se più in alto)`:"saggio non indicato" });
-  car.push({ k:"bagni", nome:"Servizi igienici", unita:"n.", attiva:isFinite(cB)&&isFinite(sog.N),
-    pm:()=>cB*(1-dB/100), diff:c=>sog.N-num(c.bagni), nota:isFinite(cB)?`costo ${eur(cB)} − deprezzamento ${fmt(dB,0)}%`:"costo non indicato" });
-  car.push({ k:"manut", nome:"Stato di manutenzione", unita:"livelli", attiva:isFinite(cM)&&isFinite(sog.M),
-    pm:c=>cM*n0(c.superficie), diff:c=>sog.M-num(c.manutenzione), nota:isFinite(cM)?`${eur(cM,2)}/m² per livello`:"costo non indicato" });
-  for(const x of p.mca.extra){ const pm=num(x.prezzo); car.push({ k:"x_"+x.id, nome:x.nome||"Caratteristica", unita:x.unita||"", attiva:isFinite(pm)&&isFinite(sog.extra[x.id]),
-    pm:()=>pm, diff:c=>sog.extra[x.id]-num((c.extra||{})[x.id]), nota:isFinite(pm)?`${eur(pm)} per ${x.unita||"unità"}`:"prezzo non indicato" }); }
+  const add=(k,nome,unita,valSog,valComp,pm,attiva,nota)=>car.push({k,nome,unita,valSog,valComp,pm,attiva,nota});
+  add("data","Data","mesi",0,c=>mesiTra(c.dataScambio,sog.data),c=>n0(c.prezzo)*(isFinite(sp)?sp:0)/12,true,`sp ${isFinite(sp)?fmt(sp,4):"non indicato (0)"} annuo`);
+  add("princ","Superficie principale","m²",sog.princ,c=>num(c.princ),()=>pPrinc,true,`prezzo medio minimo ${eur(pPrinc,2)}/m² (prezzo / superficie commerciale)`);
+  for(const [k,l] of SEC){
+    const usata=sog.sec[k]||comps.some(c=>n0(c.sec?.[k]));
+    const r=rapporto(p,k);
+    if(usata&&!isFinite(r)) out.avvisi.push(`Manca il rapporto mercantile della superficie «${l}» (Dato immobiliare): aggiustamento non calcolato.`);
+    add("sec_"+k,"Sup. sec. "+l,"m²",sog.sec[k],c=>n0(c.sec?.[k]),()=>pPrinc*(isFinite(r)?r:0),usata,`${eur(pPrinc,2)} × rapporto ${isFinite(r)?fmt(r,2):"—"}`);
+  }
+  const estUsata=sog.est||comps.some(c=>n0(c.est));
+  if(estUsata&&!isFinite(pt)) out.avvisi.push("Manca il prezzo medio del terreno (Segmento di mercato): aggiustamento della superficie esterna non calcolato.");
+  add("est","Superficie esterna","m²",sog.est,c=>n0(c.est),()=>isFinite(pt)?pt:0,estUsata,`prezzo medio terreno ${isFinite(pt)?eur(pt,2):"—"}/m²`);
+  add("servizi","Servizi","n.",sog.servizi,c=>num(c.servizi),()=>n0(K.servizio),has(K.servizio),`costo ${eur(n0(K.servizio))} per servizio`);
+  add("manutImm","Stato di manutenzione immobile","punti",sog.manutImm,c=>num(c.manutImm),()=>n0(K.manutImm),has(K.manutImm),`${eur(n0(K.manutImm))} per punto`);
+  add("manutEd","Stato di manutenzione edificio","punti",sog.manutEd,c=>num(c.manutEd),()=>n0(K.manutEd),has(K.manutEd),`${eur(n0(K.manutEd))} per punto`);
+  add("piano","Livello di piano","n.",sog.piano,c=>num(c.piano),c=>{ const s=isFinite(sl)?sl:0; return sog.piano-num(c.piano)>=0 ? n0(c.prezzo)*s : n0(c.prezzo)*s/(1+s); },true,`sl ${isFinite(sl)?fmt(sl,4):"non indicato (0)"}: P × sl se il comparabile è più in basso, P × sl/(1+sl) se più in alto`);
+  add("aria","Aria condizionata","sì=1",sog.aria,c=>num(c.aria),()=>n0(K.aria),has(K.aria),`${eur(n0(K.aria))}`);
+  for(const x of p.mca.extra){ add("x_"+x.id,x.nome||"Caratteristica",x.unita||"",sog.extra[x.id],c=>num((c.extra||{})[x.id]),()=>n0(x.prezzo),has(x.prezzo),`${eur(n0(x.prezzo))} per ${x.unita||"unità"}`); }
   for(const ch of car){
     const r={ ...ch, valori:[] };
     for(const c of comps){
-      let pm=NaN, df=NaN, adj=0;
-      if(ch.attiva){ pm=ch.pm(c); df=ch.diff(c); if(!isFinite(df)){ out.avvisi.push(`${ch.nome}: dato mancante per il comparabile «${c.indirizzo||c.riferimento||"senza nome"}» (aggiustamento 0).`); df=NaN; } adj=isFinite(pm)&&isFinite(df)?pm*df:0; }
-      r.valori.push({ pm, df, adj });
+      const vc=ch.valComp(c), vs=ch.k==="data"?0:ch.valSog;
+      const pm=ch.pm(c);
+      // data: differenza = mesi trascorsi dal contratto del comparabile; altre caratteristiche: immobile da stimare − comparabile
+      const df=ch.k==="data" ? (isFinite(vc)?vc:NaN) : vs-vc;
+      let adj=0;
+      if(ch.attiva){
+        if(!isFinite(df)){ if(!(ch.k==="data"&&!(isFinite(sp)&&sp!==0))) out.avvisi.push(`${ch.nome}: dato mancante per «${c.indirizzo||"comparabile"}» (aggiustamento 0).`); }
+        else adj=pm*df;
+      }
+      r.valori.push({ vc, pm, df, adj });
     }
     out.righe.push(r);
   }
   out.corretti=comps.map((c,j)=>n0(c.prezzo)+out.righe.reduce((a,r)=>a+r.valori[j].adj,0));
+  const pesi=comps.map(c=>num(c.peso)); const usaPesi=pesi.every(w=>isFinite(w)&&w>=0)&&pesi.reduce((a,b)=>a+b,0)>0;
+  const tot=usaPesi?pesi.reduce((a,b)=>a+b,0):comps.length;
+  out.pesi=usaPesi?pesi.map(w=>w/tot):comps.map(()=>1/comps.length);
+  out.ponderata=usaPesi;
+  out.media=out.corretti.reduce((a,v,j)=>a+v*out.pesi[j],0);
+  out.passo=n0(p.mca.arrotondamento)||1;
+  out.valoreStimato=arrotonda(out.media,out.passo);
+  out.elementi=p.conclusione.detrazioni.reduce((a,d)=>a+n0(d.importo),0);
+  out.valore=out.valoreStimato+out.elementi;
   const mn=Math.min(...out.corretti), mx=Math.max(...out.corretti);
   out.divergenza=mn>0?(mx-mn)/mn*100:NaN;
-  const pesi=comps.map(c=>num(c.peso)); const usaPesi=pesi.every(w=>isFinite(w)&&w>=0)&&pesi.reduce((a,b)=>a+b,0)>0;
-  out.pesi=usaPesi?pesi.map(w=>w/pesi.reduce((a,b)=>a+b,0)):null;
-  out.media=usaPesi?out.corretti.reduce((a,v,j)=>a+v*out.pesi[j],0):out.corretti.reduce((a,b)=>a+b,0)/out.corretti.length;
-  out.passo=n0(P.arrotondamento)||1;
-  out.detrazioni=p.conclusione.detrazioni.reduce((a,d)=>a+n0(d.importo),0);
-  out.valore=arrotonda(out.media-out.detrazioni,out.passo);
-  out.unitario=out.valore/sog.S;
-  const soglia=n0(P.soglia)||5;
-  out.attendibile=isFinite(out.divergenza)&&out.divergenza<=soglia;
-  out.soglia=soglia;
-  if(isFinite(out.divergenza)&&!out.attendibile) out.avvisi.push(`Divergenza tra i prezzi corretti ${fmt(out.divergenza,1)}%: supera la soglia del ${fmt(soglia,1)}%. Verificare comparabili e parametri.`);
+  const soglia=num(p.mca.soglia); out.soglia=soglia;
+  if(isFinite(soglia)&&isFinite(out.divergenza)&&out.divergenza>soglia) out.avvisi.push(`Divergenza tra i prezzi corretti ${fmt(out.divergenza,2)}%: supera la soglia del ${fmt(soglia,1)}%.`);
   out.ok=comps.length>=3&&out.corretti.every(v=>v>0);
   return out;
+}
+function calcolaAssicurabile(p){
+  const A=p.assicurabile; const tot=A.righe.reduce((a,r)=>a+n0(r.mq)*(has(r.coeff)?num(r.coeff):1),0);
+  const costo=tot*n0(A.costoUnitario);
+  return { superficie:tot, costo, valore:arrotonda(costo,1000), ok:tot>0&&has(A.costoUnitario) };
 }
 
 /* ---------- stato e salvataggio ---------- */
@@ -324,13 +385,11 @@ function fld(label, obj, key, opt={}){
       oninput:()=>{ obj[key]=el.value; salvaPresto(); opt.on&&opt.on(); } }); el.value=obj[key]??""; }
   return h("div",{ class:"fld"+(opt.wide?" wide":"") }, h("label",{ class:"f" }, label), el);
 }
-const SINO=[["","—"],["si","Sì"],["no","No"]];
-const CONF=[["","—"],["conforme","Conforme"],["parziale","Parzialmente conforme"],["non conforme","Non conforme"],["non verificata","Non verificata"]];
 
 /* ---------- viste ---------- */
 const SEZIONI=[
-  ["incarico","Incarico"],["documenti","Documenti"],["immobile","Immobile"],["catasto","Catasto e titolarità"],["conformita","Conformità e vincoli"],
-  ["superfici","Superfici"],["comparabili","Comparabili"],["valutazione","Valutazione"],["conclusione","Conclusione"]
+  ["incarico","Incarico"],["documenti","Documentazione"],["immobile","Ubicazione"],["titolarita","Titolarità e convenzione"],["catasto","Identificazione catastale"],["conformita","Conformità e servitù"],
+  ["segmento","Segmento di mercato"],["dato","Dato immobiliare"],["comparabili","Comparabili"],["valutazione","Valutazione"],["conclusione","Conclusione"]
 ];
 function nomePerizia(p){ const i=p.immobile; return [p.incarico.numero, [i.indirizzo,i.civico].filter(Boolean).join(" "), i.comune].filter(Boolean).join(" · ")||"Perizia senza nome"; }
 
@@ -342,14 +401,14 @@ async function vistaElenco(){
     h("p",{class:"eyebrow"},"Studio Purarchitettura · Perizie"),
     h("h1",{class:"title"},"Perizie private"),
     h("hr",{class:"rule"}),
-    h("p",{class:"lead"},"Stima del valore di mercato con il metodo del confronto di mercato (MCA) e relazione in Word. Le perizie restano solo su questo dispositivo: usa «Backup» per conservarne una copia."),
+    h("p",{class:"lead"},"Stima del valore di mercato con il metodo del confronto di mercato (MCA), con la stessa struttura e gli stessi calcoli della perizia CRIF, e relazione in Word. Le perizie restano solo su questo dispositivo: usa «Backup» per conservarne una copia."),
     h("div",{class:"toolbar"},
       h("button",{class:"btn solid",type:"button",onclick:async()=>{ const p=nuovaPerizia(); await DB.put(p); apri(p); }},"Nuova perizia"),
       h("button",{class:"btn quiet",type:"button",onclick:()=>$("fileImport").click()},"Importa backup"))));
   if(!elenco.length){ app.append(h("div",{class:"empty"},"Nessuna perizia su questo dispositivo.")); return; }
   const l=h("div",{class:"list"});
   for(const p of elenco){
-    completa(p);
+    migra(p);
     const r=calcolaMCA(p);
     l.append(h("button",{class:"item",type:"button",onclick:()=>apri(p)},
       h("div",null,h("b",null,nomePerizia(p)),h("small",null,[p.incarico.committente,"modificata "+itData(p.modificata)].filter(Boolean).join(" · "))),
@@ -359,211 +418,252 @@ async function vistaElenco(){
   app.append(h("p",{class:"lead",style:"font-size:12px;margin-top:26px"},"Versione "+VERSIONE));
 }
 
-function apri(p){ corrente=completa(p); sezione=lsGet("pp_sez_"+p.id)||"incarico"; $("bar").hidden=false; $("saved").textContent="Salvata su questo dispositivo"; render(); scrollTo(0,0); }
+function apri(p){ corrente=migra(p); sezione=lsGet("pp_sez_"+p.id)||"incarico"; if(!SEZIONI.some(s=>s[0]===sezione)) sezione="incarico"; $("bar").hidden=false; $("saved").textContent="Salvata su questo dispositivo"; render(); scrollTo(0,0); }
 
 function completata(k,p){
   switch(k){
     case "incarico": return !!(p.incarico.committente&&p.incarico.dataValutazione&&p.incarico.perito);
     case "documenti": return Object.values(p.documenti.voci).some(v=>v.ok);
     case "immobile": return !!(p.immobile.indirizzo&&p.immobile.comune&&p.immobile.descrizione);
-    case "catasto": return p.catasto.some(c=>c.foglio&&c.particella)&&p.titolarita.some(t=>t.intestatario);
+    case "titolarita": return p.titolarita.some(t=>t.intestatario||t.notaio);
+    case "catasto": return p.catasto.some(c=>c.foglio&&c.particella);
     case "conformita": return !!(p.conformita.urbanistica&&p.conformita.catastale);
-    case "superfici": return supCommerciale(p)>0;
+    case "segmento": return !!(p.segmento.zona&&p.segmento.prezzoMedio);
+    case "dato": return n0(p.dato.princ)>0&&!!p.dato.dataScambio;
     case "comparabili": return calcolaMCA(p).comps.length>=3;
     case "valutazione": return calcolaMCA(p).ok;
-    case "conclusione": return !!p.conclusione.considerazioni;
+    case "conclusione": return !!(p.conclusione.considerazioni||p.conclusione.giudizio);
   }
   return false;
 }
-
+function vai(k){ sezione=k; lsSet("pp_sez_"+corrente.id,k); render(); scrollTo(0,0); }
 function render(){
   const p=corrente, app=$("app"); app.replaceChildren();
   app.append(h("section",{class:"hero",style:"padding-top:22px"},
     h("p",{class:"eyebrow"},"Perizia"+(p.incarico.numero?" n. "+p.incarico.numero:"")),
     h("h1",{class:"title",style:"font-size:clamp(20px,4.4vw,28px)"},[p.immobile.indirizzo,p.immobile.civico].filter(Boolean).join(" ")||"Nuova perizia"),
     h("p",{class:"lead",style:"margin-top:6px"},[p.immobile.comune,p.incarico.committente].filter(Boolean).join(" · ")||"Compila le sezioni nell'ordine che preferisci: il salvataggio è automatico.")));
-  const tabs=h("nav",{class:"tabs","aria-label":"Sezioni della perizia"}, SEZIONI.map(([k,l],i)=>h("button",{ type:"button", class:"tab"+(k===sezione?" on":"")+(completata(k,p)?" done":""), onclick:()=>{ sezione=k; lsSet("pp_sez_"+p.id,k); render(); } }, h("span",{class:"n"},String(i+1).padStart(2,"0")), l)));
+  const tabs=h("nav",{class:"tabs","aria-label":"Sezioni della perizia"}, SEZIONI.map(([k,l],i)=>h("button",{ type:"button", class:"tab"+(k===sezione?" on":"")+(completata(k,p)?" done":""), onclick:()=>vai(k) }, h("span",{class:"n"},String(i+1).padStart(2,"0")), l)));
   app.append(tabs);
   const pane=h("section",{class:"pane"}); app.append(pane);
-  ({incarico:secIncarico,documenti:secDocumenti,immobile:secImmobile,catasto:secCatasto,conformita:secConformita,superfici:secSuperfici,comparabili:secComparabili,valutazione:secValutazione,conclusione:secConclusione})[sezione](pane,p);
+  ({incarico:secIncarico,documenti:secDocumenti,immobile:secImmobile,titolarita:secTitolarita,catasto:secCatasto,conformita:secConformita,segmento:secSegmento,dato:secDato,comparabili:secComparabili,valutazione:secValutazione,conclusione:secConclusione})[sezione](pane,p);
   const i=SEZIONI.findIndex(s=>s[0]===sezione);
   pane.append(h("div",{class:"toolbar",style:"justify-content:space-between"},
-    i>0?h("button",{class:"btn quiet",type:"button",onclick:()=>{ sezione=SEZIONI[i-1][0]; lsSet("pp_sez_"+p.id,sezione); render(); scrollTo(0,0); }},"← "+SEZIONI[i-1][1]):h("span"),
-    i<SEZIONI.length-1?h("button",{class:"btn gold",type:"button",onclick:()=>{ sezione=SEZIONI[i+1][0]; lsSet("pp_sez_"+p.id,sezione); render(); scrollTo(0,0); }},SEZIONI[i+1][1]+" →"):h("span")));
+    i>0?h("button",{class:"btn quiet",type:"button",onclick:()=>vai(SEZIONI[i-1][0])},"← "+SEZIONI[i-1][1]):h("span"),
+    i<SEZIONI.length-1?h("button",{class:"btn gold",type:"button",onclick:()=>vai(SEZIONI[i+1][0])},SEZIONI[i+1][1]+" →"):h("span")));
   const on=tabs.querySelector(".on"); if(on) on.scrollIntoView({block:"nearest",inline:"center"});
 }
 const card=(titolo,...kids)=>h("div",{class:"card"},h("h2",null,titolo),...kids);
+const grid=(...k)=>h("div",{class:"grid"},...k);
+function righe(el,lista,titolo,campi,nuova,dopo){
+  const box=h("div",{class:"rows"});
+  const draw=()=>{ box.replaceChildren(...lista.map((r,i)=>h("div",{class:"row"},
+    h("div",{class:"rhead"},h("b",null,titolo+" "+(i+1)),h("button",{class:"btn danger small",type:"button",onclick:()=>{ if(!confirm("Eliminare questa riga?")) return; lista.splice(i,1); salvaPresto(); draw(); dopo&&dopo(); }},"Elimina")),
+    h("div",{class:"grid"},campi(r,i))))); };
+  draw();
+  el.append(box,h("button",{class:"btn gold small addrow",type:"button",onclick:()=>{ lista.push(nuova()); salvaPresto(); draw(); dopo&&dopo(); }},"+ Aggiungi"));
+}
 
 function secIncarico(el,p){
   const I=p.incarico, ricorda=()=>{ lsSet("pp_perito",I.perito); lsSet("pp_qualifica",I.qualifica); lsSet("pp_contatti",I.contattiPerito); };
-  el.append(card("Incarico",h("div",{class:"grid"},
+  el.append(card("Dati dell'incarico",grid(
     fld("N. o codice perizia",I,"numero"),
+    fld("Tipologia di perizia",I,"tipologia",{ph:"es. stima del valore di mercato"}),
     fld("Scopo della stima",I,"scopo",{type:"select",options:[["compravendita","Compravendita"],["divisione","Divisione"],["successione","Successione / donazione"],["garanzia","Garanzia / finanziamento"],["contenzioso","Contenzioso"],["patrimoniale","Valutazione patrimoniale"],["altro","Altro"]],on:()=>render()}),
     I.scopo==="altro"?fld("Scopo (specificare)",I,"scopoAltro"):null,
+    fld("Finalità / note sull'incarico",I,"finalita"),
     fld("Data incarico",I,"dataIncarico",{type:"date"}),
     fld("Data sopralluogo",I,"dataSopralluogo",{type:"date"}),
-    fld("Data di riferimento della stima",I,"dataValutazione",{type:"date"}),
+    fld("Data della valutazione",I,"dataValutazione",{type:"date"}),
     fld("Presenti al sopralluogo",I,"presenti",{wide:true}))));
-  el.append(card("Committente",h("div",{class:"grid"},
-    fld("Nome e cognome / ragione sociale",I,"committente",{on:()=>{}}),
-    fld("Codice fiscale / P. IVA",I,"cf"),
-    fld("Recapiti (telefono, email)",I,"recapiti"),
-    fld("Indirizzo",I,"indirizzoCommittente"))));
-  el.append(card("Perito",h("p",{class:"hint"},"Intestazione della relazione. Resta memorizzata su questo dispositivo per le perizie successive."),h("div",{class:"grid"},
-    fld("Nome del perito",I,"perito",{on:ricorda,ph:"es. Geom. Nome Cognome"}),
-    fld("Qualifica / iscrizione albo",I,"qualifica",{on:ricorda}),
-    fld("Studio, indirizzo e contatti",I,"contattiPerito",{on:ricorda,wide:true}))));
+  el.append(card("Committente",grid(
+    fld("Nome e cognome / ragione sociale",I,"committente"),fld("Codice fiscale / P. IVA",I,"cf"),fld("Recapiti (telefono, email)",I,"recapiti"),fld("Indirizzo",I,"indirizzoCommittente"))));
+  el.append(card("Perito",h("p",{class:"hint"},"Intestazione della relazione. Resta memorizzata su questo dispositivo per le perizie successive."),grid(
+    fld("Nome del perito",I,"perito",{on:ricorda,ph:"es. Geom. Nome Cognome"}),fld("Qualifica / iscrizione albo",I,"qualifica",{on:ricorda}),fld("Studio, indirizzo e contatti",I,"contattiPerito",{on:ricorda,wide:true}))));
 }
 function secDocumenti(el,p){
   const box=h("div");
   for(const [k,l] of DOC_STD){
     const v=p.documenti.voci[k]||(p.documenti.voci[k]={ok:false,note:""});
-    const note=h("input",{type:"text",placeholder:"Note (data, estremi, osservazioni)",value:v.note,oninput:()=>{ v.note=note.value; salvaPresto(); }});
+    const note=h("input",{type:"text",placeholder:"Note (nome file, data, estremi)",value:v.note,oninput:()=>{ v.note=note.value; salvaPresto(); }});
     const cb=h("input",{type:"checkbox",checked:v.ok,onchange:()=>{ v.ok=cb.checked; salvaPresto(); }});
     box.append(h("label",{class:"chk"},cb,h("span",{class:"t"},l,note)));
   }
-  el.append(card("Documentazione esaminata",h("p",{class:"hint"},"Spunta i documenti acquisiti: compariranno nella relazione."),box,
-    h("div",{style:"margin-top:12px"},fld("Note sulla documentazione",p.documenti,"note",{type:"area"}))));
+  el.append(card("Documentazione esaminata",h("p",{class:"hint"},"Spunta i documenti acquisiti: compariranno nella relazione."),box,h("div",{style:"margin-top:12px"},fld("Note sulla documentazione",p.documenti,"note",{type:"area"}))));
 }
 function secImmobile(el,p){
   const M=p.immobile;
-  el.append(card("Ubicazione",h("div",{class:"grid"},
-    fld("Indirizzo",M,"indirizzo"),fld("Civico",M,"civico"),fld("CAP",M,"cap",{num:false}),fld("Comune",M,"comune"),fld("Provincia",M,"provincia"),
-    fld("Scala",M,"scala"),fld("Interno",M,"interno"),fld("Piano (terra = 0)",M,"piano",{num:true,on:()=>{}}))));
-  el.append(card("Descrizione",h("div",{class:"grid"},
-    fld("Tipologia",M,"tipologia",{ph:"es. appartamento in condominio, villetta a schiera"}),
-    fld("Anno di costruzione",M,"anno"),
-    fld("Stato di manutenzione",M,"manutenzione",{type:"select",options:MANUT}),
-    fld("Servizi igienici (n.)",M,"bagni",{num:true}),
-    fld("Ascensore",M,"ascensore",{type:"select",options:SINO}),
-    fld("Classe energetica",M,"classeEnergetica"),
-    fld("Descrizione e consistenza",M,"descrizione",{type:"area",wide:true,rows:4,ph:"Composizione dei locali, piani, finiture, pertinenze"}),
-    fld("Impianti e finiture",M,"impianti",{type:"area",wide:true}),
-    fld("Confini",M,"confini",{type:"area",wide:true}),
+  el.append(card("Ubicazione",grid(
+    fld("Nome unità immobiliare",M,"nomeUnita",{wide:true,ph:"es. Appartamento 2 vani con garage e giardino"}),
+    fld("Indirizzo",M,"indirizzo"),fld("Civico",M,"civico"),fld("CAP",M,"cap"),fld("Comune",M,"comune"),fld("Provincia",M,"provincia"),
+    fld("Scala",M,"scala"),fld("Interno",M,"interno"),fld("Piano",M,"piano"),
+    fld("Descrizione consistenza",M,"descrizione",{type:"area",wide:true,rows:4}),
+    fld("Descrizione confini",M,"confini",{type:"area",wide:true}),
+    fld("Tipologia",M,"tipologia",{wide:true}),
     fld("Note",M,"note",{type:"area",wide:true}))));
 }
-function righe(el,lista,titolo,campi,nuova,dopo){
-  const box=h("div",{class:"rows"});
-  const draw=()=>{ box.replaceChildren(...lista.map((r,i)=>h("div",{class:"row"},
-    h("div",{class:"rhead"},h("b",null,titolo+" "+(i+1)),h("button",{class:"btn danger small",type:"button",onclick:()=>{ if(!confirm("Eliminare questa riga?")) return; lista.splice(i,1); salvaPresto(); draw(); dopo&&dopo(); }},"Elimina")),
-    h("div",{class:"grid"},campi(r))))); };
-  draw();
-  el.append(box,h("button",{class:"btn gold small addrow",type:"button",onclick:()=>{ lista.push(nuova()); salvaPresto(); draw(); dopo&&dopo(); }},"+ Aggiungi"));
+function secTitolarita(el,p){
+  const c1=card("Identificazione titolarità");
+  righe(c1,p.titolarita,"Titolarità",r=>[
+    fld("Intestatario",r,"intestatario"),
+    fld("Provenienza",r,"provenienza",{type:"select",options:[["Compravendita","Compravendita"],["Successione","Successione"],["Donazione","Donazione"],["Divisione","Divisione"],["Assegnazione","Assegnazione"],["Altro","Altro"]]}),
+    fld("Diritto",r,"diritto",{type:"select",options:[["Proprietà","Proprietà"],["Nuda proprietà","Nuda proprietà"],["Usufrutto","Usufrutto"],["Superficie","Proprietà superficiaria"],["Altro","Altro"]]}),
+    fld("Quota di proprietà (%)",r,"quota",{num:true}),
+    fld("Usufrutto",r,"usufrutto",{type:"select",options:SINO}),fld("Quota usufrutto (%)",r,"quotaUsufrutto",{num:true}),
+    fld("Nuda proprietà",r,"nudaProprieta",{type:"select",options:SINO}),fld("Quota nuda proprietà (%)",r,"quotaNuda",{num:true}),
+    fld("Notaio",r,"notaio"),fld("Repertorio",r,"repertorio"),fld("Fascicolo / raccolta",r,"raccolta"),fld("Data atto",r,"dataAtto",{type:"date"}),
+    fld("Prezzo di compravendita (€)",r,"prezzo",{num:true}),
+    fld("Corrispondenza puntuale atto / oggetto di stima",r,"corrispondenza",{type:"select",options:SINO}),
+    fld("Manutenzioni successive all'acquisto",r,"manutenzioniSuccessive",{type:"select",options:SINO}),
+    fld("Conformità ai dati notarili e catastali",r,"conformeAtto",{type:"select",options:SINO}),
+    fld("Note sulla conformità",r,"noteConformita",{type:"area",wide:true})
+  ],nuovaTitolarita);
+  el.append(c1);
+  const C=p.convenzione;
+  el.append(card("Convenzione comunale",grid(
+    fld("Presente",C,"presente",{type:"select",options:SINO}),
+    fld("Riferimento",C,"riferimento"),fld("Data",C,"data",{type:"date"}),
+    fld("Prezzo massimo di cessione da convenzione (€)",C,"prezzoMax",{num:true}),
+    fld("Prezzo massimo di cessione attualizzato (€)",C,"prezzoAttualizzato",{num:true}),
+    fld("Tipologia",C,"tipologia",{ph:"es. edilizia convenzionata"}),
+    fld("Piano di zona",C,"pianoZona",{type:"select",options:SINO}),fld("Presenza altri vincoli",C,"altriVincoli",{type:"select",options:SINO}),
+    fld("Edilizia conv. fuori piano di zona",C,"fuoriPiano",{type:"select",options:SINO}),fld("Recupero convenzionato",C,"recupero",{type:"select",options:SINO}),
+    fld("Vincolo Belle Arti",C,"belleArti",{type:"select",options:SINO}),
+    fld("Note sulla convenzione",C,"note",{type:"area",wide:true,rows:4}))));
 }
 function secCatasto(el,p){
-  const c1=card("Identificazione catastale");
-  righe(c1,p.catasto,"Unità",r=>[
+  const c=card("Identificazione catastale");
+  righe(c,p.catasto,"Unità",r=>[
     fld("Catasto",r,"catasto",{type:"select",options:[["Fabbricati","Fabbricati"],["Terreni","Terreni"]]}),
-    fld("Comune censuario",r,"comune"),fld("Sezione",r,"sezione"),fld("Foglio",r,"foglio"),fld("Particella",r,"particella"),fld("Subalterno",r,"sub"),
-    fld("Categoria / qualità",r,"categoria"),fld("Classe",r,"classe"),fld("Consistenza",r,"consistenza"),fld("Superficie catastale (m²)",r,"superficie",{num:true}),fld("Rendita / reddito (€)",r,"rendita",{num:true})
-  ],()=>({ id:uid(), catasto:"Fabbricati", comune:"", sezione:"", foglio:"", particella:"", sub:"", categoria:"", classe:"", consistenza:"", superficie:"", rendita:"" }));
-  el.append(c1);
-  const c2=card("Titolarità e provenienza");
-  righe(c2,p.titolarita,"Titolare",r=>[
-    fld("Intestatario",r,"intestatario"),fld("Diritto",r,"diritto",{type:"select",options:[["Proprietà","Proprietà"],["Nuda proprietà","Nuda proprietà"],["Usufrutto","Usufrutto"],["Superficie","Diritto di superficie"],["Altro","Altro"]]}),
-    fld("Quota (%)",r,"quota",{num:true}),fld("Provenienza",r,"provenienza",{type:"select",options:[["Compravendita","Compravendita"],["Successione","Successione"],["Donazione","Donazione"],["Divisione","Divisione"],["Assegnazione","Assegnazione"],["Altro","Altro"]]}),
-    fld("Notaio",r,"notaio"),fld("Repertorio",r,"repertorio"),fld("Raccolta",r,"raccolta"),fld("Data atto",r,"dataAtto",{type:"date"}),fld("Trascrizione",r,"trascrizione")
-  ],()=>({ id:uid(), intestatario:"", diritto:"Proprietà", quota:"", provenienza:"Compravendita", notaio:"", repertorio:"", raccolta:"", dataAtto:"", trascrizione:"" }));
-  el.append(c2);
+    fld("Comune censuario",r,"comune"),fld("Sezione",r,"sezione"),fld("Foglio",r,"foglio"),fld("Particella",r,"particella"),fld("Subalterno",r,"sub"),fld("Zona censuaria",r,"zona"),
+    fld("Categoria",r,"categoria"),fld("Classe",r,"classe"),fld("Consistenza",r,"consistenza"),fld("Superficie catastale (m²)",r,"superficie",{num:true}),fld("Sup. cat. escl. aree scoperte (m²)",r,"supEscl",{num:true}),fld("Rendita (€)",r,"rendita",{num:true}),
+    fld("Stato attuale conforme allo stato catastale",r,"conforme",{type:"select",options:SINO}),fld("Tipo diritto",r,"diritto",{ph:"es. piena proprietà"}),
+    fld("APE: anno costruzione",r,"annoApe"),fld("Classe energetica",r,"classeEnergetica"),fld("EPgl (kWh/m² anno)",r,"epgl",{num:true}),fld("Emissioni CO₂",r,"co2",{num:true}),
+    fld("Data certificato",r,"dataApe",{type:"date"}),fld("Certificatore",r,"certificatore"),fld("Codice certificatore",r,"codCertificatore"),fld("Superficie riscaldata (m²)",r,"supRiscaldata",{num:true})
+  ],nuovoCatasto);
+  el.append(c);
 }
 function secConformita(el,p){
   const C=p.conformita;
-  el.append(card("Conformità urbanistica",h("div",{class:"grid"},
-    fld("Costruito prima del 1° settembre 1967",C,"ante67",{type:"select",options:SINO}),
-    fld("Esito",C,"urbanistica",{type:"select",options:CONF}),
-    fld("Titoli edilizi",C,"titoli",{type:"area",wide:true,ph:"Elenco dei titoli con numero e data"}),
-    fld("Note e difformità",C,"urbanisticaNote",{type:"area",wide:true}))));
-  el.append(card("Conformità catastale",h("div",{class:"grid"},
-    fld("Esito",C,"catastale",{type:"select",options:CONF}),
-    fld("Note e difformità",C,"catastaleNote",{type:"area",wide:true}))));
-  el.append(card("Vincoli, servitù e stato di occupazione",h("div",{class:"grid"},
-    fld("Stato di occupazione",C,"occupazione",{type:"select",options:[["","—"],["libero","Libero"],["proprietario","Occupato dal proprietario"],["locato","Locato"],["altro","Altro"]]}),
-    fld("Note sull'occupazione (contratto, scadenza, canone)",C,"occupazioneNote"),
-    fld("Vincoli (paesaggistici, storici, urbanistici)",C,"vincoli",{type:"area",wide:true}),
-    fld("Servitù",C,"servitu",{type:"area",wide:true}),
-    fld("Convenzioni (edilizia convenzionata, PEEP)",C,"convenzioni",{type:"area",wide:true}),
-    fld("Condominio (spese, insoluti, delibere)",C,"condominio",{type:"area",wide:true}))));
-}
-function secSuperfici(el,p){
-  const tot=h("b"); const upd=()=>{ tot.textContent=fmt(supCommerciale(p),2)+" m²"; };
-  const c=card("Consistenza e superficie commerciale",h("p",{class:"hint"},"Superfici lorde misurate e coefficienti di ragguaglio. Scegliendo il tipo viene proposto il coefficiente del D.P.R. 138/1998 (Allegato C), sempre modificabile; per autorimesse e altre superfici indicalo tu."));
-  righe(c,p.superfici,"Superficie",r=>{
-    const coeff=fld("Coefficiente",r,"coeff",{num:true,on:upd});
-    const tipo=fld("Tipo",r,"tipo",{type:"select",options:TIPI_SUP.map(([v,l])=>[v,l]),on:()=>{ const t=TIPI_SUP.find(x=>x[0]===r.tipo); if(t&&t[2]!==""){ r.coeff=String(t[2]).replace(".",","); coeff.querySelector("input").value=r.coeff; } else if(t){ r.coeff=""; coeff.querySelector("input").value=""; } salvaPresto(); upd(); }});
-    return [fld("Descrizione",r,"descrizione"),tipo,fld("Superficie lorda (m²)",r,"lorda",{num:true,on:upd}),coeff];
-  },()=>({ id:uid(), descrizione:"", tipo:"altro", lorda:"", coeff:"" }),upd);
-  c.append(h("div",{class:"sum"},h("span",null,"Superficie commerciale"),tot)); upd();
+  const c=card("Conformità urbanistica",grid(
+    fld("Immobile ultimato prima del 1/09/1967",C,"ante67",{type:"select",options:SINO}),
+    fld("Edificio realizzato in conformità",C,"urbanistica",{type:"select",options:CONF}),
+    fld("Note sulla conformità",C,"urbanisticaNote",{type:"area",wide:true})),h("h2",{style:"margin-top:20px"},"Interventi"));
+  righe(c,C.interventi,"Intervento",r=>[fld("Descrizione intervento",r,"descrizione"),fld("Atto autorizzativo",r,"atto"),fld("Riferimento",r,"riferimento"),fld("Data",r,"data",{type:"date"})],()=>({ id:uid(), descrizione:"", atto:"", riferimento:"", data:"" }));
   el.append(c);
+  el.append(card("Conformità catastale",grid(fld("Esito",C,"catastale",{type:"select",options:CONF}),fld("Note",C,"catastaleNote",{type:"area",wide:true}))));
+  el.append(card("Servitù, vincoli e occupazione",grid(
+    fld("Servitù",C,"servitu",{type:"area",wide:true}),fld("Vincoli",C,"vincoli",{type:"area",wide:true}),fld("Condominio (spese, insoluti, delibere)",C,"condominio",{type:"area",wide:true}))));
+}
+function secSegmento(el,p){
+  const S=p.segmento;
+  el.append(card("Localizzazione e contratto",grid(fld("Zona",S,"zona",{ph:"es. centrale"}),fld("Quartiere",S,"quartiere"),fld("Tipo transazione",S,"contratto"),fld("Destinazione",S,"destinazione"),fld("Destinazione alternativa",S,"destAlternativa"))));
+  el.append(card("Tipologia immobiliare ed edilizia",grid(fld("1° livello",S,"tip1",{ph:"es. fabbricato"}),fld("2° livello",S,"tip2",{ph:"es. condominio"}),fld("Tipo costruzione",S,"tipoCostruzione",{ph:"es. seminuovo"}),fld("Condizione",S,"condizione",{ph:"es. abitabile"}),
+    fld("Tipologia edilizia",S,"tipEdilizia",{ph:"es. appartamento"}),fld("Tipologia costruttiva",S,"tipCostruttiva"),fld("Dimensione",S,"dimensione",{ph:"es. media"}))));
+  el.append(card("Domanda, offerta e prezzi",grid(fld("Compratori",S,"compratori"),fld("Venditori",S,"venditori"),fld("Motivo dell'acquisto",S,"motivo"),fld("Intermediari",S,"intermediari"),fld("Forma di mercato",S,"forma"),
+    fld("Prezzo medio di mercato (€/m²)",S,"prezzoMedio",{num:true}),fld("Fase del ciclo immobiliare",S,"fase"),fld("Tempo medio di vendita",S,"tempoVendita"),fld("Filtering",S,"filtering"),fld("Livello degli scambi",S,"scambi"))));
+  const sv=S.servizi;
+  el.append(card("Infrastrutture e servizi",grid(...[["autostrada","Prossimità ad autostrada"],["commerciali","Attività commerciali"],["mezzi","Servita da mezzi pubblici"],["strade","Strade di grande comunicazione"],["amministrative","Strutture amministrative"],["ricreative","Strutture ricreative"],["sanitarie","Strutture sanitarie"],["scolastiche","Strutture scolastiche"],["sportive","Strutture sportive"]].map(([k,l])=>fld(l,sv,k,{type:"select",options:SINO})))));
+  el.append(card("Indici di mercato",h("p",{class:"hint"},"Come sul portale CRIF: saggi espressi in forma decimale (0,05 = 5%). Servono per i prezzi marginali della data, del livello di piano e della superficie esterna."),grid(
+    fld("sp – saggio annuale di variazione dei prezzi (es. 0,05)",S,"sp",{num:true}),
+    fld("sl – saggio di variazione del livello di piano (es. 0,01)",S,"sl",{num:true}),
+    fld("c – rapporto complementare area/immobile (es. 0,30)",S,"c",{num:true}),
+    fld("Prezzo medio terreno (€/m²)",S,"prezzoTerreno",{num:true}),
+    fld("Note sul segmento",S,"note",{type:"area",wide:true}))));
+}
+function secDato(el,p){
+  const D=p.dato;
+  const tot=h("div"); const upd=()=>{ const s=superfici(p); tot.replaceChildren(h("div",{class:"sum"},h("span",null,"Totale superficie convenzionale"),h("b",null,fmt(s.convenzionale,2)+" m²")),h("div",{class:"sum"},h("span",null,"Totale superficie commerciale (senza superficie esterna)"),h("b",null,fmt(s.commerciale,2)+" m²"))); };
+  const secBox=h("div",{class:"rows"});
+  for(const [k,l] of SEC){ const o=D.sec[k]; secBox.append(h("div",{class:"row"},h("div",{class:"rhead"},h("b",null,l)),grid(fld("Misura (m²)",o,"mq",{num:true,on:upd}),fld("Rapporto mercantile",o,"r",{num:true,on:upd,ph:"es. 0,5"})))); }
+  el.append(card("Individuazione delle superfici",grid(
+    fld("Tipo misura",D,"tipoMisura",{ph:"es. da planimetria"}),fld("Elaborato grafico utilizzato",D,"elaborato",{ph:"es. planimetria catastale"}),
+    fld("Criterio di misurazione",D,"criterio",{type:"select",options:[["","—"],["SEL","S.E.L. – Superficie Esterna Lorda"],["SIL","S.I.L. – Superficie Interna Lorda"],["SIN","S.I.N. – Superficie Interna Netta"]]}),
+    fld("Superficie principale (m²)",D,"princ",{num:true,on:upd}),fld("Volume superficie principale (m³)",D,"volume",{num:true})),
+    h("h2",{style:"margin-top:20px"},"Superfici secondarie annesse e collegate"),
+    h("p",{class:"hint"},"Lascia vuote le voci che non ci sono. Il rapporto mercantile serve anche per i comparabili: indicalo per ogni voce presente nell'immobile o in un comparabile."),secBox,
+    h("h2",{style:"margin-top:20px"},"Superfici esterne"),
+    grid(fld("Superficie esterna di proprietà (m²)",D.est,"mq",{num:true,on:upd}),fld("Rapporto superficie esterna",D.est,"r",{num:true,on:upd}),fld("Superficie esterna condominiale (m²)",D,"estCond",{num:true}),fld("Quota condominiale",D,"quotaCond")),tot)); upd();
+  el.append(card("Caratteristiche quantitative",grid(
+    fld("Anno di costruzione",D,"anno"),fld("N. totale piani",D,"piani",{num:true}),fld("Data dello scambio (mese)",D,"dataScambio",{type:"month"}),
+    fld("Livello di piano",D,"piano",{num:true}),fld("N. vani utili",D,"vani",{num:true}),fld("N. servizi",D,"servizi",{num:true}),
+    fld("Aria condizionata",D,"aria",{type:"select",options:[["","—"],["1","Sì"],["0","No"]]}),fld("Altri impianti",D,"impianti",{wide:true,ph:"es. riscaldamento autonomo, impianto elettrico e idraulico"}),
+    fld("Stato di manutenzione edificio (punteggio)",D,"manutEd",{type:"select",options:PUNTI}),fld("Stato di manutenzione immobile (punteggio)",D,"manutImm",{type:"select",options:PUNTI}))));
+  const Q=D.qual;
+  el.append(card("Caratteristiche qualitative",grid(...[["inqAtm","Inquinamento atmosferico"],["inqEm","Inquinamento elettromagnetico"],["inqAcu","Inquinamento acustico"],["amianto","Presenza amianto"],["prospEd","Prospicienza dell'edificio"],["prospImm","Prospicienza dell'immobile"],["esposizione","Esposizione"],["panoramicita","Panoramicità"],["luminosita","Luminosità"],["funzionalita","Funzionalità"],["finiture","Qualità delle finiture"]].map(([k,l])=>fld(l,Q,k)))));
+  el.append(card("Classe energetica e stato locativo",grid(fld("Classe energetica",D,"classeEnergetica"),
+    fld("Stato locativo",D,"statoLocativo",{type:"select",options:[["","—"],["libero","Libero"],["occupato","Occupato dal proprietario"],["locato","Locato"]]}),
+    fld("Canone medio annuo di mercato (€)",D,"canoneMercato",{num:true}),fld("Canone di locazione annuo (€)",D,"canone",{num:true}),fld("Scadenza contratto",D,"scadenza",{type:"date"}))));
 }
 function secComparabili(el,p){
-  const P=p.mca.parametri;
-  el.append(h("div",{class:"notice"},"Metodo del confronto di mercato (MCA): servono almeno 3 compravendite recenti di immobili dello stesso segmento, con prezzo e data. La superficie di confronto deve essere misurata allo stesso modo per comparabili e immobile da stimare: di norma la superficie commerciale; in alternativa la sola superficie principale, con le superfici secondarie come «Altre caratteristiche»."));
-  el.append(card("Segmento di mercato",h("div",{class:"grid"},
-    fld("Segmento (zona, tipologia, destinazione)",p.mercato,"segmento",{type:"area",wide:true}),
-    fld("Fonti dei dati",p.mercato,"fonti",{type:"area",wide:true,ph:"es. atti di compravendita, banche dati, agenzie"}),
-    fld("Note",p.mercato,"note",{type:"area",wide:true}))));
-  const c=card("Comparabili");
-  righe(c,p.mca.comparabili,"Comparabile",r=>[
-    fld("Fonte",r,"fonte",{type:"select",options:[["Atto di compravendita","Atto di compravendita"],["Agenzia immobiliare","Agenzia immobiliare"],["Rilevazione diretta","Rilevazione diretta"],["Banca dati","Banca dati"],["Altro","Altro"]]}),
-    fld("Riferimento (notaio, rep., data)",r,"riferimento"),
-    fld("Indirizzo",r,"indirizzo"),
-    fld("Data del contratto",r,"data",{type:"date"}),
-    fld("Prezzo (€)",r,"prezzo",{num:true}),
-    fld("Superficie di confronto (m²)",r,"superficie",{num:true}),
-    fld("Piano",r,"piano",{num:true}),
-    fld("Servizi igienici (n.)",r,"bagni",{num:true}),
-    fld("Stato di manutenzione",r,"manutenzione",{type:"select",options:MANUT}),
-    fld("Peso nella media (%)",r,"peso",{num:true,ph:"vuoto = media semplice"}),
-    ...p.mca.extra.map(x=>{ r.extra=r.extra||{}; return fld((x.nome||"Caratteristica")+(x.unita?` (${x.unita})`:""),r.extra,x.id,{num:true}); }),
-    fld("Note",r,"note",{wide:true})
-  ],nuovoComparabile);
+  el.append(h("div",{class:"notice"},"Inserisci per ogni comparabile le stesse caratteristiche del Dato immobiliare. I rapporti mercantili delle superfici secondarie sono quelli dell'immobile da stimare. Il peso serve per la media ponderata (vuoto per tutti = media semplice)."));
+  const c=card("Tabella dei dati – comparabili");
+  righe(c,p.mca.comparabili,"Comparabile",r=>{
+    r.sec=r.sec||{}; const sec=h("div",{class:"wide"},h("label",{class:"f"},"Superfici secondarie (m²)"),grid(...SEC.map(([k,l])=>fld(l,r.sec,k,{num:true}))));
+    return [
+      fld("Fonte",r,"fonte",{type:"select",options:[["Atto di compravendita","Atto di compravendita"],["Agenzia immobiliare","Agenzia immobiliare"],["Rilevazione diretta","Rilevazione diretta"],["Banca dati","Banca dati"],["Altro","Altro"]]}),
+      fld("Riferimento",r,"riferimento"),fld("Indirizzo",r,"indirizzo",{wide:true}),
+      fld("Data dello scambio (mese)",r,"dataScambio",{type:"month"}),fld("Prezzo di mercato (€)",r,"prezzo",{num:true}),fld("Superficie principale (m²)",r,"princ",{num:true}),
+      sec,
+      fld("Superficie esterna (m²)",r,"est",{num:true}),fld("Servizi (n.)",r,"servizi",{num:true}),
+      fld("Manutenzione immobile (punteggio)",r,"manutImm",{type:"select",options:PUNTI}),fld("Manutenzione edificio (punteggio)",r,"manutEd",{type:"select",options:PUNTI}),
+      fld("Livello di piano",r,"piano",{num:true}),fld("Aria condizionata",r,"aria",{type:"select",options:[["","—"],["1","Sì"],["0","No"]]}),
+      ...p.mca.extra.map(x=>{ r.extra=r.extra||{}; return fld((x.nome||"Caratteristica")+(x.unita?` (${x.unita})`:""),r.extra,x.id,{num:true}); }),
+      fld("Peso nella media ponderata (%)",r,"peso",{num:true}),
+      fld("Note",r,"note",{wide:true})];
+  },nuovoComparabile);
   el.append(c);
-  el.append(card("Prezzi marginali",h("p",{class:"hint"},"Parametri per gli aggiustamenti. Una caratteristica senza parametro non viene considerata. Il prezzo marginale della superficie è calcolato in automatico (prezzo medio minimo dei comparabili)."),h("div",{class:"grid"},
-    fld("Variazione annua dei prezzi (%)",P,"saggioAnnuo",{num:true,ph:"es. −2 se i prezzi calano"}),
-    fld("Livello di piano: rapporto per piano (%)",P,"rapportoPiano",{num:true}),
-    fld("Costo di un bagno (€)",P,"costoBagno",{num:true}),
-    fld("Deprezzamento del bagno (%)",P,"deprezzamentoBagno",{num:true}),
-    fld("Manutenzione: costo per livello (€/m²)",P,"costoManutenzione",{num:true}),
-    fld("Arrotondamento del valore (€)",P,"arrotondamento",{num:true}),
-    fld("Soglia di divergenza accettabile (%)",P,"soglia",{num:true}),
-    fld("Superficie dell'immobile nel confronto (m²)",p.mca,"supConfronto",{num:true,ph:"vuoto = superficie commerciale"}))));
-  const cx=card("Altre caratteristiche (facoltative)",h("p",{class:"hint"},"Per caratteristiche non previste (es. posto auto, giardino, vista): indica il prezzo marginale per unità e il valore dell'immobile da stimare; i valori dei comparabili si inseriscono nelle loro schede."));
-  righe(cx,p.mca.extra,"Caratteristica",x=>[fld("Nome",x,"nome"),fld("Unità di misura",x,"unita",{ph:"es. n., m², punti"}),fld("Prezzo marginale (€ per unità)",x,"prezzo",{num:true}),fld("Valore dell'immobile da stimare",x,"soggetto",{num:true})],()=>({ id:uid(), nome:"", unita:"", prezzo:"", soggetto:"" }),()=>render());
+  const K=p.mca.costi;
+  el.append(card("Prezzi marginali da costo",h("p",{class:"hint"},"Costi per unità di differenza, come nella Tabella dei prezzi marginali CRIF. Una voce vuota non viene corretta."),grid(
+    fld("Servizi: costo per servizio (€)",K,"servizio",{num:true}),fld("Manutenzione immobile: € per punto",K,"manutImm",{num:true}),
+    fld("Manutenzione edificio: € per punto",K,"manutEd",{num:true}),fld("Aria condizionata (€)",K,"aria",{num:true}),
+    fld("Arrotondamento del valore (€)",p.mca,"arrotondamento",{num:true}),fld("Soglia di divergenza (%) – facoltativa",p.mca,"soglia",{num:true}))));
+  const cx=card("Altre caratteristiche (facoltative)",h("p",{class:"hint"},"Per caratteristiche non previste dalla tabella CRIF: prezzo marginale per unità e valore dell'immobile da stimare; i valori dei comparabili si inseriscono nelle loro schede."));
+  righe(cx,p.mca.extra,"Caratteristica",x=>[fld("Nome",x,"nome"),fld("Unità di misura",x,"unita"),fld("Prezzo marginale (€ per unità)",x,"prezzo",{num:true}),fld("Valore dell'immobile da stimare",x,"soggetto",{num:true})],()=>({ id:uid(), nome:"", unita:"", prezzo:"", soggetto:"" }),()=>render());
   el.append(cx);
 }
-function tabellaMCA(r,p){
-  const comps=r.comps, head=["",...comps.map((c,i)=>"C"+(i+1))];
-  const t1=[ ["Indirizzo",...comps.map(c=>c.indirizzo||"—")], ["Data contratto",...comps.map(c=>itData(c.data)||"—")], ["Prezzo",...comps.map(c=>eur(n0(c.prezzo)))], ["Superficie (m²)",...comps.map(c=>fmt(n0(c.superficie),2))], ["Prezzo unitario (€/m²)",...comps.map(c=>fmt(n0(c.prezzo)/n0(c.superficie),2))] ];
-  const t2=r.righe.filter(x=>x.attiva).map(x=>[x.nome+" · "+x.nota,...x.valori.map(v=>isFinite(v.df)?`${fmt(v.df,x.k==="data"?1:2)} × ${fmt(v.pm,2)} = ${fmt(v.adj,0)}`:"0")]);
-  const t3=[["Prezzo corretto",...r.corretti.map(v=>eur(v))],...(r.pesi?[["Peso nella media",...r.pesi.map(w=>fmt(w*100,1)+"%")]]:[])];
-  return { head, t1, t2, t3 };
+function htmlTable(head,rows,opt={}){
+  return h("div",{class:"tw"},h("table",{class:"t"},h("thead",null,h("tr",null,head.map(x=>h("th",null,x)))),h("tbody",null,rows.map((r,i)=>h("tr",{class:(opt.tot&&opt.tot.includes(i))?"tot":null},r.map(c=>h("td",null,c)))))));
 }
-function htmlTable(head,rows,totRows){
-  return h("div",{class:"tw"},h("table",{class:"t"},h("thead",null,h("tr",null,head.map(x=>h("th",null,x)))),h("tbody",null,rows.map(r=>h("tr",null,r.map(c=>h("td",null,c)))),(totRows||[]).map(r=>h("tr",{class:"tot"},r.map(c=>h("td",null,c)))))));
+function tabelleMCA(r,p){
+  const C=r.comps, lettere=C.map((c,i)=>String.fromCharCode(65+i));
+  const head=["Prezzo e caratteristica",...lettere.map(l=>"Comparabile "+l),"Da stimare"];
+  const att=r.righe.filter(x=>x.attiva);
+  const dati=[["Fonte",...C.map(c=>c.fonte||"—"),""],["Prezzo di mercato (€)",...C.map(c=>fmtv(n0(c.prezzo))),""],["Indirizzo",...C.map(c=>c.indirizzo||"—"),[p.immobile.indirizzo,p.immobile.civico].filter(Boolean).join(" ")],
+    ...att.map(x=>[`${x.nome} (${x.unita})`,...x.valori.map(v=>isFinite(v.vc)?fmtv(v.vc):"—"),x.k==="data"?"0":(isFinite(x.valSog)?fmtv(x.valSog):"—")])];
+  const marg=[["Prezzo di mercato (€)",...C.map(c=>fmtv(n0(c.prezzo)))],...att.map(x=>[`${x.nome} (€)`,...x.valori.map(v=>fmtv(v.pm))])];
+  const val=[["Prezzo di mercato (€)",...C.map(c=>fmtv(n0(c.prezzo)))],...att.map(x=>[`${x.nome} (€)`,...x.valori.map(v=>fmtv(v.adj))]),["Prezzo corretto (€)",...r.corretti.map(v=>fmtv(v))],["Pesi per la media ponderata",...r.pesi.map(w=>fmt(w*100,0)+"%")]];
+  return { lettere, head, dati, marg, val };
 }
 function secValutazione(el,p){
-  const r=calcolaMCA(p);
+  const r=calcolaMCA(p), A=calcolaAssicurabile(p);
   for(const a of r.avvisi) el.append(h("div",{class:"notice err"},a));
-  if(!r.comps.length||!(r.sog.S>0)){ el.append(h("div",{class:"empty"},"Il calcolo compare quando ci sono la superficie commerciale e almeno un comparabile con prezzo e superficie.")); return; }
-  el.append(h("div",{class:"result"},h("small",null,"VALORE DI MERCATO STIMATO"),h("div",{class:"big"},eur(r.valore)),
-    h("small",null,`${eur(r.unitario,2)}/m² su ${fmt(r.sog.S,2)} m² ${r.sog.supDaConfronto?"di confronto":"commerciali"} · ${r.pesi?"media ponderata":"media"} prezzi corretti ${eur(r.media)}`+(r.detrazioni?` − detrazioni ${eur(r.detrazioni)}`:"")+` · arrotondamento a ${eur(r.passo)}`)));
-  el.append(h("div",{class:"notice "+(r.attendibile?"ok":"err")},`Divergenza percentuale assoluta tra i prezzi corretti: ${fmt(r.divergenza,2)}% (soglia ${fmt(r.soglia,1)}%) — ${r.attendibile?"stima attendibile":"verificare comparabili e parametri"}.`));
-  const T=tabellaMCA(r,p);
-  el.append(card("Comparabili",htmlTable(T.head,T.t1)));
-  el.append(card("Aggiustamenti (differenza × prezzo marginale)",h("p",{class:"hint"},"Differenza = immobile da stimare − comparabile. Per la data: mesi tra il contratto e la data di riferimento della stima."),htmlTable(T.head,T.t2,T.t3)));
-  el.append(card("Immobile da stimare",htmlTable(["Caratteristica","Valore"],[
-    ["Data di riferimento",itData(r.dv)],[r.sog.supDaConfronto?"Superficie di confronto (m²)":"Superficie commerciale (m²)",fmt(r.sog.S,2)],["Piano",isFinite(r.sog.L)?fmt(r.sog.L):"—"],["Servizi igienici",isFinite(r.sog.N)?fmt(r.sog.N):"—"],["Stato di manutenzione",(MANUT.find(m=>m[0]===String(p.immobile.manutenzione))||["","—"])[1]],
-    ...p.mca.extra.map(x=>[x.nome||"Caratteristica",isFinite(num(x.soggetto))?fmt(num(x.soggetto),2):"—"])])));
+  if(r.comps.length&&r.sog.princ>0){
+    el.append(h("div",{class:"result"},h("small",null,"VALORE STIMATO (MEDIA "+(r.ponderata?"PONDERATA":"")+" DEI PREZZI CORRETTI, ARROTONDATA)"),h("div",{class:"big"},eur(r.valoreStimato)),
+      h("small",null,`Media ${eur(r.media,2)} · arrotondamento ${eur(r.passo)}`+(r.elementi?` · elementi che modificano il valore ${eur(r.elementi)} · valore finale ${eur(r.valore)}`:""))));
+    const T=tabelleMCA(r,p);
+    el.append(card("Tabella dei dati",htmlTable(T.head,T.dati)));
+    el.append(card("Tabella dei prezzi marginali",htmlTable(["Prezzo e caratteristica",...T.lettere.map(l=>"Comparabile "+l)],T.marg),
+      h("p",{class:"hint",style:"margin-top:12px"},r.righe.filter(x=>x.attiva).map(x=>`${x.nome}: ${x.nota}`).join(" · "))));
+    el.append(card("Tabella di valutazione",htmlTable(["Prezzo e caratteristica",...T.lettere.map(l=>"Comparabile "+l)],T.val,{tot:[T.val.length-2]}),
+      isFinite(r.divergenza)?h("p",{class:"hint",style:"margin-top:12px"},`Divergenza percentuale assoluta tra i prezzi corretti: ${fmt(r.divergenza,2)}% (dato informativo, non presente nel portale CRIF).`):null));
+  } else el.append(h("div",{class:"empty"},"La valutazione compare quando ci sono la superficie principale (Dato immobiliare) e almeno un comparabile con prezzo e superficie principale."));
+  const As=p.assicurabile;
+  const res=h("div"); const upd=()=>{ const a=calcolaAssicurabile(p); res.replaceChildren(h("div",{class:"sum"},h("span",null,`Superficie totale ${fmt(a.superficie,2)} m² × ${eur(n0(As.costoUnitario))}/m² = ${eur(a.costo)}`),h("b",null,a.ok?eur(a.valore):"—"))); };
+  const ca=card("Valore assicurabile (costo di ricostruzione a nuovo)",h("p",{class:"hint"},"Superfici (di norma SEL) per il costo di costruzione; il coefficiente vuoto vale 1. Il costo è arrotondato ai 1.000 €."),grid(fld("Costo unitario di costruzione (€/m²)",As,"costoUnitario",{num:true,on:upd})));
+  righe(ca,As.righe,"Superficie",x=>[fld("Descrizione",x,"descrizione"),fld("Misura (m²)",x,"mq",{num:true,on:upd}),fld("Coefficiente",x,"coeff",{num:true,on:upd,ph:"1"})],()=>({ id:uid(), descrizione:"", mq:"", coeff:"" }),upd);
+  ca.append(res); upd(); el.append(ca);
 }
 function secConclusione(el,p){
   const C=p.conclusione, r=calcolaMCA(p);
-  const c=card("Detrazioni",h("p",{class:"hint"},"Costi da sottrarre al valore (regolarizzazioni urbanistiche o catastali, lavori indispensabili, spese condominiali insolute)."));
-  righe(c,C.detrazioni,"Detrazione",d=>[fld("Descrizione",d,"descrizione"),fld("Importo (€)",d,"importo",{num:true})],()=>({ id:uid(), descrizione:"", importo:"" }),()=>render());
+  const c=card("Elementi che modificano il valore di mercato",h("p",{class:"hint"},"Importi con segno: negativi per detrazioni (regolarizzazioni, lavori, spese insolute), positivi per aggiunte."));
+  righe(c,C.detrazioni,"Elemento",d=>[fld("Descrizione",d,"descrizione"),fld("Importo (€, con segno)",d,"importo",{num:true})],()=>({ id:uid(), descrizione:"", importo:"" }),()=>render());
   el.append(c);
-  if(r.ok) el.append(h("div",{class:"result"},h("small",null,"VALORE DI MERCATO"),h("div",{class:"big"},eur(r.valore)),h("small",null,"euro "+inLettere(r.valore)+"/00")));
-  el.append(card("Conclusioni",h("div",{class:"grid"},
+  if(r.ok) el.append(h("div",{class:"result"},h("small",null,"VALORE DI STIMA DEL LOTTO"),h("div",{class:"big"},eur(r.valore)),h("small",null,"euro "+inLettere(r.valore)+"/00")));
+  el.append(card("Note sulla valutazione",grid(
+    fld("Giudizio sulla commerciabilità",C,"giudizio",{ph:"es. medio-basso"}),
     fld("Considerazioni finali",C,"considerazioni",{type:"area",wide:true,rows:5}),
-    fld("Assunzioni e limiti della stima",C,"assunzioni",{type:"area",wide:true,rows:4,ph:"es. misure, documentazione fornita, verifiche non eseguite"}),
+    fld("Assunzioni e condizioni limitanti",C,"assunzioni",{type:"area",wide:true,rows:4}),
     fld("Luogo",C,"luogo"))));
   el.append(h("div",{class:"toolbar"},h("button",{class:"btn danger small",type:"button",onclick:async()=>{ if(!confirm("Eliminare definitivamente questa perizia da questo dispositivo? Fai prima un backup se ti serve.")) return; await DB.del(p.id); toast("Perizia eliminata."); vistaElenco(); }},"Elimina perizia")));
 }
@@ -571,13 +671,13 @@ function secConclusione(el,p){
 /* ---------- backup ---------- */
 function scarica(blob,nome){ const a=h("a",{href:URL.createObjectURL(blob),download:nome}); document.body.append(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },2000); }
 function slug(s){ return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^\w]+/g,"_").replace(/^_|_$/g,"").slice(0,60)||"perizia"; }
-$("btnBackup").addEventListener("click",()=>{ if(!corrente) return; scarica(new Blob([JSON.stringify({app:"perizie-private",versione:1,perizia:corrente},null,1)],{type:"application/json"}),`Backup_${slug(nomePerizia(corrente))}_${oggi()}.json`); toast("Backup salvato: conservalo in Drive o sul computer."); });
+$("btnBackup").addEventListener("click",()=>{ if(!corrente) return; scarica(new Blob([JSON.stringify({app:"perizie-private",versione:2,perizia:corrente},null,1)],{type:"application/json"}),`Backup_${slug(nomePerizia(corrente))}_${oggi()}.json`); toast("Backup salvato: conservalo in Drive o sul computer."); });
 $("fileImport").addEventListener("change",async e=>{
   const f=e.target.files[0]; e.target.value=""; if(!f) return;
   try{ const j=JSON.parse(await f.text()); const p=j&&j.perizia; if(!p||!p.id||!p.incarico) throw new Error("file non riconosciuto");
     const esist=(await DB.all()).find(x=>x.id===p.id);
     if(esist&&!confirm("Questa perizia è già sul dispositivo. Sostituirla con il backup?")) return;
-    await DB.put(completa(p)); toast("Perizia importata."); apri(p);
+    migra(p); await DB.put(p); toast("Perizia importata."); apri(p);
   }catch(err){ toast("Importazione non riuscita: "+err.message,5000); }
 });
 
@@ -603,33 +703,36 @@ function makeZip(files){
   return new Blob([...parts,...central,new Uint8Array(end.buffer)],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
 }
 const xe=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"");
+const SN=v=>({si:"Sì",no:"No"}[v]||"");
 function buildDocx(p){
   const GOLD="84754E", INK="333333", MUTED="7A7A7A", LINE="D9D4C7";
-  const CW=9638; // larghezza utile in twip (A4, margini 2 cm)
+  const CW=9638;
   const run=(t,o={})=>{ const pr=(o.b?"<w:b/>":"")+(o.i?"<w:i/>":"")+(o.caps?"<w:caps/>":"")+`<w:color w:val="${o.color||INK}"/>`+(o.sp?`<w:spacing w:val="${o.sp}"/>`:"")+`<w:sz w:val="${o.sz||20}"/><w:szCs w:val="${o.sz||20}"/>`;
     return String(t??"").split("\n").map((ln,i)=>(i?`<w:r><w:rPr>${pr}</w:rPr><w:br/></w:r>`:"")+`<w:r><w:rPr>${pr}</w:rPr><w:t xml:space="preserve">${xe(ln)}</w:t></w:r>`).join(""); };
-  const par=(inner,o={})=>`<w:p><w:pPr>${o.keep?"<w:keepNext/>":""}${o.border?`<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="4" w:color="${GOLD}"/></w:pBdr>`:""}<w:spacing w:before="${o.before||0}" w:after="${o.after??100}"/>${o.jc?`<w:jc w:val="${o.jc}"/>`:""}</w:pPr>${inner}</w:p>`;
+  const par=(inner,o={})=>`<w:p><w:pPr>${o.keep?"<w:keepNext/>":""}${o.pb?"<w:pageBreakBefore/>":""}${o.border?`<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="4" w:color="${GOLD}"/></w:pBdr>`:""}<w:spacing w:before="${o.before||0}" w:after="${o.after??100}"/>${o.jc?`<w:jc w:val="${o.jc}"/>`:""}</w:pPr>${inner}</w:p>`;
   const P=(t,o={})=>par(run(t,o),o);
-  const H1=t=>par(run(t,{b:false,caps:true,sp:30,sz:22,color:GOLD}),{before:260,after:120,keep:true,border:true});
+  const H1=(t,o={})=>par(run(t,{caps:true,sp:30,sz:22,color:GOLD}),{before:260,after:120,keep:true,border:true,pb:o.pb});
   const H2=t=>par(run(t,{b:true,sz:19}),{before:140,after:60,keep:true});
   const cell=(t,w,o={})=>`<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${o.fill?`<w:shd w:val="clear" w:color="auto" w:fill="${o.fill}"/>`:""}</w:tcPr><w:p><w:pPr><w:spacing w:before="20" w:after="20"/>${o.jc?`<w:jc w:val="${o.jc}"/>`:""}</w:pPr>${run(t,{sz:o.sz||17,b:o.b,color:o.color})}</w:p></w:tc>`;
   const table=(rows,widths,o={})=>{ const tot=widths.reduce((a,b)=>a+b,0), ws=widths.map(w=>Math.round(w/tot*CW));
     const b=`<w:tblBorders><w:top w:val="single" w:sz="4" w:color="${LINE}"/><w:bottom w:val="single" w:sz="4" w:color="${LINE}"/><w:insideH w:val="single" w:sz="4" w:color="${LINE}"/><w:left w:val="nil"/><w:right w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders>`;
+    const bold=o.bold||[];
     return `<w:tbl><w:tblPr><w:tblW w:w="${CW}" w:type="dxa"/>${b}<w:tblLayout w:type="fixed"/><w:tblCellMar><w:left w:w="70" w:type="dxa"/><w:right w:w="70" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${ws.map(w=>`<w:gridCol w:w="${w}"/>`).join("")}</w:tblGrid>`+
-      rows.map((r,ri)=>`<w:tr><w:trPr><w:cantSplit/>${ri===0&&o.head?"<w:tblHeader/>":""}</w:trPr>${r.map((c,ci)=>cell(c,ws[ci],{ fill:ri===0&&o.head?"F1EDE3":(o.totLast&&ri===rows.length-1?"F1EDE3":null), b:(ri===0&&o.head)||(o.totLast&&ri===rows.length-1), sz:ri===0&&o.head?15:17, color:ri===0&&o.head?MUTED:INK, jc:ci>0&&o.right?"right":null })).join("")}</w:tr>`).join("")+`</w:tbl>`+P("",{after:60}); };
-  const kv=rows=>table(rows.filter(r=>r[1]!==undefined&&r[1]!==null&&String(r[1]).trim()!==""),[34,66]);
+      rows.map((r,ri)=>{ const hd=ri===0&&o.head, bb=bold.includes(ri); return `<w:tr><w:trPr><w:cantSplit/>${hd?"<w:tblHeader/>":""}</w:trPr>${r.map((c,ci)=>cell(c,ws[ci],{ fill:hd||bb?"F1EDE3":null, b:hd||bb, sz:hd?15:(o.sz||17), color:hd?MUTED:INK, jc:ci>0&&o.right?"right":null })).join("")}</w:tr>`; }).join("")+`</w:tbl>`+P("",{after:60}); };
+  const kv=rows=>{ const rr=rows.filter(r=>r[1]!==undefined&&r[1]!==null&&String(r[1]).trim()!==""); return rr.length?table(rr,[38,62]):""; };
 
-  const I=p.incarico, M=p.immobile, C=p.conformita, r=calcolaMCA(p);
+  const I=p.incarico, M=p.immobile, C=p.conformita, V=p.convenzione, S=p.segmento, D=p.dato, r=calcolaMCA(p), As=calcolaAssicurabile(p), sup=superfici(p);
   const scopi={compravendita:"compravendita",divisione:"divisione",successione:"successione / donazione",garanzia:"garanzia / finanziamento",contenzioso:"contenzioso",patrimoniale:"valutazione patrimoniale",altro:I.scopoAltro||"altro"};
   const ubic=[[M.indirizzo,M.civico].filter(Boolean).join(" "),[M.cap,M.comune].filter(Boolean).join(" ")+(M.provincia?` (${M.provincia})`:"")].filter(s=>s.trim()).join(", ");
   const B=[];
-  B.push(par(run("RELAZIONE DI STIMA",{caps:true,sp:40,sz:34,color:INK}),{after:40}));
-  B.push(par(run("Valore di mercato · metodo del confronto di mercato (MCA)",{sz:20,color:MUTED}),{after:200,border:true}));
-  B.push(kv([["Perizia n.",I.numero],["Immobile",ubic],["Committente",I.committente],["Data di riferimento",itData(I.dataValutazione)],["Perito",[I.perito,I.qualifica].filter(Boolean).join(" · ")]]));
+  B.push(par(run("RAPPORTO DI VALUTAZIONE",{caps:true,sp:40,sz:34}),{after:40}));
+  B.push(par(run("Stima del valore di mercato · Market Comparison Approach (MCA)",{sz:20,color:MUTED}),{after:200,border:true}));
+  B.push(kv([["Perizia n.",I.numero],["Tipologia di perizia",I.tipologia],["Unità immobiliare",M.nomeUnita],["Ubicazione",ubic],["Committente",I.committente],["Data sopralluogo",itData(I.dataSopralluogo)],["Data della valutazione",itData(I.dataValutazione)],["Perito",[I.perito,I.qualifica].filter(Boolean).join(" · ")]]));
+  if(r.ok) B.push(kv([["Valore di mercato",eur(r.valore)],["Valore assicurabile",As.ok?eur(As.valore):""],["Giudizio sulla commerciabilità",p.conclusione.giudizio]]));
 
   B.push(H1("1. Incarico"));
-  B.push(P(`Il sottoscritto ${I.perito||"「DA FORNIRE」"}${I.qualifica?", "+I.qualifica:""}, su incarico di ${I.committente||"「DA FORNIRE」"}${I.dataIncarico?" conferito in data "+itData(I.dataIncarico):""}, ha redatto la presente relazione allo scopo di determinare il più probabile valore di mercato dell'immobile descritto di seguito, ai fini di ${scopi[I.scopo]||I.scopo}, alla data del ${itData(I.dataValutazione)||"「DA FORNIRE」"}.`));
-  B.push(kv([["Committente",I.committente],["C.F. / P. IVA",I.cf],["Recapiti",I.recapiti],["Indirizzo",I.indirizzoCommittente],["Data sopralluogo",itData(I.dataSopralluogo)],["Presenti al sopralluogo",I.presenti]]));
+  B.push(P(`Il sottoscritto ${I.perito||"「DA FORNIRE」"}${I.qualifica?", "+I.qualifica:""}, su incarico di ${I.committente||"「DA FORNIRE」"}${I.dataIncarico?" conferito in data "+itData(I.dataIncarico):""}, ha redatto il presente rapporto allo scopo di determinare il più probabile valore di mercato dell'immobile descritto di seguito, ai fini di ${scopi[I.scopo]||I.scopo}, alla data del ${itData(I.dataValutazione)||"「DA FORNIRE」"}.`));
+  B.push(kv([["Committente",I.committente],["C.F. / P. IVA",I.cf],["Recapiti",I.recapiti],["Indirizzo",I.indirizzoCommittente],["Finalità",I.finalita],["Presenti al sopralluogo",I.presenti]]));
 
   B.push(H1("2. Documentazione esaminata"));
   const docs=DOC_STD.filter(([k])=>p.documenti.voci[k]&&p.documenti.voci[k].ok);
@@ -637,53 +740,64 @@ function buildDocx(p){
   else B.push(P("Nessun documento indicato.",{color:MUTED}));
   if(p.documenti.note) B.push(P(p.documenti.note,{before:80}));
 
-  B.push(H1("3. Identificazione dell'immobile"));
-  B.push(kv([["Ubicazione",ubic],["Scala / interno / piano",[M.scala&&"scala "+M.scala,M.interno&&"int. "+M.interno,M.piano!==""&&M.piano!=null&&"piano "+M.piano].filter(Boolean).join(", ")],["Tipologia",M.tipologia],["Anno di costruzione",M.anno],["Stato di manutenzione",(MANUT.find(m=>m[0]===String(M.manutenzione))||["",""])[1]],["Servizi igienici",M.bagni],["Ascensore",{si:"Sì",no:"No"}[M.ascensore]],["Classe energetica",M.classeEnergetica]]));
-  if(M.descrizione){ B.push(H2("Descrizione e consistenza")); B.push(P(M.descrizione)); }
-  if(M.impianti){ B.push(H2("Impianti e finiture")); B.push(P(M.impianti)); }
-  if(M.confini){ B.push(H2("Confini")); B.push(P(M.confini)); }
-  if(M.note){ B.push(P(M.note)); }
+  B.push(H1("3. Due diligence"));
+  B.push(H2("Ubicazione"));
+  B.push(kv([["Nome unità immobiliare",M.nomeUnita],["Indirizzo",ubic],["Scala / interno / piano",[M.scala&&"scala "+M.scala,M.interno&&"int. "+M.interno,M.piano!==""&&M.piano!=null&&"piano "+M.piano].filter(Boolean).join(", ")],["Tipologia",M.tipologia],["Descrizione consistenza",M.descrizione],["Descrizione confini",M.confini],["Note",M.note]]));
+  const tit=p.titolarita.filter(t=>t.intestatario||t.notaio||t.repertorio);
+  if(tit.length){ B.push(H2("Identificazione titolarità")); for(const t of tit) B.push(kv([["Intestatario",t.intestatario],["Provenienza",t.provenienza],["Diritto",t.diritto==="Superficie"?"Proprietà superficiaria":t.diritto],["Quota di proprietà",t.quota?t.quota+"%":""],["Usufrutto",SN(t.usufrutto)+(t.quotaUsufrutto?` (${t.quotaUsufrutto}%)`:"")],["Nuda proprietà",SN(t.nudaProprieta)+(t.quotaNuda?` (${t.quotaNuda}%)`:"")],["Atto",[t.notaio&&"Notaio "+t.notaio,t.repertorio&&"rep. "+t.repertorio,t.raccolta&&"fasc./racc. "+t.raccolta,t.dataAtto&&"del "+itData(t.dataAtto)].filter(Boolean).join(", ")],["Prezzo di compravendita",has(t.prezzo)?eur(num(t.prezzo)):""],["Corrispondenza puntuale atto / oggetto di stima",SN(t.corrispondenza)],["Manutenzioni successive all'acquisto",SN(t.manutenzioniSuccessive)],["Conformità ai dati notarili e catastali",SN(t.conformeAtto)],["Note sulla conformità",t.noteConformita]])); }
+  if(V.presente==="si"||V.riferimento){ B.push(H2("Convenzione comunale")); B.push(kv([["Riferimento",V.riferimento],["Data",itData(V.data)],["Tipologia",V.tipologia],["Prezzo massimo di cessione (da convenzione)",has(V.prezzoMax)?eur(num(V.prezzoMax),2):""],["Prezzo massimo di cessione attualizzato",has(V.prezzoAttualizzato)?eur(num(V.prezzoAttualizzato),2):""],["Piano di zona",SN(V.pianoZona)],["Presenza altri vincoli",SN(V.altriVincoli)],["Edilizia conv. fuori piano di zona",SN(V.fuoriPiano)],["Recupero convenzionato",SN(V.recupero)],["Vincolo Belle Arti",SN(V.belleArti)],["Note",V.note]])); }
   const cat=p.catasto.filter(c=>c.foglio||c.particella||c.categoria);
-  if(cat.length){ B.push(H2("Dati catastali")); B.push(table([["Catasto","Comune","Fg.","Part.","Sub","Cat.","Cl.","Consist.","Sup. m²","Rendita €"],...cat.map(c=>[c.catasto,[c.comune,c.sezione&&"sez. "+c.sezione].filter(Boolean).join(" "),c.foglio,c.particella,c.sub,c.categoria,c.classe,c.consistenza,c.superficie,c.rendita])],[11,15,6,8,6,7,5,10,9,10],{head:true})); }
-  const tit=p.titolarita.filter(t=>t.intestatario);
-  if(tit.length){ B.push(H2("Titolarità e provenienza")); B.push(table([["Intestatario","Diritto","Quota","Provenienza","Atto"],...tit.map(t=>[t.intestatario,t.diritto,t.quota?t.quota+"%":"",t.provenienza,[t.notaio&&"Notaio "+t.notaio,t.repertorio&&"rep. "+t.repertorio,t.raccolta&&"racc. "+t.raccolta,t.dataAtto&&"del "+itData(t.dataAtto),t.trascrizione&&"trascr. "+t.trascrizione].filter(Boolean).join(", ")])],[22,13,8,14,43],{head:true})); }
+  if(cat.length){ B.push(H2("Identificazione catastale")); B.push(table([["Catasto","Comune","Fg.","Part.","Sub","Cat.","Cl.","Consist.","Sup. m²","Escl. a.s.","Rendita €","Conforme"],...cat.map(c=>[c.catasto,c.comune,c.foglio,c.particella,c.sub,c.categoria,c.classe,c.consistenza,c.superficie,c.supEscl,c.rendita,SN(c.conforme)])],[10,10,5,7,5,6,4,9,7,7,9,8],{head:true,sz:16}));
+    for(const c of cat.filter(c=>c.classeEnergetica||c.epgl)) B.push(P(`APE (fg. ${c.foglio} part. ${c.particella} sub ${c.sub}): classe ${c.classeEnergetica||"—"}`+(c.epgl?`, EPgl ${c.epgl} kWh/m² anno`:"")+(c.co2?`, emissioni CO₂ ${c.co2}`:"")+(c.dataApe?`, certificato del ${itData(c.dataApe)}`:"")+(c.certificatore?`, certificatore ${c.certificatore}`:"")+(c.codCertificatore?` (${c.codCertificatore})`:"")+(c.annoApe?`; anno di costruzione da APE ${c.annoApe}`:"")+(c.supRiscaldata?`; superficie riscaldata ${c.supRiscaldata} m²`:"")+".",{sz:17})); }
+  B.push(H2("Conformità urbanistica"));
+  B.push(kv([["Immobile ultimato prima del 1/09/1967",SN(C.ante67)],["Edificio realizzato in conformità",C.urbanistica],["Note sulla conformità",C.urbanisticaNote],["Titoli edilizi (note)",C.titoli]]));
+  if(C.interventi.length) B.push(table([["Intervento","Atto autorizzativo","Riferimento","Data"],...C.interventi.map(x=>[x.descrizione,x.atto,x.riferimento,itData(x.data)])],[34,26,24,16],{head:true}));
+  B.push(kv([["Conformità catastale",C.catastale],["Note catastali",C.catastaleNote],["Servitù",C.servitu],["Vincoli",C.vincoli],["Condominio",C.condominio]]));
 
-  B.push(H1("4. Conformità, vincoli e occupazione"));
-  B.push(kv([["Costruito prima del 1/9/1967",{si:"Sì",no:"No"}[C.ante67]],["Conformità urbanistica",C.urbanistica],["Titoli edilizi",C.titoli],["Note urbanistiche",C.urbanisticaNote],["Conformità catastale",C.catastale],["Note catastali",C.catastaleNote],["Stato di occupazione",{libero:"Libero",proprietario:"Occupato dal proprietario",locato:"Locato",altro:"Altro"}[C.occupazione]],["Note sull'occupazione",C.occupazioneNote],["Vincoli",C.vincoli],["Servitù",C.servitu],["Convenzioni",C.convenzioni],["Condominio",C.condominio]]));
+  B.push(H1("4. Analisi di mercato"));
+  B.push(H2("Segmento di mercato"));
+  const sv=S.servizi, svs=[["autostrada","prossimità ad autostrada"],["commerciali","attività commerciali"],["mezzi","mezzi pubblici"],["strade","strade di grande comunicazione"],["amministrative","strutture amministrative"],["ricreative","strutture ricreative"],["sanitarie","strutture sanitarie"],["scolastiche","strutture scolastiche"],["sportive","strutture sportive"]];
+  B.push(kv([["Localizzazione",[S.zona&&"zona "+S.zona,S.quartiere&&"quartiere "+S.quartiere].filter(Boolean).join(", ")],["Tipo transazione",S.contratto],["Destinazione",[S.destinazione,S.destAlternativa&&"alternativa: "+S.destAlternativa].filter(Boolean).join(" · ")],["Tipologia immobiliare",[S.tip1,S.tip2,S.tipoCostruzione,S.condizione].filter(Boolean).join(" · ")],["Tipologia edilizia",[S.tipEdilizia,S.tipCostruttiva&&"costruttiva "+S.tipCostruttiva,S.dimensione&&"dimensione "+S.dimensione].filter(Boolean).join(" · ")],
+    ["Compratori / venditori",[S.compratori,S.venditori].filter(Boolean).join(" / ")],["Motivo dell'acquisto",S.motivo],["Intermediari",S.intermediari],["Forma di mercato",S.forma],["Prezzo medio di mercato",has(S.prezzoMedio)?eur(num(S.prezzoMedio))+"/m²":""],["Fase del ciclo immobiliare",S.fase],["Tempo medio di vendita",S.tempoVendita],["Filtering",S.filtering],["Livello degli scambi",S.scambi],
+    ["Infrastrutture e servizi presenti",svs.filter(([k])=>sv[k]==="si").map(x=>x[1]).join(", ")],["Assenti",svs.filter(([k])=>sv[k]==="no").map(x=>x[1]).join(", ")],
+    ["Indici di mercato",[has(S.sp)&&"sp "+fmt(num(S.sp),4),has(S.sl)&&"sl "+fmt(num(S.sl),4),has(S.c)&&"c "+fmt(num(S.c),2),has(S.prezzoTerreno)&&"prezzo medio terreno "+eur(num(S.prezzoTerreno))+"/m²"].filter(Boolean).join(" · ")],["Note",S.note]]));
+  B.push(H2("Dato immobiliare – superfici"));
+  B.push(kv([["Tipo misura",[D.tipoMisura,D.elaborato&&"elaborato: "+D.elaborato].filter(Boolean).join(" · ")],["Criterio di misurazione",{SEL:"S.E.L. – Superficie Esterna Lorda",SIL:"S.I.L. – Superficie Interna Lorda",SIN:"S.I.N. – Superficie Interna Netta"}[D.criterio]||""]]));
+  const sr=[["Superficie","Misura m²","Rapporto","Convenzionale m²"],["Superficie principale",fmt(n0(D.princ),2),"1,00",fmt(n0(D.princ),2)]];
+  for(const [k,l] of SEC){ const o=D.sec[k]; if(n0(o.mq)) sr.push([l,fmt(n0(o.mq),2),fmt(n0(o.r),2),fmt(n0(o.mq)*n0(o.r),2)]); }
+  if(n0(D.est.mq)) sr.push(["Superficie esterna di proprietà",fmt(n0(D.est.mq),2),fmt(n0(D.est.r),2),fmt(n0(D.est.mq)*n0(D.est.r),2)]);
+  sr.push(["Totale superficie convenzionale","","",fmt(sup.convenzionale,2)],["Totale superficie commerciale","","",fmt(sup.commerciale,2)]);
+  B.push(table(sr,[46,18,14,22],{head:true,right:true,bold:[sr.length-2,sr.length-1]}));
+  B.push(H2("Dato immobiliare – caratteristiche"));
+  const Q=D.qual;
+  B.push(kv([["Anno di costruzione",D.anno],["N. totale piani",D.piani],["Data dello scambio",itData(D.dataScambio)],["Livello di piano",D.piano],["N. vani utili",D.vani],["N. servizi",D.servizi],["Aria condizionata",{"1":"Sì","0":"No"}[D.aria]],["Altri impianti",D.impianti],["Stato di manutenzione edificio (punteggio)",D.manutEd],["Stato di manutenzione immobile (punteggio)",D.manutImm],
+    ["Caratteristiche qualitative",[["inqAtm","inquinamento atmosferico"],["inqEm","inquinamento elettromagnetico"],["inqAcu","inquinamento acustico"],["amianto","amianto"],["prospEd","prospicienza edificio"],["prospImm","prospicienza immobile"],["esposizione","esposizione"],["panoramicita","panoramicità"],["luminosita","luminosità"],["funzionalita","funzionalità"],["finiture","finiture"]].filter(([k])=>Q[k]).map(([k,l])=>l+": "+Q[k]).join("; ")],
+    ["Classe energetica",D.classeEnergetica],["Stato locativo",{libero:"Libero",occupato:"Occupato dal proprietario",locato:"Locato"}[D.statoLocativo]],["Canone medio annuo di mercato",has(D.canoneMercato)?eur(num(D.canoneMercato)):""],["Canone di locazione annuo",has(D.canone)?eur(num(D.canone)):""],["Scadenza contratto",itData(D.scadenza)]]));
 
-  B.push(H1("5. Consistenza"));
-  const sup=p.superfici.filter(s=>has(s.lorda));
-  if(sup.length) B.push(table([["Superficie","Lorda m²","Coeff.","Commerciale m²"],...sup.map(s=>[s.descrizione||(TIPI_SUP.find(t=>t[0]===s.tipo)||["","",""])[1],fmt(n0(s.lorda),2),fmt(n0(s.coeff),2),fmt(n0(s.lorda)*n0(s.coeff),2)]),["Superficie commerciale","","",fmt(supCommerciale(p),2)]],[52,16,12,20],{head:true,right:true,totLast:true}));
-  B.push(P("Superfici lorde ragguagliate con i coefficienti indicati (riferimento: D.P.R. 138/1998, Allegato C, salvo diversa indicazione del perito).",{sz:16,color:MUTED}));
-
-  B.push(H1("6. Analisi di mercato"));
-  if(p.mercato.segmento) B.push(kv([["Segmento di mercato",p.mercato.segmento],["Fonti",p.mercato.fonti],["Note",p.mercato.note]]));
-  if(r.comps.length){
-    B.push(table([["","Indirizzo","Data","Prezzo €","Sup. m²","€/m²","Piano","Bagni","Manut."],...r.comps.map((c,i)=>["C"+(i+1),c.indirizzo+(c.riferimento?"\n"+c.riferimento:""),itData(c.data),fmt(n0(c.prezzo)),fmt(n0(c.superficie),2),fmt(n0(c.prezzo)/n0(c.superficie),0),c.piano,c.bagni,c.manutenzione]),["Stima",ubic,itData(r.dv),"",fmt(r.sog.S,2),"",M.piano,M.bagni,M.manutenzione]],[8,27,13,11,9,8,7,7,8],{head:true}));
-  }
-
-  B.push(H1("7. Valutazione"));
-  B.push(P("La stima è svolta con il metodo del confronto di mercato (Market Comparison Approach), secondo gli standard internazionali di valutazione (IVS) e il Codice delle valutazioni immobiliari: il prezzo di ciascun comparabile è corretto con aggiustamenti pari alla differenza tra le caratteristiche dell'immobile da stimare e quelle del comparabile, moltiplicata per il prezzo marginale della caratteristica."));
-  if(r.comps.length&&r.sog.S>0){
-    const att=r.righe.filter(x=>x.attiva);
-    B.push(H2("Prezzi marginali"));
-    B.push(table([["Caratteristica","Criterio"],...att.map(x=>[x.nome,x.nota])],[35,65],{head:true}));
-    B.push(H2("Tabella di valutazione"));
-    const cols=r.comps.map((c,i)=>"C"+(i+1)), w=[30,...cols.map(()=>70/cols.length)];
-    B.push(table([["",...cols],["Prezzo",...r.comps.map(c=>fmt(n0(c.prezzo)))],...att.map(x=>[x.nome,...x.valori.map(v=>fmt(v.adj))]),["Prezzo corretto",...r.corretti.map(v=>fmt(v))],...(r.pesi?[["Peso nella media",...r.pesi.map(x=>fmt(x*100,1)+"%")]]:[])],w,{head:true,right:true,totLast:!r.pesi}));
-    B.push(H2("Dettaglio degli aggiustamenti"));
-    B.push(table([["Caratteristica",...cols],...att.map(x=>[x.nome+(x.unita?` (${x.unita})`:""),...x.valori.map(v=>isFinite(v.df)?`${fmt(v.df,x.k==="data"?1:2)} × ${fmt(v.pm,2)}`:"—")])],w,{head:true,right:true}));
-    B.push(kv([[r.pesi?"Media ponderata dei prezzi corretti":"Media dei prezzi corretti",eur(r.media)],...(r.sog.supDaConfronto?[["Superficie dell'immobile nel confronto",fmt(r.sog.S,2)+" m²"]]:[]),["Divergenza percentuale assoluta",fmt(r.divergenza,2)+"% (soglia "+fmt(r.soglia,1)+"%)"+(r.attendibile?"":" — oltre la soglia")],...p.conclusione.detrazioni.filter(d=>has(d.importo)).map(d=>["Detrazione: "+(d.descrizione||"—"),"− "+eur(n0(d.importo))]),["Arrotondamento",eur(r.passo)]]));
-  } else B.push(P("「DA FORNIRE」 comparabili e superficie commerciale per il calcolo.",{color:MUTED}));
+  B.push(H1("5. Stima",{pb:true}));
+  B.push(kv([["Valore da stimare","Valore di mercato"],["Procedimento di stima","Market Comparison Approach (MCA)"]]));
+  B.push(P("Il valore di mercato è l'importo stimato al quale l'immobile verrebbe venduto alla data della valutazione in un'operazione svolta tra un venditore e un acquirente consenzienti alle normali condizioni di mercato, dopo un'adeguata promozione commerciale, nell'ambito della quale entrambe le parti hanno agito con cognizione di causa, con prudenza e senza essere soggette a costrizioni.",{sz:17,color:MUTED}));
+  if(r.comps.length&&r.sog.princ>0){
+    const T=tabelleMCA(r,p), n=T.lettere.length;
+    const w1=[34,...T.lettere.map(()=>52/n),14], w2=[40,...T.lettere.map(()=>60/n)];
+    B.push(H2("Tabella dei dati")); B.push(table([T.head,...T.dati],w1,{head:true,right:true,sz:16}));
+    B.push(H2("Tabella dei prezzi marginali")); B.push(table([["Prezzo e caratteristica",...T.lettere.map(l=>"Comp. "+l)],...T.marg],w2,{head:true,right:true,sz:16}));
+    B.push(P(r.righe.filter(x=>x.attiva).map(x=>`${x.nome}: ${x.nota}`).join(" · "),{sz:15,color:MUTED}));
+    B.push(H2("Tabella di valutazione")); B.push(table([["Prezzo e caratteristica",...T.lettere.map(l=>"Comp. "+l)],...T.val],w2,{head:true,right:true,sz:16,bold:[T.val.length-1]}));
+    B.push(kv([[r.ponderata?"Media ponderata dei prezzi corretti":"Media dei prezzi corretti",eur(r.media,2)],["Valore stimato (arrotondato ai "+fmt(r.passo)+" €)",eur(r.valoreStimato)],...p.conclusione.detrazioni.filter(d=>has(d.importo)).map(d=>["Elemento che modifica il valore: "+(d.descrizione||"—"),eur(n0(d.importo))]),["Valore finale",eur(r.valore)]]));
+  } else B.push(P("「DA FORNIRE」 comparabili e superficie principale per il calcolo.",{color:MUTED}));
   for(const a of r.avvisi) B.push(P("Nota: "+a,{sz:16,color:"A33A2C"}));
+  if(As.ok){ B.push(H2("Valore assicurabile – costo di ricostruzione a nuovo")); B.push(table([["Superficie","Misura m²","Coeff.","m²"],...p.assicurabile.righe.filter(x=>has(x.mq)).map(x=>[x.descrizione,fmt(n0(x.mq),2),has(x.coeff)?fmt(num(x.coeff),2):"1,00",fmt(n0(x.mq)*(has(x.coeff)?num(x.coeff):1),2)]),["Superficie totale","","",fmt(As.superficie,2)]],[46,18,14,22],{head:true,right:true,bold:[p.assicurabile.righe.filter(x=>has(x.mq)).length+1]}));
+    B.push(kv([["Costo unitario",eur(n0(p.assicurabile.costoUnitario))+"/m²"],["Costo totale",eur(As.costo)],["Valore assicurabile (arrotondato ai 1.000 €)",eur(As.valore)]])); }
 
-  B.push(H1("8. Conclusione"));
+  B.push(H1("6. Conclusione"));
   if(r.ok){
-    B.push(P("Sulla base di quanto esposto, il più probabile valore di mercato dell'immobile alla data del "+itData(r.dv)+" è pari a:",{after:80}));
-    B.push(par(run(eur(r.valore),{b:true,sz:30,color:GOLD})+run("   (euro "+inLettere(r.valore)+"/00)",{sz:20}),{after:160,jc:"left"}));
+    B.push(P("Sulla base di quanto esposto, il più probabile valore di mercato dell'immobile alla data del "+itData(I.dataValutazione)+" è pari a:",{after:80}));
+    B.push(par(run(eur(r.valore),{b:true,sz:30,color:GOLD})+run("   (euro "+inLettere(r.valore)+"/00)",{sz:20}),{after:160}));
   } else B.push(P("Valore non determinato: completare i dati della valutazione.",{color:"A33A2C"}));
+  if(p.conclusione.giudizio) B.push(kv([["Giudizio sulla commerciabilità",p.conclusione.giudizio]]));
   if(p.conclusione.considerazioni) B.push(P(p.conclusione.considerazioni));
-  if(p.conclusione.assunzioni){ B.push(H2("Assunzioni e limiti")); B.push(P(p.conclusione.assunzioni)); }
+  if(p.conclusione.assunzioni){ B.push(H2("Assunzioni e condizioni limitanti")); B.push(P(p.conclusione.assunzioni)); }
   B.push(P([p.conclusione.luogo,itData(oggi())].filter(Boolean).join(", "),{before:300}));
   B.push(par(run("Il perito",{color:MUTED}),{before:200,jc:"right",after:0}));
   B.push(par(run(I.perito||"",{b:true}),{jc:"right",after:600}));
@@ -693,14 +807,14 @@ function buildDocx(p){
   const sect=`<w:sectPr><w:headerReference w:type="default" r:id="rIdHdr"/><w:footerReference w:type="default" r:id="rIdFtr"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1418" w:right="1134" w:bottom="1134" w:left="1134" w:header="567" w:footer="510" w:gutter="0"/></w:sectPr>`;
   const documentXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document ${NS}><w:body>${B.join("")}${sect}</w:body></w:document>`;
   const tab=`<w:r><w:tab/></w:r>`;
-  const header=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr ${NS}>`+par(run(I.perito||"",{b:true,sz:18})+tab+run("RELAZIONE DI STIMA",{sz:15,color:GOLD,sp:20}),{after:0}).replace("<w:pPr>",`<w:pPr><w:tabs><w:tab w:val="right" w:pos="${CW}"/></w:tabs>`)+par(run(I.contattiPerito||"",{sz:14,color:MUTED}),{border:true,after:0})+`</w:hdr>`;
-  const fld=c=>`<w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:instrText xml:space="preserve"> ${c} </w:instrText></w:r><w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:t>1</w:t></w:r><w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:fldChar w:fldCharType="end"/></w:r>`;
-  const footer=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:ftr ${NS}><w:p><w:pPr><w:tabs><w:tab w:val="right" w:pos="${CW}"/></w:tabs><w:spacing w:after="0"/></w:pPr>${run(nomePerizia(p),{sz:14,color:MUTED})}${tab}${run("Pag. ",{sz:14,color:MUTED})}${fld("PAGE")}${run(" di ",{sz:14,color:MUTED})}${fld("NUMPAGES")}</w:p></w:ftr>`;
+  const header=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr ${NS}>`+par(run(I.perito||"",{b:true,sz:18})+tab+run("RAPPORTO DI VALUTAZIONE",{sz:15,color:GOLD,sp:20}),{after:0}).replace("<w:pPr>",`<w:pPr><w:tabs><w:tab w:val="right" w:pos="${CW}"/></w:tabs>`)+par(run(I.contattiPerito||"",{sz:14,color:MUTED}),{border:true,after:0})+`</w:hdr>`;
+  const fld2=c=>`<w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:instrText xml:space="preserve"> ${c} </w:instrText></w:r><w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:t>1</w:t></w:r><w:r><w:rPr><w:sz w:val="14"/><w:color w:val="${MUTED}"/></w:rPr><w:fldChar w:fldCharType="end"/></w:r>`;
+  const footer=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:ftr ${NS}><w:p><w:pPr><w:tabs><w:tab w:val="right" w:pos="${CW}"/></w:tabs><w:spacing w:after="0"/></w:pPr>${run(nomePerizia(p),{sz:14,color:MUTED})}${tab}${run("Pag. ",{sz:14,color:MUTED})}${fld2("PAGE")}${run(" di ",{sz:14,color:MUTED})}${fld2("NUMPAGES")}</w:p></w:ftr>`;
   const styles=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="Arial" w:cs="Arial"/><w:sz w:val="20"/><w:szCs w:val="20"/><w:color w:val="${INK}"/><w:lang w:val="it-IT"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="100" w:line="264" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style><w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/><w:tblPr><w:tblInd w:w="0" w:type="dxa"/><w:tblCellMar><w:top w:w="0" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:right w:w="108" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style></w:styles>`;
   const settings=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:updateFields w:val="true"/><w:defaultTabStop w:val="708"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>`;
   const rels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rIdSettings" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/><Relationship Id="rIdHdr" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/><Relationship Id="rIdFtr" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/></Relationships>`;
   const now=new Date().toISOString().replace(/\.\d+Z$/,"Z");
-  const core=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${xe("Relazione di stima - "+nomePerizia(p))}</dc:title><dc:creator>${xe(I.perito)}</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${now}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${now}</dcterms:modified></cp:coreProperties>`;
+  const core=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${xe("Rapporto di valutazione - "+nomePerizia(p))}</dc:title><dc:creator>${xe(I.perito)}</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${now}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${now}</dcterms:modified></cp:coreProperties>`;
   const types=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/><Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>`;
   const root=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>`;
   return makeZip([{name:"[Content_Types].xml",data:types},{name:"_rels/.rels",data:root},{name:"docProps/core.xml",data:core},{name:"word/document.xml",data:documentXml},{name:"word/_rels/document.xml.rels",data:rels},{name:"word/styles.xml",data:styles},{name:"word/settings.xml",data:settings},{name:"word/header1.xml",data:header},{name:"word/footer1.xml",data:footer}]);
@@ -708,8 +822,8 @@ function buildDocx(p){
 $("btnWord").addEventListener("click",async()=>{
   if(!corrente) return;
   const r=calcolaMCA(corrente);
-  if(!r.ok&&!confirm("La valutazione non è completa (servono almeno 3 comparabili e la superficie). Creare comunque la relazione?")) return;
-  const blob=buildDocx(corrente), nome=`Relazione_di_stima_${slug(nomePerizia(corrente))}.docx`;
+  if(!r.ok&&!confirm("La valutazione non è completa (servono almeno 3 comparabili e la superficie principale). Creare comunque la relazione?")) return;
+  const blob=buildDocx(corrente), nome=`Rapporto_di_valutazione_${slug(nomePerizia(corrente))}.docx`;
   let file=null; try{ file=new File([blob],nome,{type:blob.type}); }catch(e){}
   if(file&&navigator.canShare&&navigator.canShare({files:[file]})&&/Android|iPhone|iPad/i.test(navigator.userAgent)){ try{ await navigator.share({files:[file],title:nome}); return; }catch(e){ if(e.name==="AbortError") return; } }
   scarica(blob,nome); toast("Relazione Word scaricata: "+nome,4500);

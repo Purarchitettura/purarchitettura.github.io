@@ -1,5 +1,5 @@
 /* Service worker della sola cartella /perizie-private/: non tocca le altre app del sito. */
-const CACHE = "pp-v2";
+const CACHE = "pp-v3";
 const FILES = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {
