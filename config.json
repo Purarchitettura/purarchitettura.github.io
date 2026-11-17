@@ -41,6 +41,17 @@
       "gruppi": [
         "*"
       ]
+    },
+    {
+      "id": "scheda-sopralluogo",
+      "nome": "Scheda sopralluogo",
+      "descrizione": "Scheda sopralluogo CRIF: richiesta di documentazione integrativa al cliente, firme e PDF da condividere via email o WhatsApp.",
+      "url": "https://purarchitettura.github.io/scheda-sopralluogo/",
+      "tipo": "app",
+      "sezione": "App dello studio",
+      "gruppi": [
+        "*"
+      ]
     }
   ]
 }
