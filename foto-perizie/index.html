@@ -293,11 +293,19 @@ const CONFIG = {
   // Assegnazioni esplicite: ID delle sole cartelle cantiere autorizzate per account.
   CANTIERE_ACCESS: {
   },
+  // Perizie da eseguire: file scritto dall'agente appuntamenti CRIF nella cartella archivio.
+  AGENDA_FILE: 'perizie.json',
+  AGENDA_REGISTRO: 'perizie-importate.json',
+  // Intestazione dei rapporti per le perizie importate, per sigla del perito (come nella Scheda sopralluogo perizie).
+  PERITI: {
+    FS: { intestazione: 'Geom. Fabio Sottana · Studio Purarchitettura', contatti: 'Via Treviso n. 19 Zero Branco (TV) · tel/fax 0422.97436 · geometrafabiosottana@gmail.com' },
+    NG: { intestazione: 'Arch. Nicola Giusto · Studio Purarchitettura', contatti: 'Via Treviso n. 19 Zero Branco (TV) · architettonicolagiusto@gmail.com' },
+  },
   INTESTAZIONE_DEFAULT: 'Geom. Ilario Corrò',
   CONTATTI_DEFAULT: 'geometrailariocorro@gmail.com · PEC ilariocorro@geopec.it · tel. 3475648284',
 };
 const MODE = CONFIG.CLIENT_ID && CONFIG.ROOT_FOLDER_ID ? 'drive' : 'demo';
-const APP_VERSION = '1.0 (da Foto Cantiere 2.13) · 17/11/2026';
+const APP_VERSION = '1.1 perizie da eseguire · 17/11/2026';
 
 /* =====================================================================
    REGOLE PER GLI AGGIORNAMENTI (da rispettare in ogni modifica futura)
@@ -2067,6 +2075,82 @@ function cantiereForm(d = {}) {
   const read = () => Object.fromEntries(Object.entries(f).map(([k, v]) => [k, v.value.trim()]));
   return { body, read, f };
 }
+/* ---------- Perizie da eseguire (dall'agente appuntamenti CRIF) ----------
+   L'agente salva "perizie.json" nella cartella archivio su Drive. Per ogni perizia con
+   sopralluogo non ancora effettuato e appuntamento da ieri in poi, l'app crea UNA VOLTA SOLA:
+   la perizia (nome = portale, codice e comune) e dentro il gruppo foto "Sopralluogo".
+   I codici già importati sono scritti in "perizie-importate.json" nella stessa cartella:
+   una perizia eliminata a mano non viene ricreata. Le perizie esistenti non vengono mai modificate.
+   Campi nuovi della perizia (solo aggiunti, regola 2): codicePerizia, portale, perito, appuntamento, telefono. */
+const Agenda = {
+  EVERY: 10 * 60 * 1000, running: false,
+  async findFile(name) {
+    const q = `'${CONFIG.ROOT_FOLDER_ID}' in parents and trashed=false and name='${name}'`;
+    const j = await (await Drive.f(`${API}/files?q=${encodeURIComponent(q)}&orderBy=modifiedTime desc&fields=files(id,modifiedTime)&supportsAllDrives=true&includeItemsFromAllDrives=true`)).json();
+    return (j.files || [])[0] || null;
+  },
+  async readJSON(file) { return JSON.parse(await (await Drive.getBlob(file.id)).text()); },
+  async saveRegistro(file, reg) {
+    const body = JSON.stringify(reg, null, 1);
+    if (file) { await Drive.f(`${UPL}/files/${file.id}?uploadType=media&supportsAllDrives=true`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body }); return; }
+    const b = 'fpa' + uid(), meta = { name: CONFIG.AGENDA_REGISTRO, parents: [CONFIG.ROOT_FOLDER_ID], mimeType: 'application/json' };
+    await Drive.f(`${UPL}/files?uploadType=multipart&supportsAllDrives=true`, { method: 'POST', headers: { 'Content-Type': 'multipart/related; boundary=' + b },
+      body: `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${b}--` });
+  },
+  // perizie con sopralluogo da fare, dall'elenco dell'agente
+  daEseguire(j) {
+    const ieri = new Date(Date.now() - 864e5); const min = `${ieri.getFullYear()}-${pad(ieri.getMonth() + 1)}-${pad(ieri.getDate())}`;
+    const out = [];
+    for (const acc of (j && j.account) || []) for (const p of acc.perizie || []) {
+      const s = p.sopralluogo || {}; const inizio = String(s.inizio || '');
+      if (!p.codice || s.effettuato || !/^\d{4}-\d{2}-\d{2}/.test(inizio) || inizio.slice(0, 10) < min) continue;
+      out.push({ ...p, prefisso: acc.prefisso || '', inizio });
+    }
+    return out;
+  },
+  async sync(force) {
+    if (MODE !== 'drive' || this.running || !navigator.onLine || !Access.canCreateCantiere()) return 0;
+    const last = +Settings.lsGet('fp_agenda_at') || 0;
+    if (!force && Date.now() - last < this.EVERY) return 0;
+    this.running = true;
+    try {
+      const file = await Store.net(() => this.findFile(CONFIG.AGENDA_FILE));
+      Settings.lsSet('fp_agenda_at', String(Date.now()));
+      if (!file) return 0;
+      const lista = this.daEseguire(await this.readJSON(file));
+      if (!lista.length) return 0;
+      const regFile = await this.findFile(CONFIG.AGENDA_REGISTRO);
+      const reg = regFile ? await this.readJSON(regFile).catch(() => ({})) : {};
+      reg.importate = reg.importate || {};
+      const esistenti = await Store.list('cantiere', ROOT_ID);
+      const giaPresenti = new Set(esistenti.map(c => c.data.codicePerizia).filter(Boolean));
+      let n = 0;
+      for (const p of lista) {
+        const key = `${p.portale || ''} ${p.codice}`.trim();
+        if (reg.importate[key] || giaPresenti.has(p.codice)) continue;
+        const perito = CONFIG.PERITI[p.prefisso] || {};
+        const comune = String(p.comune || '').trim();
+        const dataSop = p.inizio.slice(0, 10), ora = p.inizio.slice(11, 16);
+        const cant = await Store.create('cantiere', ROOT_ID, {
+          nome: [p.prefisso, p.portale, p.codice].filter(Boolean).join(' ') + (comune ? ' – ' + comune : ''),
+          indirizzo: p.luogoCompleto || p.luogo || p.indirizzo || '', committente: p.contatto || '',
+          intestazione: perito.intestazione ?? CONFIG.INTESTAZIONE_DEFAULT, contatti: perito.contatti ?? CONFIG.CONTATTI_DEFAULT,
+          creato: new Date().toISOString(), codicePerizia: p.codice, portale: p.portale || '', perito: p.prefisso, appuntamento: p.inizio, telefono: p.telefono || '',
+        });
+        const note = String(p.sopralluogo?.note || '').replace(/\+\+/g, ' · ').replace(/\s+/g, ' ').replace(/^[\s·]+|[\s·]+$/g, '');
+        await Store.create('gruppo', cant.id, {
+          titolo: 'Sopralluogo', data: dataSop,
+          descrizione: [`Appuntamento ${fmtDay(dataSop)}${ora && ora !== '00:00' ? ' ore ' + ora : ''}`, p.prefisso ? 'Perito ' + p.prefisso : '', p.contatto ? 'Contatto: ' + p.contatto : '', p.telefono ? 'Tel. ' + p.telefono : '', note ? 'Note portale: ' + note : ''].filter(Boolean).join('\n'),
+        });
+        reg.importate[key] = new Date().toISOString(); giaPresenti.add(p.codice); n++;
+      }
+      if (n) { reg.aggiornato = new Date().toISOString(); await this.saveRegistro(regFile, reg); }
+      return n;
+    } catch (e) { console.error('Perizie da eseguire:', e); return 0; }
+    finally { this.running = false; }
+  },
+};
+
 function HomeView() {
   const READONLY = !Access.canCreateCantiere();
   const list = h('div', { class: 'card list' }, h('div', { class: 'spin' }));
@@ -2080,12 +2164,13 @@ function HomeView() {
     items.sort((a, b) => String(b.modified || b.created).localeCompare(String(a.modified || a.created)));
     if (!items.length) return list.replaceChildren(h('div', { class: 'empty' }, h('strong', null, 'Nessuna perizia'), READONLY ? 'Nessuna perizia assegnata e accessibile con questo account. Chiedi al responsabile di autorizzarti.' : 'Crea la prima perizia con il pulsante in basso.'));
     list.replaceChildren(...items.map(c => h('button', { class: 'row', type: 'button', onclick: () => Nav.push(() => CantiereView(c)) },
-      h('div', { class: 'row-main' }, h('div', { class: 'row-title' }, c.data.nome, stateTag(c)), h('div', { class: 'row-sub' }, [c.data.indirizzo, c.data.committente].filter(Boolean).join(' · ') || 'Nessun indirizzo')),
+      h('div', { class: 'row-main' }, h('div', { class: 'row-title' }, c.data.nome, stateTag(c)), h('div', { class: 'row-sub' }, [c.data.appuntamento && String(c.data.appuntamento).slice(0, 10) >= todayISO() ? `Sopralluogo ${fmtDay(c.data.appuntamento)}${String(c.data.appuntamento).slice(11, 16) && String(c.data.appuntamento).slice(11, 16) !== '00:00' ? ' ore ' + String(c.data.appuntamento).slice(11, 16) : ''}` : '', c.data.indirizzo, c.data.committente].filter(Boolean).join(' · ') || 'Nessun indirizzo')),
       icon('chev', 'chev'))));
   }
   async function load() {
     const c = await Store.cachedList('cantiere', ROOT_ID); if (c) render(c);
     try { render(await Store.list('cantiere', ROOT_ID)); } catch (e) { if (!c) showLoadError(list, e); else toast(e.message, 'err'); }
+    if (!READONLY) Agenda.sync().then(async n => { if (!n) return; toast(n === 1 ? 'Aggiunta 1 perizia da eseguire, con il gruppo Sopralluogo.' : `Aggiunte ${n} perizie da eseguire, con il gruppo Sopralluogo.`); const c2 = await Store.cachedList('cantiere', ROOT_ID); if (c2) render(c2); });
   }
   async function add() {
     if (!Access.canCreateCantiere()) return toast('Solo gli utenti abilitati possono creare nuove perizie.', 'err');
