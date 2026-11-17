@@ -150,7 +150,7 @@ dialog .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex
    Il sito ospita anche altre app: chiavi locali con prefisso "pp_",
    copie offline con prefisso "pp-".
    ===================================================================== */
-const VERSIONE = "1.0 · 17/11/2026";
+const VERSIONE = "1.1 · 17/11/2026";
 const $ = id => document.getElementById(id);
 function h(tag, attrs, ...kids){
   const e=document.createElement(tag);
@@ -217,7 +217,7 @@ const DOC_STD=[
   ["titoli","Titoli edilizi (licenze, concessioni, permessi, DIA/SCIA/CILA, condoni)"],["agibilita","Agibilità / abitabilità"],["ape","Attestato di prestazione energetica (APE)"],
   ["condominio","Regolamento condominiale, tabelle millesimali e spese"],["impianti","Dichiarazioni di conformità degli impianti"],["altro","Altro"]
 ];
-const MANUT=[["1","1 · Scadente"],["2","2 · Mediocre"],["3","3 · Normale"],["4","4 · Buono"],["5","5 · Ottimo"]];
+const MANUT=[["","—"],["1","1 · Scadente"],["2","2 · Mediocre"],["3","3 · Normale"],["4","4 · Buono"],["5","5 · Ottimo"]];
 /* Coefficienti di partenza (rapporti mercantili) secondo il D.P.R. 138/1998, Allegato C: sempre modificabili. */
 const TIPI_SUP=[
   ["principale","Vani principali e accessori diretti",1],
@@ -244,11 +244,11 @@ function nuovaPerizia(){
     conformita:{ ante67:"", titoli:"", urbanistica:"", urbanisticaNote:"", catastale:"", catastaleNote:"", vincoli:"", servitu:"", convenzioni:"", condominio:"", occupazione:"", occupazioneNote:"" },
     superfici:[{ id:uid(), descrizione:"Abitazione", tipo:"principale", lorda:"", coeff:"1" }],
     mercato:{ segmento:"", fonti:"", note:"" },
-    mca:{ comparabili:[], parametri:{ saggioAnnuo:"", rapportoPiano:"", costoBagno:"", deprezzamentoBagno:"", costoManutenzione:"", arrotondamento:"1000", soglia:"5" }, extra:[] },
+    mca:{ comparabili:[], supConfronto:"", parametri:{ saggioAnnuo:"", rapportoPiano:"", costoBagno:"", deprezzamentoBagno:"", costoManutenzione:"", arrotondamento:"1000", soglia:"5" }, extra:[] },
     conclusione:{ detrazioni:[], considerazioni:"", assunzioni:"", luogo:"" }
   };
 }
-function nuovoComparabile(){ return { id:uid(), fonte:"Atto di compravendita", riferimento:"", indirizzo:"", data:"", prezzo:"", superficie:"", piano:"", bagni:"", manutenzione:"3", note:"", extra:{} }; }
+function nuovoComparabile(){ return { id:uid(), fonte:"Atto di compravendita", riferimento:"", indirizzo:"", data:"", prezzo:"", superficie:"", piano:"", bagni:"", manutenzione:"3", peso:"", note:"", extra:{} }; }
 /* compatibilità: aggiunge i campi mancanti alle perizie salvate con versioni precedenti */
 function completa(p){ const b=nuovaPerizia(); (function fill(t,s){ for(const k of Object.keys(s)){ if(t[k]===undefined) t[k]=JSON.parse(JSON.stringify(s[k])); else if(s[k]&&typeof s[k]==="object"&&!Array.isArray(s[k])&&t[k]&&typeof t[k]==="object") fill(t[k],s[k]); } })(p,b); return p; }
 
@@ -258,9 +258,10 @@ function mesiTra(a,b){ if(!a||!b) return NaN; const da=new Date(a), db=new Date(
 function calcolaMCA(p){
   const P=p.mca.parametri, comps=p.mca.comparabili.filter(c=>has(c.prezzo)&&has(c.superficie)&&n0(c.superficie)>0);
   const dv=p.incarico.dataValutazione||oggi();
-  const sog={ S:supCommerciale(p), L:num(p.immobile.piano), N:num(p.immobile.bagni), M:num(p.immobile.manutenzione), extra:Object.fromEntries(p.mca.extra.map(x=>[x.id,num(x.soggetto)])) };
+  const supConf=num(p.mca.supConfronto);
+  const sog={ S:isFinite(supConf)&&supConf>0?supConf:supCommerciale(p), supDaConfronto:isFinite(supConf)&&supConf>0, L:num(p.immobile.piano), N:num(p.immobile.bagni), M:num(p.immobile.manutenzione), extra:Object.fromEntries(p.mca.extra.map(x=>[x.id,num(x.soggetto)])) };
   const out={ sog, comps, righe:[], avvisi:[], dv, ok:false };
-  if(!(sog.S>0)) out.avvisi.push("Manca la superficie commerciale dell'immobile da stimare (sezione Superfici).");
+  if(!(sog.S>0)) out.avvisi.push("Manca la superficie dell'immobile da stimare (sezione Superfici o «Superficie nel confronto»).");
   if(comps.length<3) out.avvisi.push(`Servono almeno 3 comparabili completi di prezzo e superficie: ora ${comps.length}.`);
   if(!comps.length||!(sog.S>0)) return out;
   const i=num(P.saggioAnnuo), rP=num(P.rapportoPiano), cB=num(P.costoBagno), dB=n0(P.deprezzamentoBagno), cM=num(P.costoManutenzione);
@@ -268,10 +269,10 @@ function calcolaMCA(p){
   const car=[];
   car.push({ k:"data", nome:"Data del contratto", unita:"mesi", attiva:isFinite(i),
     pm:c=>n0(c.prezzo)*i/100/12, diff:c=>mesiTra(c.data,dv), nota:isFinite(i)?`saggio annuo ${fmt(i,2)}%`:"saggio annuo non indicato" });
-  car.push({ k:"sup", nome:"Superficie commerciale", unita:"m²", attiva:true,
+  car.push({ k:"sup", nome:sog.supDaConfronto?"Superficie di confronto":"Superficie commerciale", unita:"m²", attiva:true,
     pm:()=>pSup, diff:c=>sog.S-n0(c.superficie), nota:`prezzo medio minimo ${eur(pSup,2)}/m²` });
   car.push({ k:"piano", nome:"Livello di piano", unita:"piani", attiva:isFinite(rP)&&isFinite(sog.L),
-    pm:c=>n0(c.prezzo)*rP/100, diff:c=>sog.L-num(c.piano), nota:isFinite(rP)?`rapporto ${fmt(rP,2)}% per piano`:"rapporto non indicato" });
+    pm:c=>{ const s=rP/100; return sog.L-num(c.piano)>=0 ? n0(c.prezzo)*s : n0(c.prezzo)*s/(1+s); }, diff:c=>sog.L-num(c.piano), nota:isFinite(rP)?`saggio ${fmt(rP,2)}% per piano (P·s se il comparabile è più in basso, P·s/(1+s) se più in alto)`:"saggio non indicato" });
   car.push({ k:"bagni", nome:"Servizi igienici", unita:"n.", attiva:isFinite(cB)&&isFinite(sog.N),
     pm:()=>cB*(1-dB/100), diff:c=>sog.N-num(c.bagni), nota:isFinite(cB)?`costo ${eur(cB)} − deprezzamento ${fmt(dB,0)}%`:"costo non indicato" });
   car.push({ k:"manut", nome:"Stato di manutenzione", unita:"livelli", attiva:isFinite(cM)&&isFinite(sog.M),
@@ -290,7 +291,9 @@ function calcolaMCA(p){
   out.corretti=comps.map((c,j)=>n0(c.prezzo)+out.righe.reduce((a,r)=>a+r.valori[j].adj,0));
   const mn=Math.min(...out.corretti), mx=Math.max(...out.corretti);
   out.divergenza=mn>0?(mx-mn)/mn*100:NaN;
-  out.media=out.corretti.reduce((a,b)=>a+b,0)/out.corretti.length;
+  const pesi=comps.map(c=>num(c.peso)); const usaPesi=pesi.every(w=>isFinite(w)&&w>=0)&&pesi.reduce((a,b)=>a+b,0)>0;
+  out.pesi=usaPesi?pesi.map(w=>w/pesi.reduce((a,b)=>a+b,0)):null;
+  out.media=usaPesi?out.corretti.reduce((a,v,j)=>a+v*out.pesi[j],0):out.corretti.reduce((a,b)=>a+b,0)/out.corretti.length;
   out.passo=n0(P.arrotondamento)||1;
   out.detrazioni=p.conclusione.detrazioni.reduce((a,d)=>a+n0(d.importo),0);
   out.valore=arrotonda(out.media-out.detrazioni,out.passo);
@@ -494,22 +497,23 @@ function secSuperfici(el,p){
 }
 function secComparabili(el,p){
   const P=p.mca.parametri;
-  el.append(h("div",{class:"notice"},"Metodo del confronto di mercato (MCA): servono almeno 3 compravendite recenti di immobili dello stesso segmento, con prezzo, data e superficie commerciale calcolata con gli stessi coefficienti dell'immobile da stimare."));
+  el.append(h("div",{class:"notice"},"Metodo del confronto di mercato (MCA): servono almeno 3 compravendite recenti di immobili dello stesso segmento, con prezzo e data. La superficie di confronto deve essere misurata allo stesso modo per comparabili e immobile da stimare: di norma la superficie commerciale; in alternativa la sola superficie principale, con le superfici secondarie come «Altre caratteristiche»."));
   el.append(card("Segmento di mercato",h("div",{class:"grid"},
     fld("Segmento (zona, tipologia, destinazione)",p.mercato,"segmento",{type:"area",wide:true}),
     fld("Fonti dei dati",p.mercato,"fonti",{type:"area",wide:true,ph:"es. atti di compravendita, banche dati, agenzie"}),
     fld("Note",p.mercato,"note",{type:"area",wide:true}))));
   const c=card("Comparabili");
   righe(c,p.mca.comparabili,"Comparabile",r=>[
-    fld("Fonte",r,"fonte",{type:"select",options:[["Atto di compravendita","Atto di compravendita"],["Banca dati","Banca dati"],["Altro","Altro"]]}),
+    fld("Fonte",r,"fonte",{type:"select",options:[["Atto di compravendita","Atto di compravendita"],["Agenzia immobiliare","Agenzia immobiliare"],["Rilevazione diretta","Rilevazione diretta"],["Banca dati","Banca dati"],["Altro","Altro"]]}),
     fld("Riferimento (notaio, rep., data)",r,"riferimento"),
     fld("Indirizzo",r,"indirizzo"),
     fld("Data del contratto",r,"data",{type:"date"}),
     fld("Prezzo (€)",r,"prezzo",{num:true}),
-    fld("Superficie commerciale (m²)",r,"superficie",{num:true}),
+    fld("Superficie di confronto (m²)",r,"superficie",{num:true}),
     fld("Piano",r,"piano",{num:true}),
     fld("Servizi igienici (n.)",r,"bagni",{num:true}),
     fld("Stato di manutenzione",r,"manutenzione",{type:"select",options:MANUT}),
+    fld("Peso nella media (%)",r,"peso",{num:true,ph:"vuoto = media semplice"}),
     ...p.mca.extra.map(x=>{ r.extra=r.extra||{}; return fld((x.nome||"Caratteristica")+(x.unita?` (${x.unita})`:""),r.extra,x.id,{num:true}); }),
     fld("Note",r,"note",{wide:true})
   ],nuovoComparabile);
@@ -521,7 +525,8 @@ function secComparabili(el,p){
     fld("Deprezzamento del bagno (%)",P,"deprezzamentoBagno",{num:true}),
     fld("Manutenzione: costo per livello (€/m²)",P,"costoManutenzione",{num:true}),
     fld("Arrotondamento del valore (€)",P,"arrotondamento",{num:true}),
-    fld("Soglia di divergenza accettabile (%)",P,"soglia",{num:true}))));
+    fld("Soglia di divergenza accettabile (%)",P,"soglia",{num:true}),
+    fld("Superficie dell'immobile nel confronto (m²)",p.mca,"supConfronto",{num:true,ph:"vuoto = superficie commerciale"}))));
   const cx=card("Altre caratteristiche (facoltative)",h("p",{class:"hint"},"Per caratteristiche non previste (es. posto auto, giardino, vista): indica il prezzo marginale per unità e il valore dell'immobile da stimare; i valori dei comparabili si inseriscono nelle loro schede."));
   righe(cx,p.mca.extra,"Caratteristica",x=>[fld("Nome",x,"nome"),fld("Unità di misura",x,"unita",{ph:"es. n., m², punti"}),fld("Prezzo marginale (€ per unità)",x,"prezzo",{num:true}),fld("Valore dell'immobile da stimare",x,"soggetto",{num:true})],()=>({ id:uid(), nome:"", unita:"", prezzo:"", soggetto:"" }),()=>render());
   el.append(cx);
@@ -530,7 +535,7 @@ function tabellaMCA(r,p){
   const comps=r.comps, head=["",...comps.map((c,i)=>"C"+(i+1))];
   const t1=[ ["Indirizzo",...comps.map(c=>c.indirizzo||"—")], ["Data contratto",...comps.map(c=>itData(c.data)||"—")], ["Prezzo",...comps.map(c=>eur(n0(c.prezzo)))], ["Superficie (m²)",...comps.map(c=>fmt(n0(c.superficie),2))], ["Prezzo unitario (€/m²)",...comps.map(c=>fmt(n0(c.prezzo)/n0(c.superficie),2))] ];
   const t2=r.righe.filter(x=>x.attiva).map(x=>[x.nome+" · "+x.nota,...x.valori.map(v=>isFinite(v.df)?`${fmt(v.df,x.k==="data"?1:2)} × ${fmt(v.pm,2)} = ${fmt(v.adj,0)}`:"0")]);
-  const t3=[["Prezzo corretto",...r.corretti.map(v=>eur(v))]];
+  const t3=[["Prezzo corretto",...r.corretti.map(v=>eur(v))],...(r.pesi?[["Peso nella media",...r.pesi.map(w=>fmt(w*100,1)+"%")]]:[])];
   return { head, t1, t2, t3 };
 }
 function htmlTable(head,rows,totRows){
@@ -541,13 +546,13 @@ function secValutazione(el,p){
   for(const a of r.avvisi) el.append(h("div",{class:"notice err"},a));
   if(!r.comps.length||!(r.sog.S>0)){ el.append(h("div",{class:"empty"},"Il calcolo compare quando ci sono la superficie commerciale e almeno un comparabile con prezzo e superficie.")); return; }
   el.append(h("div",{class:"result"},h("small",null,"VALORE DI MERCATO STIMATO"),h("div",{class:"big"},eur(r.valore)),
-    h("small",null,`${eur(r.unitario,2)}/m² su ${fmt(r.sog.S,2)} m² commerciali · media prezzi corretti ${eur(r.media)}`+(r.detrazioni?` − detrazioni ${eur(r.detrazioni)}`:"")+` · arrotondamento a ${eur(r.passo)}`)));
+    h("small",null,`${eur(r.unitario,2)}/m² su ${fmt(r.sog.S,2)} m² ${r.sog.supDaConfronto?"di confronto":"commerciali"} · ${r.pesi?"media ponderata":"media"} prezzi corretti ${eur(r.media)}`+(r.detrazioni?` − detrazioni ${eur(r.detrazioni)}`:"")+` · arrotondamento a ${eur(r.passo)}`)));
   el.append(h("div",{class:"notice "+(r.attendibile?"ok":"err")},`Divergenza percentuale assoluta tra i prezzi corretti: ${fmt(r.divergenza,2)}% (soglia ${fmt(r.soglia,1)}%) — ${r.attendibile?"stima attendibile":"verificare comparabili e parametri"}.`));
   const T=tabellaMCA(r,p);
   el.append(card("Comparabili",htmlTable(T.head,T.t1)));
   el.append(card("Aggiustamenti (differenza × prezzo marginale)",h("p",{class:"hint"},"Differenza = immobile da stimare − comparabile. Per la data: mesi tra il contratto e la data di riferimento della stima."),htmlTable(T.head,T.t2,T.t3)));
   el.append(card("Immobile da stimare",htmlTable(["Caratteristica","Valore"],[
-    ["Data di riferimento",itData(r.dv)],["Superficie commerciale (m²)",fmt(r.sog.S,2)],["Piano",isFinite(r.sog.L)?fmt(r.sog.L):"—"],["Servizi igienici",isFinite(r.sog.N)?fmt(r.sog.N):"—"],["Stato di manutenzione",(MANUT.find(m=>m[0]===String(p.immobile.manutenzione))||["","—"])[1]],
+    ["Data di riferimento",itData(r.dv)],[r.sog.supDaConfronto?"Superficie di confronto (m²)":"Superficie commerciale (m²)",fmt(r.sog.S,2)],["Piano",isFinite(r.sog.L)?fmt(r.sog.L):"—"],["Servizi igienici",isFinite(r.sog.N)?fmt(r.sog.N):"—"],["Stato di manutenzione",(MANUT.find(m=>m[0]===String(p.immobile.manutenzione))||["","—"])[1]],
     ...p.mca.extra.map(x=>[x.nome||"Caratteristica",isFinite(num(x.soggetto))?fmt(num(x.soggetto),2):"—"])])));
 }
 function secConclusione(el,p){
@@ -665,10 +670,10 @@ function buildDocx(p){
     B.push(table([["Caratteristica","Criterio"],...att.map(x=>[x.nome,x.nota])],[35,65],{head:true}));
     B.push(H2("Tabella di valutazione"));
     const cols=r.comps.map((c,i)=>"C"+(i+1)), w=[30,...cols.map(()=>70/cols.length)];
-    B.push(table([["",...cols],["Prezzo",...r.comps.map(c=>fmt(n0(c.prezzo)))],...att.map(x=>[x.nome,...x.valori.map(v=>fmt(v.adj))]),["Prezzo corretto",...r.corretti.map(v=>fmt(v))]],w,{head:true,right:true,totLast:true}));
+    B.push(table([["",...cols],["Prezzo",...r.comps.map(c=>fmt(n0(c.prezzo)))],...att.map(x=>[x.nome,...x.valori.map(v=>fmt(v.adj))]),["Prezzo corretto",...r.corretti.map(v=>fmt(v))],...(r.pesi?[["Peso nella media",...r.pesi.map(x=>fmt(x*100,1)+"%")]]:[])],w,{head:true,right:true,totLast:!r.pesi}));
     B.push(H2("Dettaglio degli aggiustamenti"));
     B.push(table([["Caratteristica",...cols],...att.map(x=>[x.nome+(x.unita?` (${x.unita})`:""),...x.valori.map(v=>isFinite(v.df)?`${fmt(v.df,x.k==="data"?1:2)} × ${fmt(v.pm,2)}`:"—")])],w,{head:true,right:true}));
-    B.push(kv([["Media dei prezzi corretti",eur(r.media)],["Divergenza percentuale assoluta",fmt(r.divergenza,2)+"% (soglia "+fmt(r.soglia,1)+"%)"+(r.attendibile?"":" — oltre la soglia")],...p.conclusione.detrazioni.filter(d=>has(d.importo)).map(d=>["Detrazione: "+(d.descrizione||"—"),"− "+eur(n0(d.importo))]),["Arrotondamento",eur(r.passo)]]));
+    B.push(kv([[r.pesi?"Media ponderata dei prezzi corretti":"Media dei prezzi corretti",eur(r.media)],...(r.sog.supDaConfronto?[["Superficie dell'immobile nel confronto",fmt(r.sog.S,2)+" m²"]]:[]),["Divergenza percentuale assoluta",fmt(r.divergenza,2)+"% (soglia "+fmt(r.soglia,1)+"%)"+(r.attendibile?"":" — oltre la soglia")],...p.conclusione.detrazioni.filter(d=>has(d.importo)).map(d=>["Detrazione: "+(d.descrizione||"—"),"− "+eur(n0(d.importo))]),["Arrotondamento",eur(r.passo)]]));
   } else B.push(P("「DA FORNIRE」 comparabili e superficie commerciale per il calcolo.",{color:MUTED}));
   for(const a of r.avvisi) B.push(P("Nota: "+a,{sz:16,color:"A33A2C"}));
 
