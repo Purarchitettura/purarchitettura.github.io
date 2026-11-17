@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>Scheda sopralluogo</title>
+<title>Scheda sopralluogo perizie</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Sopralluogo">
+<meta name="apple-mobile-web-app-title" content="Sopralluogo perizie">
 <style>
 /* Stile purarchitettura.it: fondo bianco, Arial, titoli maiuscoli spaziati, accento oro, pulsanti a pillola */
 :root{--bg:#fff;--surface:#fff;--soft:#f6f4ef;--ink:#333;--muted:#7a7a7a;--faint:#a9a9a9;--line:#e4e1da;--gold:#84754e;--gold-ink:#fff;--gold-soft:#f1ede3;--danger:#a33a2c;--warn-bg:#f7f1e1;--warn-ink:#6b5a2e;--f:Arial,"Helvetica Neue",Helvetica,sans-serif;color-scheme:light}
@@ -30,6 +30,9 @@ header.top{border-bottom:1px solid var(--line);background:var(--bg);position:sti
 .word{display:grid;line-height:1.15;min-width:0}
 .word b{font-weight:400;font-size:18px;letter-spacing:.02em;white-space:nowrap}
 .word b span{color:var(--gold)}
+.brand{flex:1 1 auto}
+.top-in .btn{flex:none}
+@media(max-width:480px){.word b{white-space:normal;font-size:16px;line-height:1.2}.top-in .btn{padding:0 12px;font-size:10.5px}}
 .word small{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .spacer{flex:1}
 
@@ -132,10 +135,9 @@ footer span{display:block}
   <div class="wrap top-in">
     <a class="brand" href="../" aria-label="Torna a PuraStrumenti">
       <svg class="mark" viewBox="72 75 435 407" aria-hidden="true"><rect x="72" y="75" width="435" height="407" fill="#84754e"/><polygon points="290,75 507,482 72,482" fill="#fff"/><polygon points="290,277 397,482 180,482" fill="#84754e"/></svg>
-      <span class="word"><b>Scheda <span>sopralluogo</span></b><small>Purarchitettura · perizie</small></span>
+      <span class="word"><b>Scheda sopralluogo <span>perizie</span></b><small>Purarchitettura · perizie</small></span>
     </a>
-    <span class="spacer"></span>
-    <button type="button" class="btn quiet small dashed" id="btnNew">Nuova scheda</button>
+        <button type="button" class="btn quiet small dashed" id="btnNew">Nuova scheda</button>
   </div>
 </header>
 
@@ -143,7 +145,7 @@ footer span{display:block}
   <section class="hero">
     <div>
       <p class="eyebrow">Studio Purarchitettura · Perizie</p>
-      <h1 class="title">Scheda sopralluogo</h1>
+      <h1 class="title">Scheda sopralluogo perizie</h1>
       <hr class="rule">
       <span id="headerPerizia" class="header-perizia">Perizia n. —</span>
       <p class="document-heading">Richiesta documentazione integrativa</p>

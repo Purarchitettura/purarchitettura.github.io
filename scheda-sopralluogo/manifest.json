@@ -1,6 +1,6 @@
 {
-  "name": "Scheda sopralluogo · Purarchitettura",
-  "short_name": "Sopralluogo",
+  "name": "Scheda sopralluogo perizie · Purarchitettura",
+  "short_name": "Sopralluogo perizie",
   "description": "Scheda sopralluogo CRIF e richiesta documentazione integrativa.",
   "start_url": "./",
   "scope": "./",
