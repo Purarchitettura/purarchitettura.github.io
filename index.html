@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PuraStrumenti</title>
+<meta name="description" content="Gli strumenti dello studio Purarchitettura in un unico posto.">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="PuraStrumenti">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+/* Layout: stile purarchitettura.it — fondo bianco, Arial, titoli maiuscoli spaziati, accento oro del logo, pulsanti a contorno */
+:root {
+  --bg: #ffffff; --surface: #ffffff; --soft: #f6f4ef; --ink: #333333; --muted: #7a7a7a; --faint: #a9a9a9;
+  --line: #e4e1da; --gold: #84754e; --gold-ink: #ffffff; --gold-soft: #f1ede3; --danger: #a33a2c; --overlay: rgba(30, 28, 22, .45);
+  --f: Arial, "Helvetica Neue", Helvetica, sans-serif; color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #161513; --surface: #1e1d1a; --soft: #24221e; --ink: #e8e5de; --muted: #a8a399; --faint: #7d786e; --line: #34312b; --gold: #b8a676; --gold-ink: #161513; --gold-soft: #2b2820; --danger: #e08a7d; --overlay: rgba(0,0,0,.6); color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #161513; --surface: #1e1d1a; --soft: #24221e; --ink: #e8e5de; --muted: #a8a399; --faint: #7d786e; --line: #34312b; --gold: #b8a676; --gold-ink: #161513; --gold-soft: #2b2820; --danger: #e08a7d; --overlay: rgba(0,0,0,.6); color-scheme: dark; }
+* { box-sizing: border-box; }
+html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--f); -webkit-text-size-adjust: 100%; }
+[hidden] { display: none !important; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+a { color: inherit; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+header.top { border-bottom: 1px solid var(--line); background: var(--bg); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); background: var(--bg); z-index: 11; }
+.top-in { display: flex; align-items: center; gap: 14px; min-height: 68px; padding-block: 10px; }
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; min-width: 0; }
+.mark { width: 38px; height: 36px; flex: none; }
+.word { display: grid; line-height: 1.1; min-width: 0; }
+.word b { font-weight: 400; font-size: 19px; letter-spacing: .02em; color: var(--ink); white-space: nowrap; }
+.word b span { color: var(--gold); }
+.word small { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spacer { flex: 1; }
+.who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.who-name { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 26ch; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--gold-soft); color: var(--gold); display: grid; place-items: center; font-size: 13px; flex: none; overflow: hidden; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 20px; border: 1px solid var(--ink); border-radius: 999px; background: transparent; color: var(--ink); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; cursor: pointer; white-space: nowrap; transition: background .15s, color .15s, border-color .15s; }
+.btn:hover { background: var(--ink); color: var(--bg); }
+.btn.gold { border-color: var(--gold); color: var(--gold); }
+.btn.gold:hover { background: var(--gold); color: var(--gold-ink); }
+.btn.solid { background: var(--gold); border-color: var(--gold); color: var(--gold-ink); }
+.btn.solid:hover { filter: brightness(.92); background: var(--gold); color: var(--gold-ink); }
+.btn.quiet { border-color: var(--line); color: var(--muted); }
+.btn.quiet:hover { background: var(--soft); color: var(--ink); }
+.btn.danger { border-color: var(--danger); color: var(--danger); }
+.btn.danger:hover { background: var(--danger); color: #fff; }
+.btn.small { min-height: 32px; padding: 0 14px; font-size: 11.5px; }
+.btn svg { width: 15px; height: 15px; }
+.eyebrow { font-size: 12px; letter-spacing: .28em; text-transform: uppercase; color: var(--muted); margin: 0; }
+h1.title { font-weight: 400; font-size: clamp(26px, 5vw, 36px); letter-spacing: .16em; text-transform: uppercase; color: var(--ink); margin: 6px 0 0; text-wrap: balance; }
+.rule { width: 64px; height: 1px; background: var(--gold); border: 0; margin: 18px 0 0; }
+.lead { color: var(--muted); max-width: 62ch; margin: 14px 0 0; }
+main { padding-block: 36px 56px; display: grid; gap: 36px; }
+.search { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); max-width: 420px; padding: 4px 2px; }
+.search:focus-within { border-color: var(--gold); }
+.search svg { width: 18px; height: 18px; color: var(--faint); flex: none; }
+.search input { border: 0; background: transparent; outline: none; padding: 8px 0; flex: 1; min-width: 0; font-size: 15px; }
+.section { display: grid; gap: 16px; }
+.section-head { display: flex; align-items: baseline; gap: 12px; }
+.section-head h2 { font-weight: 400; font-size: 13px; letter-spacing: .26em; text-transform: uppercase; color: var(--ink); margin: 0; }
+.section-head .count { font-size: 12px; color: var(--faint); }
+.section-head::after { content: ""; flex: 1; height: 1px; background: var(--line); align-self: center; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+.card { border: 1px solid var(--line); background: var(--surface); padding: 22px 22px 20px; display: grid; grid-template-rows: auto 1fr auto; gap: 14px; min-width: 0; transition: border-color .15s, box-shadow .15s; }
+.card:hover { border-color: var(--gold); box-shadow: 0 6px 24px rgba(132, 117, 78, .10); }
+.card-head { display: flex; gap: 14px; align-items: center; min-width: 0; }
+.mono { width: 46px; height: 46px; flex: none; background: var(--gold); color: var(--gold-ink); display: grid; place-items: center; font-size: 17px; letter-spacing: .06em; }
+.mono.link { background: var(--gold-soft); color: var(--gold); }
+.card h3 { font-weight: 400; font-size: 18px; letter-spacing: .02em; margin: 0; overflow-wrap: anywhere; }
+.kind { font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
+.card p { margin: 0; color: var(--muted); font-size: 14.5px; overflow-wrap: anywhere; }
+.card .acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.card .host { font-size: 12px; color: var(--faint); margin-left: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 48%; }
+.empty { border: 1px dashed var(--line); padding: 28px; text-align: center; color: var(--muted); }
+.gate { min-height: calc(100vh - 120px); display: grid; place-items: center; padding-block: 48px; }
+.gate-box { width: 100%; max-width: 440px; display: grid; gap: 22px; justify-items: start; }
+.gate-box .mark { width: 64px; height: 60px; }
+.gate-box .lead { margin-top: 0; }
+.note { font-size: 13px; color: var(--muted); }
+.note a { color: var(--gold); }
+.err { border-left: 2px solid var(--danger); padding: 8px 12px; color: var(--danger); font-size: 14px; background: var(--soft); width: 100%; }
+.spin { width: 26px; height: 26px; border: 2px solid var(--line); border-top-color: var(--gold); border-radius: 50%; animation: rot .8s linear infinite; margin: 60px auto; }
+@keyframes rot { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation-duration: 2.4s; } .card, .btn { transition: none; } }
+footer.foot { border-top: 1px solid var(--line); }
+.foot-in { display: flex; gap: 12px 24px; flex-wrap: wrap; justify-content: space-between; padding-block: 20px; font-size: 12px; color: var(--faint); letter-spacing: .04em; }
+.foot-in a { color: var(--muted); }
+.admin-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.panel { border: 1px solid var(--line); background: var(--surface); display: grid; }
+.tabs { display: flex; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tabs button { border: 0; background: none; padding: 14px 18px; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--gold); }
+.panel-body { padding: 20px; display: grid; gap: 16px; }
+.row { display: flex; gap: 14px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); min-width: 0; }
+.row:first-child { border-top: 0; }
+.row-main { flex: 1; min-width: 0; }
+.row-title { font-size: 15px; overflow-wrap: anywhere; }
+.row-sub { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.chip { display: inline-block; font-size: 11px; letter-spacing: .06em; padding: 2px 9px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); margin: 2px 4px 2px 0; }
+.chip.gold { border-color: var(--gold); color: var(--gold); }
+.changes { border: 1px solid var(--gold); background: var(--gold-soft); padding: 14px 16px; display: grid; gap: 10px; }
+.changes p { margin: 0; font-size: 14px; }
+.form { display: grid; gap: 14px; }
+.field { display: grid; gap: 5px; }
+.field > span { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.field input, .field select, .field textarea { width: 100%; border: 1px solid var(--line); background: var(--bg); padding: 10px 12px; font-size: 16px; border-radius: 0; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--gold); outline: none; }
+.field small { font-size: 12px; color: var(--faint); }
+.checks { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.checks label { display: inline-flex; gap: 6px; align-items: center; font-size: 14px; }
+.checks input { width: 17px; height: 17px; accent-color: var(--gold); }
+.modal-back { position: fixed; inset: 0; background: var(--overlay); z-index: 50; display: grid; place-items: center; padding: 16px; }
+.modal { width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; background: var(--surface); border-top: 2px solid var(--gold); padding: 24px max(20px, env(safe-area-inset-right, 0px)) 22px max(20px, env(safe-area-inset-left, 0px)); display: grid; gap: 18px; }
+.modal h2 { font-weight: 400; font-size: 15px; letter-spacing: .22em; text-transform: uppercase; margin: 0; }
+.modal-acts { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.preview-banner { border: 1px solid var(--gold); color: var(--gold); padding: 10px 14px; font-size: 13px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 18px; font-size: 14px; z-index: 60; max-width: calc(100vw - 32px); }
+@media (max-width: 560px) { .who-name { display: none; } .word small { display: none; } .top-in { min-height: 60px; } }
+</style>
+</head>
+<body>
+<div id="app"><div class="spin" aria-label="Caricamento"></div></div>
+<script>
+'use strict';
+/* =====================================================================
+   PuraStrumenti — portale degli strumenti dello studio Purarchitettura
+   REGOLE (anche per le modifiche future)
+   - Il portale sta alla radice di purarchitettura.github.io e condivide
+     la memoria del browser con le app nelle sottocartelle (es. /app-cantiere/).
+     Per questo: nessun service worker alla radice, e solo chiavi con il
+     prefisso "ps_" in localStorage. Mai cancellare chiavi di altre app.
+   - Nessuna cartella del repository del portale deve chiamarsi come un'app
+     (es. "app-cantiere"): coprirebbe l'app pubblicata a quell'indirizzo.
+   - Nascondere una scheda non è una protezione: ogni app e servizio
+     protegge da sé i propri dati (condivisioni Drive, accessi propri).
+   - Le persone sono indicate in config.json con un'impronta SHA-256
+     dell'email, non con l'email in chiaro.
+   ===================================================================== */
+const CONFIG = {
+  CLIENT_ID: '',   // ID client OAuth (progetto Google "PuraStrumenti"), solo nome ed email
+  ADMIN_GROUP: 'amministrazione',
+  CONTATTO: 'contact@purarchitettura.it',
+  VERSIONE: '1.0 · 17/11/2026',
+  SESSIONE_GIORNI: 30,
+};
+const $ = s => document.querySelector(s);
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  if (attrs) for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
+    else if (k === 'value') el.value = v;
+    else if (k === 'checked') el.checked = !!v;
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat(Infinity)) { if (c == null || c === false) continue; el.append(c.nodeType ? c : document.createTextNode(String(c))); }
+  return el;
+}
+const SVGNS = 'http://www.w3.org/2000/svg';
+function sv(tag, attrs, ...kids) { const e = document.createElementNS(SVGNS, tag); for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, v); kids.forEach(k => e.append(k)); return e; }
+function markSVG(cls = 'mark') {
+  return sv('svg', { class: cls, viewBox: '72 75 435 407', role: 'img', 'aria-label': 'Purarchitettura' },
+    sv('rect', { x: 72, y: 75, width: 435, height: 407, fill: '#84754e' }),
+    sv('polygon', { points: '290,75 507,482 72,482', fill: '#ffffff' }),
+    sv('polygon', { points: '290,277 397,482 180,482', fill: '#84754e' }));
+}
+const ICONS = { search: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14z M20 20l-4-4', ext: 'M14 4h6v6 M20 4l-9 9 M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5', doc: 'M7 3h7l5 5v13H7z M14 3v5h5', gear: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M4 12h2 M18 12h2 M12 4v2 M12 18v2 M6.3 6.3l1.4 1.4 M16.3 16.3l1.4 1.4 M6.3 17.7l1.4-1.4 M16.3 7.7l1.4-1.4' };
+function icon(n) { return sv('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.6', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true' }, sv('path', { d: ICONS[n] })); }
+const LS = {
+  get(k) { try { return JSON.parse(localStorage.getItem('ps_' + k)); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem('ps_' + k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem('ps_' + k); } catch {} },
+};
+const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+async function sha256(text) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+const idFor = (salt, email) => sha256(salt + String(email).trim().toLowerCase());
+function toast(msg) { const t = h('div', { class: 'toast', role: 'status' }, msg); document.body.append(t); setTimeout(() => t.remove(), 3200); }
+function initials(s) { const p = String(s || '').trim().split(/\s+/).filter(Boolean); return ((p[0]?.[0] || '') + (p[1]?.[0] || p[0]?.[1] || '')).toUpperCase() || '·'; }
+function hostOf(u) { try { return new URL(u, location.href).host.replace(/^www\./, ''); } catch { return ''; } }
+const isOwnApp = u => { try { return new URL(u, location.href).origin === location.origin; } catch { return false; } };
+
+/* ---------- accesso Google (solo nome ed email) ---------- */
+const Auth = {
+  redirectUri() { return location.origin + location.pathname.replace(/index\.html$/, ''); },
+  start(selectAccount) {
+    const state = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    LS.set('oauth_state', state);
+    const p = new URLSearchParams({ client_id: CONFIG.CLIENT_ID, redirect_uri: this.redirectUri(), response_type: 'token', scope: 'openid email profile', state });
+    if (selectAccount) p.set('prompt', 'select_account');
+    location.assign('https://accounts.google.com/o/oauth2/v2/auth?' + p);
+  },
+  async readRedirect() {
+    if (!/access_token=|error=/.test(location.hash)) return null;
+    const p = new URLSearchParams(location.hash.slice(1));
+    history.replaceState(null, '', location.pathname + location.search);
+    if (p.get('state') !== LS.get('oauth_state')) return { error: 'Risposta di accesso non valida. Riprova.' };
+    LS.del('oauth_state');
+    if (p.get('error')) return { error: p.get('error') === 'access_denied' ? 'Accesso annullato.' : 'Accesso non riuscito (' + p.get('error') + ').' };
+    try {
+      const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: 'Bearer ' + p.get('access_token') } });
+      if (!r.ok) throw new Error('risposta ' + r.status);
+      const u = await r.json();
+      if (!u.email || u.email_verified === false) return { error: 'L\'account Google non ha un indirizzo email verificato.' };
+      LS.set('session', { email: u.email.toLowerCase(), name: u.name || u.email, picture: u.picture || '', until: Date.now() + CONFIG.SESSIONE_GIORNI * 864e5 });
+      fetch('https://oauth2.googleapis.com/revoke?token=' + encodeURIComponent(p.get('access_token')), { method: 'POST' }).catch(() => {});
+      return { ok: true };
+    } catch (e) { return { error: 'Verifica dell\'account non riuscita: ' + e.message }; }
+  },
+  session() { const s = LS.get('session'); return s && s.until > Date.now() ? s : null; },
+  signOut() { LS.del('session'); },
+};
+
+/* ---------- configurazione ---------- */
+async function loadConfig() {
+  const r = await fetch('config.json?t=' + Date.now(), { cache: 'no-store' });
+  if (!r.ok) throw new Error('config.json non trovato (' + r.status + ')');
+  const c = await r.json();
+  c.gruppi ||= []; c.persone ||= []; c.schede ||= []; c.sezioni ||= [];
+  return c;
+}
+function visibleFor(cfg, groups) { const set = new Set(groups); return cfg.schede.filter(s => (s.gruppi || []).some(g => g === '*' || set.has(g))); }
+
+/* ---------- interfaccia ---------- */
+let STATE = { cfg: null, me: null, person: null, admin: false, draft: null, preview: null, query: '' };
+function Header() {
+  const s = STATE.me;
+  return h('header', { class: 'top' }, h('div', { class: 'wrap top-in' },
+    h('a', { class: 'brand', href: './', 'aria-label': 'PuraStrumenti, pagina iniziale' }, markSVG(),
+      h('span', { class: 'word' }, h('b', null, 'Pura', h('span', null, 'Strumenti')), h('small', null, 'Purarchitettura · strumenti dello studio'))),
+    h('span', { class: 'spacer' }),
+    s ? h('div', { class: 'who' },
+      h('span', { class: 'who-name' }, s.name),
+      h('span', { class: 'avatar', title: s.email }, s.picture ? h('img', { src: s.picture, alt: '', referrerpolicy: 'no-referrer' }) : initials(s.name)),
+      h('button', { class: 'btn quiet small', type: 'button', onclick: () => { Auth.signOut(); STATE.me = null; Gate(); } }, 'Esci')) : null));
+}
+function Footer() {
+  return h('footer', { class: 'foot' }, h('div', { class: 'wrap foot-in' },
+    h('span', null, '© Purarchitettura · PuraStrumenti ' + CONFIG.VERSIONE),
+    h('span', null, h('a', { href: 'privacy.html' }, 'Privacy'), ' · Assistenza: ', h('a', { href: 'mailto:' + CONFIG.CONTATTO }, CONFIG.CONTATTO))));
+}
+function page(...content) { $('#app').replaceChildren(Header(), h('main', { class: 'wrap' }, content), Footer()); }
+function Gate(error) {
+  $('#app').replaceChildren(Header(), h('div', { class: 'wrap gate' }, h('div', { class: 'gate-box' },
+    markSVG(),
+    h('div', null, h('p', { class: 'eyebrow' }, 'Purarchitettura'), h('h1', { class: 'title' }, 'PuraStrumenti'), h('hr', { class: 'rule' })),
+    h('p', { class: 'lead' }, 'Gli strumenti dello studio in un unico posto: le app sviluppate per il lavoro in studio e in cantiere e i collegamenti ai servizi che usiamo ogni giorno.'),
+    error ? h('div', { class: 'err', role: 'alert' }, error) : null,
+    CONFIG.CLIENT_ID
+      ? h('button', { class: 'btn solid', type: 'button', onclick: () => Auth.start(true) }, 'Accedi con Google')
+      : h('div', { class: 'err' }, 'L\'accesso sarà attivo a breve: è in corso la configurazione.'),
+    h('p', { class: 'note' }, 'L\'accesso usa solo il tuo nome e il tuo indirizzo email, per mostrarti gli strumenti a cui sei abilitato. ', h('a', { href: 'privacy.html' }, 'Informativa privacy'))))
+  , Footer());
+}
+function NotEnabled() {
+  page(h('div', { class: 'gate-box', style: 'max-width:520px' },
+    h('div', null, h('p', { class: 'eyebrow' }, 'Accesso non abilitato'), h('h1', { class: 'title', style: 'font-size:24px' }, 'Account non riconosciuto'), h('hr', { class: 'rule' })),
+    h('p', { class: 'lead' }, 'L\'account ', h('b', null, STATE.me.email), ' non è tra quelli abilitati a PuraStrumenti.'),
+    h('p', { class: 'note' }, 'Se hai più account Google, accedi con quello che usi per lo studio. Per essere abilitato scrivi a ', h('a', { href: 'mailto:' + CONFIG.CONTATTO }, CONFIG.CONTATTO), '.'),
+    h('div', { class: 'admin-bar' }, h('button', { class: 'btn gold', type: 'button', onclick: () => { Auth.signOut(); Auth.start(true); } }, 'Usa un altro account'))));
+}
+function Card(s) {
+  const own = isOwnApp(s.url), isApp = s.tipo === 'app';
+  return h('article', { class: 'card' },
+    h('div', { class: 'card-head' },
+      h('div', { class: 'mono' + (isApp ? '' : ' link'), 'aria-hidden': 'true' }, initials(s.nome)),
+      h('div', { style: 'min-width:0' }, h('div', { class: 'kind' }, isApp ? 'App' : 'Collegamento'), h('h3', null, s.nome))),
+    h('p', null, s.descrizione || ''),
+    h('div', { class: 'acts' },
+      h('a', { class: 'btn gold small', href: s.url, target: own ? null : '_blank', rel: own ? null : 'noopener' }, 'Apri', own ? null : icon('ext')),
+      s.guida ? h('a', { class: 'btn quiet small', href: s.guida, target: '_blank', rel: 'noopener' }, icon('doc'), 'Guida') : null,
+      h('span', { class: 'host' }, hostOf(s.url))));
+}
+function Home() {
+  const cfg = STATE.draft || STATE.cfg;
+  const groups = STATE.preview ? [STATE.preview] : (STATE.person?.gruppi || []);
+  const all = visibleFor(cfg, groups);
+  const q = norm(STATE.query);
+  const list = q ? all.filter(s => norm([s.nome, s.descrizione, hostOf(s.url)].join(' ')).includes(q)) : all;
+  const order = [...cfg.sezioni, ...new Set(list.map(s => s.sezione || 'Altro').filter(x => !cfg.sezioni.includes(x)))];
+  const bySec = order.map(sec => [sec, list.filter(s => (s.sezione || 'Altro') === sec)]).filter(([, a]) => a.length);
+  const nome = (STATE.me.name || '').split(' ')[0];
+  const search = all.length > 6 ? h('label', { class: 'search' }, icon('search'), h('input', { id: 'q', type: 'search', placeholder: 'Cerca uno strumento', value: STATE.query, 'aria-label': 'Cerca uno strumento', oninput: e => { STATE.query = e.target.value; Home(); setTimeout(() => { const i = $('#q'); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }); } })) : null;
+  const gname = id => id === '*' ? 'Tutti' : (cfg.gruppi.find(g => g.id === id)?.nome || id);
+  page(
+    STATE.preview ? h('div', { class: 'preview-banner' }, 'Anteprima: vedi il portale come il gruppo «' + gname(STATE.preview) + '».', h('button', { class: 'btn gold small', type: 'button', onclick: () => { STATE.preview = null; Home(); } }, 'Torna alla tua vista')) : null,
+    h('section', null,
+      h('p', { class: 'eyebrow' }, nome ? 'Ciao ' + nome : 'Benvenuto'),
+      h('h1', { class: 'title' }, 'Strumenti dello studio'), h('hr', { class: 'rule' }),
+      h('p', { class: 'lead' }, all.length ? `${all.length === 1 ? 'Hai accesso a 1 strumento' : 'Hai accesso a ' + all.length + ' strumenti'}. Le app si aprono qui; i collegamenti esterni in una nuova scheda.` : 'Non ci sono ancora strumenti assegnati al tuo account.')),
+    STATE.admin && !STATE.preview ? AdminBar() : null,
+    search,
+    bySec.length ? bySec.map(([sec, items]) => h('section', { class: 'section', 'aria-label': sec },
+      h('div', { class: 'section-head' }, h('h2', null, sec), h('span', { class: 'count' }, String(items.length))),
+      h('div', { class: 'grid' }, items.map(Card))))
+      : h('div', { class: 'empty' }, q ? 'Nessuno strumento corrisponde a «' + STATE.query + '».' : 'Quando ti verranno assegnati degli strumenti li troverai qui.'),
+    STATE.admin && STATE.adminOpen && !STATE.preview ? Admin() : null);
+}
+
+/* ---------- gestione (solo gruppo amministrazione) ---------- */
+function AdminBar() {
+  return h('div', { class: 'admin-bar' },
+    h('button', { class: 'btn quiet small', type: 'button', onclick: () => { STATE.adminOpen = !STATE.adminOpen; Home(); if (STATE.adminOpen) setTimeout(() => $('#gestione')?.scrollIntoView({ behavior: 'smooth' }), 50); } }, icon('gear'), STATE.adminOpen ? 'Chiudi gestione' : 'Gestione'),
+    STATE.draft ? h('span', { class: 'chip gold' }, 'Modifiche non pubblicate') : null);
+}
+function draft() { if (!STATE.draft) STATE.draft = JSON.parse(JSON.stringify(STATE.cfg)); return STATE.draft; }
+function saveDraft() { LS.set('draft', { base: STATE.cfgSig, data: STATE.draft }); Home(); }
+function Admin() {
+  const cfg = STATE.draft || STATE.cfg;
+  const tab = STATE.adminTab || 'schede';
+  const setTab = t => { STATE.adminTab = t; Home(); $('#gestione')?.scrollIntoView(); };
+  const gname = id => id === '*' ? 'Tutti' : (cfg.gruppi.find(g => g.id === id)?.nome || id);
+  let body;
+  if (tab === 'schede') {
+    body = [h('div', { class: 'admin-bar' }, h('button', { class: 'btn gold small', type: 'button', onclick: () => editScheda(null) }, '+ Nuova scheda')),
+      h('div', null, cfg.schede.length ? cfg.schede.map(s => h('div', { class: 'row' },
+        h('div', { class: 'row-main' }, h('div', { class: 'row-title' }, s.nome, ' ', h('span', { class: 'chip' }, s.tipo === 'app' ? 'App' : 'Collegamento'), h('span', { class: 'chip' }, s.sezione || 'Altro')),
+          h('div', { class: 'row-sub' }, s.url), h('div', null, (s.gruppi || []).map(g => h('span', { class: 'chip gold' }, gname(g))))),
+        h('button', { class: 'btn quiet small', type: 'button', onclick: () => editScheda(s) }, 'Modifica'))) : h('div', { class: 'empty' }, 'Nessuna scheda.'))];
+  } else if (tab === 'gruppi') {
+    body = [h('div', { class: 'admin-bar' }, h('button', { class: 'btn gold small', type: 'button', onclick: () => editGruppo(null) }, '+ Nuovo gruppo')),
+      h('div', null, cfg.gruppi.map(g => {
+        const n = cfg.persone.filter(p => p.gruppi.includes(g.id)).length, ns = cfg.schede.filter(s => (s.gruppi || []).includes(g.id)).length;
+        return h('div', { class: 'row' },
+          h('div', { class: 'row-main' }, h('div', { class: 'row-title' }, g.nome), h('div', { class: 'row-sub' }, `${g.descrizione || ''}${g.descrizione ? ' · ' : ''}${n} ${n === 1 ? 'persona' : 'persone'}, ${ns} ${ns === 1 ? 'scheda' : 'schede'}`)),
+          h('button', { class: 'btn quiet small', type: 'button', onclick: () => { STATE.preview = g.id; window.scrollTo(0, 0); Home(); } }, 'Anteprima'),
+          h('button', { class: 'btn quiet small', type: 'button', onclick: () => editGruppo(g) }, 'Modifica'));
+      }))];
+  } else {
+    body = [h('div', { class: 'admin-bar' }, h('button', { class: 'btn gold small', type: 'button', onclick: () => editPersona(null) }, '+ Aggiungi persona')),
+      h('p', { class: 'note', style: 'margin:0' }, 'Le email non vengono salvate: nel file resta solo un\'impronta cifrata e l\'etichetta che scegli tu (es. nome e cognome).'),
+      h('div', null, cfg.persone.map(p => h('div', { class: 'row' },
+        h('div', { class: 'row-main' }, h('div', { class: 'row-title' }, p.etichetta || 'Senza etichetta', p.id === STATE.person?.id ? h('span', { class: 'chip gold', style: 'margin-left:8px' }, 'tu') : null),
+          h('div', null, p.gruppi.map(g => h('span', { class: 'chip' }, gname(g))))),
+        h('button', { class: 'btn quiet small', type: 'button', onclick: () => editPersona(p) }, 'Modifica'))))];
+  }
+  return h('section', { class: 'section', id: 'gestione' },
+    h('div', { class: 'section-head' }, h('h2', null, 'Gestione del portale')),
+    STATE.draft ? h('div', { class: 'changes' },
+      h('p', null, h('b', null, 'Hai modifiche non ancora pubblicate.'), ' Le vedi solo tu, su questo dispositivo. Per renderle valide per tutti scarica il nuovo file config.json e caricalo nel repository GitHub purarchitettura.github.io (Add file → Upload files).'),
+      h('div', { class: 'admin-bar' },
+        h('button', { class: 'btn solid small', type: 'button', onclick: exportConfig }, 'Scarica config.json'),
+        h('button', { class: 'btn quiet small', type: 'button', onclick: copyConfig }, 'Copia testo'),
+        h('button', { class: 'btn danger small', type: 'button', onclick: () => { STATE.draft = null; LS.del('draft'); Home(); toast('Modifiche annullate'); } }, 'Annulla modifiche'))) : null,
+    h('div', { class: 'panel' },
+      h('div', { class: 'tabs', role: 'tablist' }, [['schede', 'Schede'], ['gruppi', 'Gruppi'], ['persone', 'Persone']].map(([k, l]) => h('button', { type: 'button', role: 'tab', 'aria-selected': String(tab === k), onclick: () => setTab(k) }, l))),
+      h('div', { class: 'panel-body' }, body)));
+}
+function modal(title, content, actions) {
+  return new Promise(res => {
+    const back = h('div', { class: 'modal-back', onclick: e => { if (e.target === back) close(null); } });
+    const close = v => { back.remove(); document.removeEventListener('keydown', onKey); res(v); };
+    const onKey = e => { if (e.key === 'Escape') close(null); };
+    back.append(h('div', { class: 'modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': title }, h('h2', null, title), content,
+      h('div', { class: 'modal-acts' }, actions.map(a => h('button', { class: 'btn small ' + (a.kind || 'quiet'), type: 'button', onclick: async () => { const r = a.run ? await a.run() : a.value; if (r !== false) close(r ?? a.value); } }, a.label)))));
+    document.body.append(back); document.addEventListener('keydown', onKey);
+    setTimeout(() => back.querySelector('input,textarea,select')?.focus(), 30);
+  });
+}
+const field = (label, input, hint) => h('label', { class: 'field' }, h('span', null, label), input, hint ? h('small', null, hint) : null);
+function groupChecks(cfg, selected, withAll) {
+  const boxes = []; const wrap = h('div', { class: 'checks' });
+  const add = (id, nome) => { const c = h('input', { type: 'checkbox', value: id, checked: selected.includes(id) }); boxes.push(c); wrap.append(h('label', null, c, nome)); };
+  if (withAll) add('*', 'Tutti gli abilitati');
+  cfg.gruppi.forEach(g => add(g.id, g.nome));
+  return { el: wrap, value: () => boxes.filter(b => b.checked).map(b => b.value) };
+}
+async function editScheda(s) {
+  const cfg = STATE.draft || STATE.cfg;
+  const f = {
+    nome: h('input', { value: s?.nome || '', maxlength: 60 }),
+    descr: h('textarea', { rows: 3, maxlength: 240 }),
+    url: h('input', { type: 'url', value: s?.url || 'https://', inputmode: 'url' }),
+    guida: h('input', { type: 'url', value: s?.guida || '', placeholder: 'facoltativo', inputmode: 'url' }),
+    tipo: h('select', null, h('option', { value: 'app' }, 'App dello studio'), h('option', { value: 'link' }, 'Collegamento esterno')),
+    sezione: h('input', { value: s?.sezione || cfg.sezioni[0] || 'App dello studio', list: 'sez-list' }),
+  };
+  f.descr.value = s?.descrizione || ''; f.tipo.value = s?.tipo || 'app';
+  const gc = groupChecks(cfg, s?.gruppi || ['*'], true);
+  const dl = h('datalist', { id: 'sez-list' }, cfg.sezioni.map(x => h('option', { value: x })));
+  const err = h('div', { class: 'err', hidden: true });
+  const acts = [{ label: 'Annulla', value: null }];
+  if (s) acts.unshift({ label: 'Elimina', kind: 'danger', run: () => { const d = draft(); d.schede = d.schede.filter(x => x.id !== s.id); d.sezioni = d.sezioni.filter(x => d.schede.some(sc => sc.sezione === x)); saveDraft(); toast('Scheda eliminata (da pubblicare)'); } });
+  acts.push({ label: 'Salva', kind: 'solid', run: () => {
+    const nome = f.nome.value.trim(), url = f.url.value.trim(), guida = f.guida.value.trim(), gruppi = gc.value();
+    const bad = m => { err.textContent = m; err.hidden = false; return false; };
+    if (!nome) return bad('Indica il nome della scheda.');
+    if (!/^https:\/\/[^\s]+\.[^\s]+/.test(url)) return bad('Il link deve iniziare con https:// ed essere un indirizzo completo.');
+    if (guida && !/^https:\/\/[^\s]+\.[^\s]+/.test(guida)) return bad('Il link della guida deve iniziare con https://.');
+    if (!gruppi.length) return bad('Scegli almeno un gruppo che può vedere la scheda.');
+    const d = draft(); const sez = f.sezione.value.trim() || 'Altro';
+    if (!d.sezioni.includes(sez)) d.sezioni.push(sez);
+    const data = { id: s?.id || (norm(nome).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'scheda') + '-' + Date.now().toString(36).slice(-4), nome, descrizione: f.descr.value.trim(), url, guida: guida || undefined, tipo: f.tipo.value, sezione: sez, gruppi };
+    const i = d.schede.findIndex(x => x.id === data.id); if (i >= 0) d.schede[i] = data; else d.schede.push(data);
+    d.sezioni = d.sezioni.filter(x => d.schede.some(sc => sc.sezione === x));
+    saveDraft(); toast('Scheda salvata (da pubblicare)');
+  } });
+  await modal(s ? 'Modifica scheda' : 'Nuova scheda', h('div', { class: 'form' }, field('Nome', f.nome), field('Descrizione', f.descr, 'Una riga su a cosa serve'), field('Link', f.url), field('Guida', f.guida),
+    field('Tipo', f.tipo), field('Sezione', f.sezione, 'Scegli una sezione esistente o scrivine una nuova'), dl, field('Chi la vede', gc.el), err), acts);
+}
+async function editGruppo(g) {
+  const nome = h('input', { value: g?.nome || '', maxlength: 40 }), descr = h('input', { value: g?.descrizione || '', maxlength: 120 });
+  const err = h('div', { class: 'err', hidden: true });
+  const acts = [{ label: 'Annulla', value: null }];
+  if (g && g.id !== CONFIG.ADMIN_GROUP) acts.unshift({ label: 'Elimina', kind: 'danger', run: () => {
+    const d = draft(); d.gruppi = d.gruppi.filter(x => x.id !== g.id);
+    d.persone.forEach(p => p.gruppi = p.gruppi.filter(x => x !== g.id)); d.schede.forEach(s => s.gruppi = (s.gruppi || []).filter(x => x !== g.id));
+    saveDraft(); toast('Gruppo eliminato (da pubblicare)');
+  } });
+  acts.push({ label: 'Salva', kind: 'solid', run: () => {
+    const n = nome.value.trim(); if (!n) { err.textContent = 'Indica il nome del gruppo.'; err.hidden = false; return false; }
+    const d = draft();
+    if (g) { const x = d.gruppi.find(y => y.id === g.id); x.nome = n; x.descrizione = descr.value.trim(); }
+    else { let id = norm(n).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'gruppo'; while (d.gruppi.some(y => y.id === id)) id += '-2'; d.gruppi.push({ id, nome: n, descrizione: descr.value.trim() }); }
+    saveDraft(); toast('Gruppo salvato (da pubblicare)');
+  } });
+  await modal(g ? 'Modifica gruppo' : 'Nuovo gruppo', h('div', { class: 'form' }, field('Nome', nome), field('Descrizione', descr, 'Facoltativa'),
+    g?.id === CONFIG.ADMIN_GROUP ? h('p', { class: 'note', style: 'margin:0' }, 'Questo gruppo dà accesso alla gestione del portale e non si può eliminare.') : null, err), acts);
+}
+async function editPersona(p) {
+  const cfg = STATE.draft || STATE.cfg;
+  const email = h('input', { type: 'email', placeholder: 'nome@esempio.it', autocomplete: 'off', inputmode: 'email' });
+  const lab = h('input', { value: p?.etichetta || '', maxlength: 60, placeholder: 'Es. Mario Rossi' });
+  const gc = groupChecks(cfg, p?.gruppi || [], false);
+  const err = h('div', { class: 'err', hidden: true });
+  const adminsLeft = d => d.persone.filter(x => x.gruppi.includes(CONFIG.ADMIN_GROUP)).length;
+  const acts = [{ label: 'Annulla', value: null }];
+  if (p) acts.unshift({ label: 'Rimuovi', kind: 'danger', run: () => {
+    const d = draft(); const rest = d.persone.filter(x => x.id !== p.id);
+    if (p.gruppi.includes(CONFIG.ADMIN_GROUP) && rest.filter(x => x.gruppi.includes(CONFIG.ADMIN_GROUP)).length === 0) { err.textContent = 'Deve restare almeno una persona nel gruppo Amministrazione.'; err.hidden = false; return false; }
+    d.persone = rest; saveDraft(); toast('Persona rimossa (da pubblicare)');
+  } });
+  acts.push({ label: 'Salva', kind: 'solid', run: async () => {
+    const d = draft(); const gruppi = gc.value(); const bad = m => { err.textContent = m; err.hidden = false; return false; };
+    if (!p) {
+      const e = email.value.trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return bad('Inserisci un indirizzo email valido.');
+      const id = await idFor(d.sale, e);
+      if (d.persone.some(x => x.id === id)) return bad('Questa persona è già presente.');
+      if (!gruppi.length) return bad('Scegli almeno un gruppo.');
+      d.persone.push({ id, etichetta: lab.value.trim() || e.split('@')[0], gruppi });
+    } else {
+      const x = d.persone.find(y => y.id === p.id); const prev = x.gruppi; x.gruppi = gruppi; x.etichetta = lab.value.trim() || x.etichetta;
+      if (adminsLeft(d) === 0) { x.gruppi = prev; return bad('Deve restare almeno una persona nel gruppo Amministrazione.'); }
+      if (!gruppi.length) { x.gruppi = prev; return bad('Scegli almeno un gruppo, oppure usa «Rimuovi».'); }
+    }
+    saveDraft(); toast('Persona salvata (da pubblicare)');
+  } });
+  await modal(p ? 'Modifica persona' : 'Aggiungi persona', h('div', { class: 'form' },
+    p ? null : field('Email dell\'account Google', email, 'Quella con cui la persona accederà. Non viene salvata.'),
+    field('Etichetta', lab, 'Come la riconosci nell\'elenco (nome e cognome o ruolo)'), field('Gruppi', gc.el), err), acts);
+}
+function configText() { const d = STATE.draft; d.aggiornato = new Date().toISOString().slice(0, 10); return JSON.stringify(d, null, 2) + '\n'; }
+function exportConfig() {
+  const blob = new Blob([configText()], { type: 'application/json' });
+  const a = h('a', { href: URL.createObjectURL(blob), download: 'config.json' }); document.body.append(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 3000);
+  toast('config.json scaricato: caricalo su GitHub per pubblicarlo');
+}
+async function copyConfig() { try { await navigator.clipboard.writeText(configText()); toast('Testo di config.json copiato'); } catch { toast('Copia non riuscita: usa «Scarica config.json»'); } }
+
+/* ---------- avvio ---------- */
+async function render() {
+  const me = Auth.session();
+  if (!me) return Gate();
+  STATE.me = me;
+  try { STATE.cfg = await loadConfig(); }
+  catch (e) { page(h('div', { class: 'err' }, 'Impossibile caricare l\'elenco degli strumenti: ' + e.message)); return; }
+  const id = await idFor(STATE.cfg.sale, me.email);
+  STATE.person = STATE.cfg.persone.find(p => p.id === id) || null;
+  if (!STATE.person) return NotEnabled();
+  STATE.admin = STATE.person.gruppi.includes(CONFIG.ADMIN_GROUP);
+  STATE.cfgSig = await sha256(JSON.stringify(STATE.cfg));
+  const d = STATE.admin ? LS.get('draft') : null;
+  // la bozza vale solo se il config pubblicato non è cambiato nel frattempo
+  STATE.draft = d && d.base === STATE.cfgSig ? d.data : null;
+  if (d && !STATE.draft) LS.del('draft');
+  Home();
+}
+(async () => {
+  const red = await Auth.readRedirect();
+  if (red?.error) return Gate(red.error);
+  render().catch(e => page(h('div', { class: 'err' }, 'Errore: ' + e.message)));
+})();
+</script>
+</body>
+</html>

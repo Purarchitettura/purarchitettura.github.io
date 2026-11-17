@@ -1,0 +1,46 @@
+{
+  "formato": 1,
+  "aggiornato": "2026-11-17",
+  "sale": "purastrumenti/v1/",
+  "gruppi": [
+    {
+      "id": "amministrazione",
+      "nome": "Amministrazione",
+      "descrizione": "Gestiscono schede, gruppi e persone del portale"
+    }
+  ],
+  "persone": [
+    {
+      "id": "4ff5b0c79fe895656c3c3ffdfa8e040e09c422e0a20f752894ce50a2ce3b808c",
+      "etichetta": "Studio (account contact)",
+      "gruppi": [
+        "amministrazione"
+      ]
+    },
+    {
+      "id": "cd0f510609ece94a29a3d4aed6b32418a31e3782f8e5c0e3eeffb44a6968f7e8",
+      "etichetta": "Ilario Corrò",
+      "gruppi": [
+        "amministrazione"
+      ]
+    }
+  ],
+  "sezioni": [
+    "App dello studio",
+    "Collegamenti"
+  ],
+  "schede": [
+    {
+      "id": "foto-cantiere",
+      "nome": "Foto Cantiere",
+      "descrizione": "Foto di cantiere con punto di ripresa sulla planimetria, gruppi di sopralluogo e rapporto fotografico PDF o Word.",
+      "url": "https://purarchitettura.github.io/app-cantiere/",
+      "guida": "https://github.com/Purarchitettura/app-cantiere/blob/main/LEGGIMI.md",
+      "tipo": "app",
+      "sezione": "App dello studio",
+      "gruppi": [
+        "*"
+      ]
+    }
+  ]
+}
