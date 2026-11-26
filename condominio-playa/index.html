@@ -280,68 +280,11 @@ function dbPut(k, v) { return new Promise((ok, ko) => { const tx = db.transactio
 let saveT;
 function salva() { S.modificato = new Date().toISOString(); clearTimeout(saveT); saveT = setTimeout(() => dbPut('stato', S).then(() => { $('#saved').textContent = 'Salvato sul dispositivo · ' + new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }); }).catch(e => toast('Salvataggio non riuscito: ' + e.message)), 250); }
 
-/* Dati iniziali: solo informazioni già emerse nella chat «Playa Grande» (fonte indicata). Tutto è modificabile o eliminabile. */
-const FONTE = 'Chat Playa Grande';
+/* Stato iniziale vuoto: il codice della pagina è pubblico, quindi qui non ci sono dati del condominio.
+   I dati di partenza (punti aperti, richieste, contatti, documenti) si caricano con «Carica backup». */
 function statoIniziale() {
-  const P = (titolo, testo, area, data) => ({ id: uid(), titolo, testo, area, stato: 'Aperto', fonte: FONTE, data: data || '2026-11-23', creato: oggi() });
-  return {
-    v: 1, creato: new Date().toISOString(),
-    dati: {
-      nome: 'Condominio Playa Grande e Playa Piccolo', indirizzo: 'Piazza Milano 25', comune: 'Jesolo (VE)',
-      mappali: 'Playa Grande mapp. 211 · Playa Piccolo mapp. 212',
-      lavori: 'Manutenzione ordinaria facciate e coperture (parti comuni), poggioli, pavimentazioni poggioli e terrazze',
-      impresa: 'De Biasi', contratto: '2026-09-24', amministratore: 'Sebastiano Barbassi', note: ''
-    },
-    unita: {}, versioni: [], attiva: null,
-    richieste: [{
-      id: uid(), data: '2026-11-24', rif: 'A104', fab: 'PG', mittente: 'Riccardo (A104) · in copia Paolo (A105)', canale: 'Email a Nicola',
-      oggetto: 'Calcolo dei costi del rifacimento del pavimento del terrazzo',
-      testo: 'Chiede: 1) costo complessivo del rifacimento del pavimento del terrazzo di proprietà (circa 48 mq); 2) parte attribuita all\'appartamento 104; 3) quota dei lastrici solari in base ai millesimi. Risposta richiesta prima dell\'assemblea straordinaria di sabato. Stesso calcolo per il 105.',
-      risposta: 'Bozza preparata in chat: quota A104 € 10.400,03 = € 9.510,65 terrazzo proprio + € 771,37 terrazza attico AT09 + € 118,01 ballatoi comuni attici. A105 € 9.433,47. Firma da decidere (Nicola o Ilario).',
-      stato: 'In lavorazione', dataRisposta: '', fonte: FONTE
-    }],
-    punti: [
-      P('Somma dei millesimi 1.003,32 invece di 1.000', 'Le ripartizioni dividono per la somma effettiva, quindi i totali tornano, ma ogni quota differisce leggermente da una tabella a 1.000. Confrontare con la tabella millesimale dell\'amministratore.', 'Riepilogo costi'),
-      P('Spese tecniche del QE al 6,83% fisso', 'Il QE non è più collegato al foglio SPESE TECNICHE (modifica fatta nel file). Verificare quale dei due valori è quello definitivo.', 'Riepilogo costi'),
-      P('Sicurezza nei totali di CONFRONTO DITTE e PARTI COMUNI', 'Le voci WBS della sicurezza non coincidono con il computo perché i totali dei fabbricati comprendono la sicurezza.', 'Riepilogo costi'),
-      P('A105: computo poggiolo senza filtro WBS', 'Totale corretto (€ 2.637,82) ma l\'export non riporta il codice WBS e l\'unità. Riesportare da PriMus con il filtro WBS e rigenerare il fascicolo.', 'Fascicoli'),
-      P('Elenco fascicoli: collegamenti «Apri PDF» non funzionanti', 'Puntano al percorso dello studio (Y:\\...). Rigenerare con collegamenti relativi o senza collegamenti; togliere le frasi «salvato nella cartella della rispettiva unità» e «come nel modello A115».', 'Fascicoli'),
-      P('Fascicoli del Playa Piccolo da verificare', 'Verificati solo quelli del Playa Grande; nella mail all\'amministratore è scritto che i fascicoli del Playa Piccolo seguiranno a parte.', 'Fascicoli'),
-      P('Criterio 50/50 per le terrazze A104/A105', 'Per A104/A105: sporto al proprietario, parte sopra le unità 50% proprietario e 50% unità coperte (R01, R02). Per gli attici si usa 1/3 e 2/3. Preparare la motivazione per l\'assemblea.', 'Ripartizione'),
-      P('Spessore del pacchetto di copertura attuale e nuovo', 'DA FORNIRE: serve per la categoria dell\'intervento (ordinaria/straordinaria) e per il vincolo paesaggistico (variazione di gronda e colmo).', 'Coperture', '2026-11-19'),
-      P('Profilo e colore del nuovo pannello, tinte delle facciate, colore delle guaine', 'DA FORNIRE: necessari per l\'Allegato A del DPR 31/2017 e per l\'art. 74 c. 2 del RE (niente guaine nere a vista).', 'Paesaggio', '2026-11-19'),
-      P('Art. 73 RE di Jesolo e pluviali', 'Chiarire con il Comune se l\'art. 73 vale per tutti gli edifici in area vincolata. Se vale, i pluviali in alluminio del computo non coincidono con rame o lamiera zincata preverniciata. Confermare anche l\'assenza di un piano del colore.', 'Paesaggio', '2026-11-19'),
-      P('Fotovoltaico e linee vita', 'Se l\'assemblea approva il fotovoltaico, rifare la verifica delle linee vita (DGR 97/2012) e aggiornare il fascicolo dell\'opera. Offerta progetto linee vita Purarchitettura del 19/10/2026: € 3.050.', 'Coperture', '2026-11-19'),
-      P('Materiali in cantiere', 'Verificare la presenza di Mapecure SRA (prescritto dalla voce LP.011.a); chiedere schede tecniche e DoP delle versioni ZERO; acquisire il DDT di consegna in cantiere del Mapegrout T60.', 'Cantiere', '2026-11-19'),
-      P('Massetto poggioli: codici A65102a/b', 'La voce ha la nuova descrizione per esterni ma ancora i codici A65102a/b (€ 32,00/mq per 3 cm + € 5,50/mq per cm in più). Se i prezzi sono definitivi, sostituire con un codice NP.', 'Computo', '2026-11-20')
-    ],
-    agenda: [
-      { id: uid(), data: '2026-11-28', ora: '', tipo: 'Assemblea', titolo: 'Assemblea straordinaria', note: 'Data ricavata dalla mail di Riccardo («prima di sabato»): da confermare.', fatto: false, fonte: FONTE },
-      { id: uid(), data: '2027-02-15', ora: '', tipo: 'Scadenza', titolo: 'Mapegrout T60: termine di utilizzo (circa metà febbraio 2027)', note: 'Vale se «MM 15/02/2026» sui sacchi è la data di produzione (conservazione 12 mesi). Verificare sul sacco.', fatto: false, fonte: FONTE },
-      { id: uid(), data: '2026-09-24', ora: '', tipo: 'Altro', titolo: 'Contratto d\'appalto con l\'impresa De Biasi', note: '', fatto: true, fonte: FONTE }
-    ],
-    contatti: [
-      { id: uid(), ruolo: 'Amministratore', nome: 'Sebastiano Barbassi', email: '', tel: '', rif: '', note: 'Nome dall\'intestazione dei computi. Email e telefono DA FORNIRE.' },
-      { id: uid(), ruolo: 'Impresa', nome: 'De Biasi', email: 'debiasi.ingegneri@gmail.com', tel: '', rif: '', note: 'Impresa appaltatrice.' },
-      { id: uid(), ruolo: 'Studio', nome: 'Geom. Ilario Corrò', email: 'geometrailariocorro@gmail.com', tel: '347 5648284', rif: '', note: 'PEC ilariocorro@geopec.it' },
-      { id: uid(), ruolo: 'Condòmino', nome: 'Riccardo', email: '', tel: '', rif: 'A104', note: '' },
-      { id: uid(), ruolo: 'Condòmino', nome: 'Paolo', email: '', tel: '', rif: 'A105', note: '' }
-    ],
-    documenti: (() => {
-      const B = 'Y:\\STUDIO_PURARCHITETTURA\\2026\\PLAYA ing. DE BIASI - JESOLO 20231221';
-      const D = (nome, percorso, cat) => ({ id: uid(), nome, percorso, cat, note: '' });
-      return [
-        D('Cartella del lavoro', B, 'Cartella'),
-        D('Riepilogo costi e computi poggioli', B + '\\COMPUTI\\20261110_Poggioli', 'Riepilogo costi'),
-        D('Computo d\'appalto parti comuni (All. B del contratto)', B + '\\COMPUTI\\Preventivi\\Preventivo_solo parti comuni.pdf', 'Computo'),
-        D('Fascicoli per unità', B + '\\SOPRALLUOGO POGGIOLI\\REPORT', 'Fascicoli'),
-        D('Documenti per l\'amministratore (Playa Grande)', B + '\\ASSEMBLEA CONDOMINIALE\\20261119_DOC\\20261123_PG_Amministratore', 'Fascicoli'),
-        D('Proiezione terrazze (DWG / DXF)', B + '\\PROGETTO\\Proiezione_terrazze.dwg', 'Progetto'),
-        D('Regolamento Edilizio Jesolo var. 2025', B + '\\URBANISTICA JESOLO\\Regolamento_Edilizio_var._2025.pdf', 'Normativa'),
-        D('Foto Cantiere (archivio Playa Grande Residence)', 'https://purarchitettura.github.io/app-cantiere/', 'Altro')
-      ];
-    })()
-  };
+  return { v: 1, creato: new Date().toISOString(), dati: { nome: 'Condominio Playa Grande e Playa Piccolo', indirizzo: '', comune: '', mappali: '', lavori: '', impresa: '', contratto: '', amministratore: '', note: '' },
+    unita: {}, versioni: [], attiva: null, richieste: [], punti: [], agenda: [], contatti: [], documenti: [] };
 }
 function migra(s) {
   for (const k of ['unita']) if (!s[k]) s[k] = {};
@@ -398,7 +341,7 @@ function vQuadro(el) {
   const rich = S.richieste.filter(r => r.stato !== 'Chiusa' && r.stato !== 'Risposta inviata');
   const punti = S.punti.filter(p => p.stato !== 'Risolto');
   let h = '';
-  if (!v) h += `<div class="notice">Per vedere quote e totali importa il file <b>Riepilogo costi</b> (.ods o .xlsx), foglio RIPARTIZIONE TOTALE. Ogni importazione diventa una versione: puoi confrontarle e nessun dato inserito a mano viene cancellato.<div class="toolbar"><button class="btn solid" data-act="importa">Importa riepilogo costi</button></div></div>`;
+  if (!v) h += `<div class="notice">Per vedere quote e totali importa il file <b>Riepilogo costi</b> (.ods o .xlsx), foglio RIPARTIZIONE TOTALE. Ogni importazione diventa una versione: puoi confrontarle e nessun dato inserito a mano viene cancellato.<div class="toolbar"><button class="btn solid" data-act="importa">Importa riepilogo costi</button><button class="btn gold" data-act="ripristina">Carica backup / dati iniziali</button></div></div>`;
   h += `<div class="kpis">`;
   h += `<div class="kpi"><small>Unità</small><b>${nU}</b><span>${['PG', 'PP'].map(f => FAB[f] + ' ' + Object.values(S.unita).filter(u => u.fab === f).length).join(' · ')}</span></div>`;
   if (v) {
