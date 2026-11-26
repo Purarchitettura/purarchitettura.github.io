@@ -1,0 +1,904 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Condominio Playa Grande</title>
+<meta name="description" content="Gestione del condominio Playa Grande e Playa Piccolo: unità, quote di spesa, confronto versioni, richieste, punti aperti, agenda.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Condominio Playa">
+<style>
+/* Stile purarchitettura.it: fondo bianco, Arial, titoli maiuscoli spaziati, accento oro, pulsanti a pillola */
+:root{--bg:#fff;--surface:#fff;--soft:#f6f4ef;--ink:#333;--muted:#7a7a7a;--faint:#a9a9a9;--line:#e4e1da;--gold:#84754e;--gold-ink:#fff;--gold-soft:#f1ede3;--danger:#a33a2c;--ok:#4d6b3c;--warn-bg:#f7f1e1;--warn-ink:#6b5a2e;--f:Arial,"Helvetica Neue",Helvetica,sans-serif;color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161513;--surface:#1e1d1a;--soft:#24221e;--ink:#e8e5de;--muted:#a8a399;--faint:#7d786e;--line:#34312b;--gold:#b8a676;--gold-ink:#161513;--gold-soft:#2b2820;--danger:#e08a7d;--ok:#a6c48f;--warn-bg:#2b2820;--warn-ink:#e3d3a6;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#161513;--surface:#1e1d1a;--soft:#24221e;--ink:#e8e5de;--muted:#a8a399;--faint:#7d786e;--line:#34312b;--gold:#b8a676;--gold-ink:#161513;--gold-soft:#2b2820;--danger:#e08a7d;--ok:#a6c48f;--warn-bg:#2b2820;--warn-ink:#e3d3a6;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--f);-webkit-text-size-adjust:100%;padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+[hidden],.hidden{display:none!important}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:960px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+
+header.top{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:10;padding-top:env(safe-area-inset-top)}
+.top-in{display:flex;align-items:center;gap:12px;min-height:62px;padding-block:8px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;min-width:0;flex:1 1 auto;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.mark{width:34px;height:32px;flex:none}
+.word{display:grid;line-height:1.15;min-width:0}
+.word b{font-weight:400;font-size:18px;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.word b span{color:var(--gold)}
+.word small{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 20px;border:1px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);font-size:12px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+.btn:hover{background:var(--ink);color:var(--bg)}
+.btn.gold{border-color:var(--gold);color:var(--gold)}.btn.gold:hover{background:var(--gold);color:var(--gold-ink)}
+.btn.solid{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}.btn.solid:hover{filter:brightness(.93)}
+.btn.quiet{border-color:var(--line);color:var(--muted)}.btn.quiet:hover{background:var(--soft);color:var(--ink)}
+.btn.danger{border-color:var(--danger);color:var(--danger)}.btn.danger:hover{background:var(--danger);color:#fff}
+.btn.small{min-height:32px;padding:0 13px;font-size:10.5px}
+.btn.icon{padding:0;width:34px;min-height:34px}
+
+.eyebrow{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin:0}
+h1.title{font-weight:400;font-size:clamp(24px,5vw,34px);letter-spacing:.16em;text-transform:uppercase;margin:6px 0 0;line-height:1.2}
+.rule{width:64px;height:1px;background:var(--gold);border:0;margin:16px 0 0}
+.lead{color:var(--muted);max-width:64ch;margin:12px 0 0;font-size:15px}
+.hero{padding-block:30px 8px}
+
+/* elenco perizie */
+.list{display:grid;gap:12px;margin-top:24px}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:center;border:1px solid var(--line);background:var(--surface);padding:16px 18px;cursor:pointer;text-align:left;width:100%}
+.item:hover{border-color:var(--gold)}
+.item b{font-weight:400;font-size:17px;overflow-wrap:anywhere}
+.item small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.item .val{font-size:15px;color:var(--gold);white-space:nowrap}
+.empty{border:1px dashed var(--line);padding:28px;text-align:center;color:var(--muted);margin-top:24px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+
+/* schede di sezione */
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-top:18px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.tab{flex:none;background:none;border:0;border-bottom:2px solid transparent;padding:12px 12px 10px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);cursor:pointer;white-space:nowrap}
+.tab .n{color:var(--gold);margin-right:6px}
+.tab.on{color:var(--ink);border-bottom-color:var(--gold)}
+.tab.done::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ok);margin-left:7px;vertical-align:middle}
+section.pane{padding-block:22px 10px}
+.card{border:1px solid var(--line);background:var(--surface);padding:22px;margin-bottom:16px}
+.card h2{display:flex;align-items:baseline;gap:12px;margin:0 0 18px;font-weight:400;font-size:13px;letter-spacing:.24em;text-transform:uppercase}
+.card h2:after{content:"";flex:1;height:1px;background:var(--line);align-self:center}
+.hint{font-size:13.5px;color:var(--muted);margin:-6px 0 14px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:12px 16px}
+.grid .wide{grid-column:1/-1}
+label.f{display:block;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.fld{min-width:0}
+input[type=text],input[type=email],input[type=tel],input[type=date],input[type=number],select,textarea{display:block;width:100%;min-width:0;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:0;padding:10px 11px;min-height:46px}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:none}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+textarea{min-height:90px;resize:vertical;line-height:1.55}
+input.num{text-align:right;font-variant-numeric:tabular-nums}
+.chk{display:flex;gap:12px;align-items:flex-start;padding:12px 4px;border-top:1px solid var(--line);cursor:pointer}
+.chk:first-child{border-top:0}
+.chk input{flex:0 0 20px;width:20px;height:20px;margin:2px 0 0;accent-color:var(--gold)}
+.chk .t{flex:1;min-width:0}
+.chk .t input{margin-top:8px;min-height:40px;font-size:15px}
+
+/* righe ripetibili */
+.rows{display:grid;gap:12px}
+.row{border:1px solid var(--line);padding:14px;position:relative;background:var(--bg)}
+.row .rhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.row .rhead b{font-weight:400;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+.addrow{margin-top:12px}
+.sum{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);margin-top:14px;padding-top:12px;font-size:15px}
+.sum b{font-weight:400;color:var(--gold);font-size:18px}
+
+/* tabelle di calcolo */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line)}
+table.t{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+table.t th,table.t td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+table.t th{font-weight:400;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:var(--soft)}
+table.t td:first-child,table.t th:first-child{text-align:left;white-space:normal}
+table.t tr.tot td{font-weight:700;border-top:2px solid var(--gold)}
+.result{border:1px solid var(--gold);background:var(--gold-soft);padding:20px;margin-bottom:16px}
+.result .big{font-size:clamp(26px,6vw,36px);letter-spacing:.04em;color:var(--gold);margin:4px 0}
+.result small{color:var(--muted)}
+.notice{background:var(--warn-bg);color:var(--warn-ink);border-left:2px solid var(--gold);padding:12px 16px;font-size:14px;line-height:1.6;margin-bottom:16px}
+.notice.err{border-left-color:var(--danger)}
+.notice.ok{border-left-color:var(--ok)}
+
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:10px 0 calc(10px + env(safe-area-inset-bottom));z-index:5}
+.bar .in{display:flex;gap:10px;align-items:center}
+.bar .in .grow{flex:1;font-size:12px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#toast{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));max-width:860px;margin:auto;background:var(--ink);color:var(--bg);padding:13px 16px;font-size:14px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;z-index:20}
+#toast.show{opacity:1;transform:none}
+dialog{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:22px;max-width:min(520px,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(30,28,22,.45)}
+dialog h3{margin:0 0 10px;font-weight:400;font-size:14px;letter-spacing:.2em;text-transform:uppercase}
+dialog .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+@media(max-width:560px){.word small{display:none}.card{padding:16px}.bar .in .grow{display:none}.bar .btn{flex:1;padding:0 10px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+/* --- Condominio Playa: aggiunte --- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:12px;margin-top:22px}
+.kpi{border:1px solid var(--line);background:var(--surface);padding:16px 18px}
+.kpi small{display:block;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.kpi b{display:block;font-weight:400;font-size:22px;color:var(--gold);margin-top:4px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.kpi span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:4px 0 14px}
+.filters input[type=search]{flex:1 1 220px;min-width:0;font-size:16px;border:1px solid var(--line);background:var(--bg);padding:10px 11px;min-height:44px}
+.filters select{width:auto;flex:0 1 auto}
+.seg{display:inline-flex;border:1px solid var(--line)}
+.seg button{background:none;border:0;padding:9px 14px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);cursor:pointer;min-height:42px}
+.seg button.on{background:var(--gold);color:var(--gold-ink)}
+.pill{display:inline-block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--line);padding:2px 8px;border-radius:999px;color:var(--muted);white-space:nowrap}
+.pill.gold{border-color:var(--gold);color:var(--gold)}
+.pill.ok{border-color:var(--ok);color:var(--ok)}
+.pill.err{border-color:var(--danger);color:var(--danger)}
+.pos{color:var(--danger)}.neg{color:var(--ok)}
+table.t tr.click{cursor:pointer}table.t tr.click:hover td{background:var(--soft)}
+table.t td.l,table.t th.l{text-align:left}
+.entry{border:1px solid var(--line);background:var(--surface);padding:14px 16px;display:grid;gap:4px}
+.entry .h{display:flex;gap:10px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}
+.entry .h b{font-weight:400;font-size:16px;overflow-wrap:anywhere}
+.entry p{margin:0;color:var(--muted);font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.entry .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.entry.done{opacity:.62}
+.stack{display:grid;gap:10px}
+.mapgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:10px 14px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.mono{font-variant-numeric:tabular-nums}
+dialog.wide{max-width:min(760px,calc(100vw - 32px));width:100%}
+dialog form{display:grid;gap:12px}
+.sec-title{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
+.da{color:var(--warn-ink);background:var(--warn-bg);padding:0 4px}
+#print{display:none}
+@media print{
+  body{padding:0;background:#fff;color:#000}
+  header.top,#app,.bar,#toast,dialog{display:none!important}
+  #print{display:block;font:11pt/1.45 Arial,sans-serif;color:#000;padding:0}
+  #print h1{font-size:15pt;font-weight:400;letter-spacing:.12em;text-transform:uppercase;margin:0 0 4px}
+  #print h2{font-size:10pt;font-weight:400;letter-spacing:.18em;text-transform:uppercase;margin:16px 0 6px;border-bottom:1px solid #84754e;padding-bottom:3px}
+  #print table{border-collapse:collapse;width:100%;font-size:10pt}
+  #print td,#print th{border-bottom:1px solid #ccc;padding:5px 6px;text-align:right}
+  #print td:first-child,#print th:first-child{text-align:left}
+  #print tr.tot td{font-weight:700;border-top:1.5px solid #84754e}
+  #print .foot{margin-top:18px;font-size:9pt;color:#555}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <button class="brand" type="button" id="goHome" aria-label="Quadro generale">
+      <svg class="mark" viewBox="72 75 435 407" aria-hidden="true"><rect x="72" y="75" width="435" height="407" fill="#84754e"/><polygon points="290,75 507,482 72,482" fill="#fff"/><polygon points="290,277 397,482 180,482" fill="#84754e"/></svg>
+      <span class="word"><b>Condominio <span>Playa</span></b><small>Purarchitettura · Playa Grande e Playa Piccolo</small></span>
+    </button>
+    <a class="btn quiet small" href="../" title="Torna a PuraStrumenti">Strumenti</a>
+  </div>
+</header>
+<main class="wrap" id="app"><p class="muted" style="padding:30px 0">Caricamento…</p></main>
+<div class="bar" id="bar" hidden><div class="wrap in">
+  <span class="grow" id="saved">Dati solo su questo dispositivo</span>
+  <button type="button" class="btn quiet" id="btnBackup">Backup</button>
+  <button type="button" class="btn solid" id="btnImport">Importa costi</button>
+</div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<dialog id="dlg"></dialog>
+<dialog id="dlgImport" class="wide"></dialog>
+<div id="print"></div>
+<input type="file" id="fileXls" accept=".ods,.xlsx,.xls,.xlsm,.csv,application/vnd.oasis.opendocument.spreadsheet,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+<input type="file" id="fileJson" accept="application/json,.json" hidden>
+<script>
+'use strict';
+/* Condominio Playa Grande · Purarchitettura
+   Dati solo su questo dispositivo (IndexedDB "condominio-playa"). Nessun invio a server.
+   Regola: importazioni e aggiornamenti non cancellano mai ciò che gli utenti hanno inserito. */
+const APP_VERSION = '1.0 · 26/11/2026';
+const DB_NAME = 'condominio-playa', LS = 'cpg_';
+const FAB = { PG: 'Playa Grande', PP: 'Playa Piccolo', '?': 'Da assegnare' };
+const VOCI = [
+  ['pc', 'Parti comuni'], ['ter', 'Pav. terrazze'], ['pog', 'Poggioli'], ['pav', 'Pav. poggioli'], ['tot', 'Totale']
+];
+const VOCI_IMPORT = [
+  ['rif', 'Unità (riferimento)', ['unit', 'rif', 'appart', 'immobile', 'u.i', 'interno']],
+  ['sub', 'Subalterno', ['sub']],
+  ['fab', 'Fabbricato (facoltativo)', ['fabbric', 'edificio', 'blocco', 'condominio']],
+  ['mill', 'Millesimi', ['millesim', 'mill']],
+  ['pc', 'Parti comuni', ['parti comuni', 'spese comuni', 'comuni']],
+  ['ter', 'Pavimentazione terrazze', ['terrazz']],
+  ['pog', 'Poggioli', ['poggiol']],
+  ['pav', 'Pavimentazione poggioli', ['pavimentazion']],
+  ['tot', 'Totale (facoltativo: se manca è la somma)', ['totale']]
+];
+const STATI_RICH = ['Aperta', 'In lavorazione', 'Risposta inviata', 'Chiusa'];
+const STATI_PUNTO = ['Aperto', 'In verifica', 'Risolto'];
+const TIPI_AGENDA = ['Assemblea', 'Scadenza', 'Sopralluogo', 'Riunione', 'Altro'];
+const CAT_DOC = ['Cartella', 'Computo', 'Riepilogo costi', 'Fascicoli', 'Progetto', 'Normativa', 'Contratto', 'Verbale', 'Altro'];
+
+/* ---------- utilità ---------- */
+const $ = s => document.querySelector(s);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const oggi = () => new Date().toISOString().slice(0, 10);
+function fmt(n, d) { const neg = n < 0; let [i, f] = Math.abs(Number(n)).toFixed(d).split('.'); i = i.replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return (neg && Number(i.replace(/\./g, '') + '.' + (f || 0)) !== 0 ? '-' : '') + i + (d ? ',' + f : ''); }
+const eur = n => (n == null || isNaN(n)) ? '—' : '€ ' + fmt(n, 2);
+const num2 = (n, d = 2) => (n == null || isNaN(n)) ? '—' : fmt(n, d);
+const sgn = n => (n > 0.004 ? '+' : '') + eur(n);
+const dataIt = s => s ? s.split('-').reverse().join('/') : '';
+const r2 = n => Math.round((Number(n) || 0) * 100) / 100;
+function toNum(v) {
+  if (v == null || v === '') return 0;
+  if (typeof v === 'number') return isFinite(v) ? v : 0;
+  let s = String(v).replace(/[€\s]/g, '').trim();
+  if (!s || s === '/' || s === '-' || s === '—') return 0;
+  if (/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) s = s.replace(/\./g, '').replace(',', '.');
+  else if (/,/.test(s)) s = s.replace(/\./g, '').replace(',', '.');
+  const n = parseFloat(s); return isFinite(n) ? n : 0;
+}
+function lsGet(k, d) { try { const v = localStorage.getItem(LS + k); return v == null ? d : JSON.parse(v); } catch { return d; } }
+function lsSet(k, v) { try { localStorage.setItem(LS + k, JSON.stringify(v)); } catch { } }
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 2600); }
+function download(name, blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800); }
+function csv(rows) { return '\ufeff' + rows.map(r => r.map(c => { const s = typeof c === 'number' ? String(c).replace('.', ',') : String(c ?? ''); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(';')).join('\r\n'); }
+async function copia(txt) { try { await navigator.clipboard.writeText(txt); toast('Copiato'); } catch { prompt('Copia il testo:', txt); } }
+
+/* ---------- unità: fabbricato, piano, ordinamento ---------- */
+function normRif(s) { return String(s ?? '').trim().toUpperCase().replace(/\s+/g, ' '); }
+function normSub(s) { let t = String(s ?? '').trim(); if (typeof s === 'number') t = String(s); return t.replace(/\s+/g, ''); }
+function fabDa(rif, sub, hint) {
+  if (hint === 'PG' || hint === 'PP') return hint;
+  const s = String(sub || '');
+  if (/^211\b|^211\//.test(s)) return 'PG';
+  if (/^212\b|^212\//.test(s)) return 'PP';
+  let m = /^A(\d)(\d{2})$/.exec(rif); if (m) return +m[2] <= 21 ? 'PG' : 'PP';
+  m = /^AT\s?(\d{1,2})$/.exec(rif); if (m) return +m[1] <= 10 ? 'PG' : 'PP';
+  m = /^([NR])(\d{1,2})$/.exec(rif); if (m) { const n = +m[2]; if (m[1] === 'N') return n <= 3 ? 'PG' : 'PP'; return n <= 2 ? 'PG' : 'PP'; }
+  if (/^P\b/.test(rif)) return 'PP';
+  return '?';
+}
+function pianoDi(rif) {
+  let m = /^A(\d)\d{2}$/.exec(rif); if (m) return m[1] + '° piano';
+  if (/^AT/.test(rif)) return 'Attico';
+  if (/^[NR]\d/.test(rif)) return 'Piano terra';
+  if (/^P\b/.test(rif)) return 'Posto auto';
+  return '';
+}
+function chiave(fab, rif, sub) { return [fab, normRif(rif), normSub(sub)].join('|'); }
+function ordUnita(a, b) {
+  const k = u => { const r = u.rif; let m = /^A(\d)(\d{2})$/.exec(r); if (m) return [1, +m[2], +m[1]]; m = /^AT(\d+)/.exec(r); if (m) return [2, +m[1], 0]; m = /^([NR])(\d+)/.exec(r); if (m) return [m[1] === 'N' ? 3 : 4, +m[2], 0]; return [5, 0, 0]; };
+  if (a.fab !== b.fab) return a.fab < b.fab ? -1 : 1;
+  const x = k(a), y = k(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] - y[i];
+  return (a.rif + a.sub).localeCompare(b.rif + b.sub, 'it', { numeric: true });
+}
+
+/* ---------- archivio (IndexedDB) ---------- */
+let db, S;
+function dbOpen() { return new Promise((ok, ko) => { const r = indexedDB.open(DB_NAME, 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); }); }
+function dbGet(k) { return new Promise((ok, ko) => { const r = db.transaction('kv').objectStore('kv').get(k); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); }); }
+function dbPut(k, v) { return new Promise((ok, ko) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = () => ok(); tx.onerror = () => ko(tx.error); }); }
+let saveT;
+function salva() { S.modificato = new Date().toISOString(); clearTimeout(saveT); saveT = setTimeout(() => dbPut('stato', S).then(() => { $('#saved').textContent = 'Salvato sul dispositivo · ' + new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }); }).catch(e => toast('Salvataggio non riuscito: ' + e.message)), 250); }
+
+/* Dati iniziali: solo informazioni già emerse nella chat «Playa Grande» (fonte indicata). Tutto è modificabile o eliminabile. */
+const FONTE = 'Chat Playa Grande';
+function statoIniziale() {
+  const P = (titolo, testo, area, data) => ({ id: uid(), titolo, testo, area, stato: 'Aperto', fonte: FONTE, data: data || '2026-11-23', creato: oggi() });
+  return {
+    v: 1, creato: new Date().toISOString(),
+    dati: {
+      nome: 'Condominio Playa Grande e Playa Piccolo', indirizzo: 'Piazza Milano 25', comune: 'Jesolo (VE)',
+      mappali: 'Playa Grande mapp. 211 · Playa Piccolo mapp. 212',
+      lavori: 'Manutenzione ordinaria facciate e coperture (parti comuni), poggioli, pavimentazioni poggioli e terrazze',
+      impresa: 'De Biasi', contratto: '2026-09-24', amministratore: 'Sebastiano Barbassi', note: ''
+    },
+    unita: {}, versioni: [], attiva: null,
+    richieste: [{
+      id: uid(), data: '2026-11-24', rif: 'A104', fab: 'PG', mittente: 'Riccardo (A104) · in copia Paolo (A105)', canale: 'Email a Nicola',
+      oggetto: 'Calcolo dei costi del rifacimento del pavimento del terrazzo',
+      testo: 'Chiede: 1) costo complessivo del rifacimento del pavimento del terrazzo di proprietà (circa 48 mq); 2) parte attribuita all\'appartamento 104; 3) quota dei lastrici solari in base ai millesimi. Risposta richiesta prima dell\'assemblea straordinaria di sabato. Stesso calcolo per il 105.',
+      risposta: 'Bozza preparata in chat: quota A104 € 10.400,03 = € 9.510,65 terrazzo proprio + € 771,37 terrazza attico AT09 + € 118,01 ballatoi comuni attici. A105 € 9.433,47. Firma da decidere (Nicola o Ilario).',
+      stato: 'In lavorazione', dataRisposta: '', fonte: FONTE
+    }],
+    punti: [
+      P('Somma dei millesimi 1.003,32 invece di 1.000', 'Le ripartizioni dividono per la somma effettiva, quindi i totali tornano, ma ogni quota differisce leggermente da una tabella a 1.000. Confrontare con la tabella millesimale dell\'amministratore.', 'Riepilogo costi'),
+      P('Spese tecniche del QE al 6,83% fisso', 'Il QE non è più collegato al foglio SPESE TECNICHE (modifica fatta nel file). Verificare quale dei due valori è quello definitivo.', 'Riepilogo costi'),
+      P('Sicurezza nei totali di CONFRONTO DITTE e PARTI COMUNI', 'Le voci WBS della sicurezza non coincidono con il computo perché i totali dei fabbricati comprendono la sicurezza.', 'Riepilogo costi'),
+      P('A105: computo poggiolo senza filtro WBS', 'Totale corretto (€ 2.637,82) ma l\'export non riporta il codice WBS e l\'unità. Riesportare da PriMus con il filtro WBS e rigenerare il fascicolo.', 'Fascicoli'),
+      P('Elenco fascicoli: collegamenti «Apri PDF» non funzionanti', 'Puntano al percorso dello studio (Y:\\...). Rigenerare con collegamenti relativi o senza collegamenti; togliere le frasi «salvato nella cartella della rispettiva unità» e «come nel modello A115».', 'Fascicoli'),
+      P('Fascicoli del Playa Piccolo da verificare', 'Verificati solo quelli del Playa Grande; nella mail all\'amministratore è scritto che i fascicoli del Playa Piccolo seguiranno a parte.', 'Fascicoli'),
+      P('Criterio 50/50 per le terrazze A104/A105', 'Per A104/A105: sporto al proprietario, parte sopra le unità 50% proprietario e 50% unità coperte (R01, R02). Per gli attici si usa 1/3 e 2/3. Preparare la motivazione per l\'assemblea.', 'Ripartizione'),
+      P('Spessore del pacchetto di copertura attuale e nuovo', 'DA FORNIRE: serve per la categoria dell\'intervento (ordinaria/straordinaria) e per il vincolo paesaggistico (variazione di gronda e colmo).', 'Coperture', '2026-11-19'),
+      P('Profilo e colore del nuovo pannello, tinte delle facciate, colore delle guaine', 'DA FORNIRE: necessari per l\'Allegato A del DPR 31/2017 e per l\'art. 74 c. 2 del RE (niente guaine nere a vista).', 'Paesaggio', '2026-11-19'),
+      P('Art. 73 RE di Jesolo e pluviali', 'Chiarire con il Comune se l\'art. 73 vale per tutti gli edifici in area vincolata. Se vale, i pluviali in alluminio del computo non coincidono con rame o lamiera zincata preverniciata. Confermare anche l\'assenza di un piano del colore.', 'Paesaggio', '2026-11-19'),
+      P('Fotovoltaico e linee vita', 'Se l\'assemblea approva il fotovoltaico, rifare la verifica delle linee vita (DGR 97/2012) e aggiornare il fascicolo dell\'opera. Offerta progetto linee vita Purarchitettura del 19/10/2026: € 3.050.', 'Coperture', '2026-11-19'),
+      P('Materiali in cantiere', 'Verificare la presenza di Mapecure SRA (prescritto dalla voce LP.011.a); chiedere schede tecniche e DoP delle versioni ZERO; acquisire il DDT di consegna in cantiere del Mapegrout T60.', 'Cantiere', '2026-11-19'),
+      P('Massetto poggioli: codici A65102a/b', 'La voce ha la nuova descrizione per esterni ma ancora i codici A65102a/b (€ 32,00/mq per 3 cm + € 5,50/mq per cm in più). Se i prezzi sono definitivi, sostituire con un codice NP.', 'Computo', '2026-11-20')
+    ],
+    agenda: [
+      { id: uid(), data: '2026-11-28', ora: '', tipo: 'Assemblea', titolo: 'Assemblea straordinaria', note: 'Data ricavata dalla mail di Riccardo («prima di sabato»): da confermare.', fatto: false, fonte: FONTE },
+      { id: uid(), data: '2027-02-15', ora: '', tipo: 'Scadenza', titolo: 'Mapegrout T60: termine di utilizzo (circa metà febbraio 2027)', note: 'Vale se «MM 15/02/2026» sui sacchi è la data di produzione (conservazione 12 mesi). Verificare sul sacco.', fatto: false, fonte: FONTE },
+      { id: uid(), data: '2026-09-24', ora: '', tipo: 'Altro', titolo: 'Contratto d\'appalto con l\'impresa De Biasi', note: '', fatto: true, fonte: FONTE }
+    ],
+    contatti: [
+      { id: uid(), ruolo: 'Amministratore', nome: 'Sebastiano Barbassi', email: '', tel: '', rif: '', note: 'Nome dall\'intestazione dei computi. Email e telefono DA FORNIRE.' },
+      { id: uid(), ruolo: 'Impresa', nome: 'De Biasi', email: 'debiasi.ingegneri@gmail.com', tel: '', rif: '', note: 'Impresa appaltatrice.' },
+      { id: uid(), ruolo: 'Studio', nome: 'Geom. Ilario Corrò', email: 'geometrailariocorro@gmail.com', tel: '347 5648284', rif: '', note: 'PEC ilariocorro@geopec.it' },
+      { id: uid(), ruolo: 'Condòmino', nome: 'Riccardo', email: '', tel: '', rif: 'A104', note: '' },
+      { id: uid(), ruolo: 'Condòmino', nome: 'Paolo', email: '', tel: '', rif: 'A105', note: '' }
+    ],
+    documenti: (() => {
+      const B = 'Y:\\STUDIO_PURARCHITETTURA\\2026\\PLAYA ing. DE BIASI - JESOLO 20231221';
+      const D = (nome, percorso, cat) => ({ id: uid(), nome, percorso, cat, note: '' });
+      return [
+        D('Cartella del lavoro', B, 'Cartella'),
+        D('Riepilogo costi e computi poggioli', B + '\\COMPUTI\\20261110_Poggioli', 'Riepilogo costi'),
+        D('Computo d\'appalto parti comuni (All. B del contratto)', B + '\\COMPUTI\\Preventivi\\Preventivo_solo parti comuni.pdf', 'Computo'),
+        D('Fascicoli per unità', B + '\\SOPRALLUOGO POGGIOLI\\REPORT', 'Fascicoli'),
+        D('Documenti per l\'amministratore (Playa Grande)', B + '\\ASSEMBLEA CONDOMINIALE\\20261119_DOC\\20261123_PG_Amministratore', 'Fascicoli'),
+        D('Proiezione terrazze (DWG / DXF)', B + '\\PROGETTO\\Proiezione_terrazze.dwg', 'Progetto'),
+        D('Regolamento Edilizio Jesolo var. 2025', B + '\\URBANISTICA JESOLO\\Regolamento_Edilizio_var._2025.pdf', 'Normativa'),
+        D('Foto Cantiere (archivio Playa Grande Residence)', 'https://purarchitettura.github.io/app-cantiere/', 'Altro')
+      ];
+    })()
+  };
+}
+function migra(s) {
+  for (const k of ['unita']) if (!s[k]) s[k] = {};
+  for (const k of ['versioni', 'richieste', 'punti', 'agenda', 'contatti', 'documenti']) if (!Array.isArray(s[k])) s[k] = [];
+  if (!s.dati) s.dati = {};
+  return s;
+}
+
+/* ---------- versioni del riepilogo costi ---------- */
+const versione = id => S.versioni.find(v => v.id === id);
+const attiva = () => versione(S.attiva) || S.versioni[S.versioni.length - 1] || null;
+function precedente(v) { const i = S.versioni.indexOf(v); return i > 0 ? S.versioni[i - 1] : null; }
+function totaliDi(v, fab) {
+  const t = { pc: 0, ter: 0, pog: 0, pav: 0, tot: 0, mill: 0, n: 0 };
+  for (const r of v.righe) { if (fab && r.fab !== fab) continue; for (const k of ['pc', 'ter', 'pog', 'pav', 'tot', 'mill']) t[k] += r[k] || 0; t.n++; }
+  for (const k in t) t[k] = r2(t[k]); return t;
+}
+function rigaDi(v, u) {
+  if (!v) return null;
+  return v.righe.find(r => r.key === u.key) || v.righe.find(r => r.fab === u.fab && r.rif === u.rif && (!u.sub || !r.sub)) || null;
+}
+function abbina(a, b) { // a,b versioni → righe abbinate per chiave
+  const out = [], viste = new Set();
+  const idx = new Map(b.righe.map(r => [r.key, r]));
+  for (const r of a.righe) { const s = idx.get(r.key) || b.righe.find(x => x.fab === r.fab && x.rif === r.rif && !viste.has(x.key)); if (s) viste.add(s.key); out.push([r, s || null]); }
+  for (const s of b.righe) if (!viste.has(s.key) && !a.righe.some(r => r.key === s.key)) out.push([null, s]);
+  return out;
+}
+
+/* ---------- interfaccia ---------- */
+const TABS = [['quadro', 'Quadro'], ['unita', 'Unità'], ['costi', 'Costi'], ['richieste', 'Richieste'], ['punti', 'Punti aperti'], ['agenda', 'Agenda'], ['contatti', 'Contatti'], ['documenti', 'Documenti'], ['dati', 'Dati']];
+let tab = lsGet('tab', 'quadro'), sel = null;
+const F = { q: '', fab: lsGet('fab', ''), cq: '', soloVar: true, cA: null, cB: null, ordC: 'diff', pq: '', pStato: 'aperti', rStato: 'aperte' };
+
+function render() {
+  if (!TABS.some(t => t[0] === tab)) tab = 'quadro';
+  const app = $('#app');
+  const nA = S.richieste.filter(r => r.stato !== 'Chiusa' && r.stato !== 'Risposta inviata').length;
+  const nP = S.punti.filter(p => p.stato !== 'Risolto').length;
+  app.innerHTML = `
+  <div class="hero"><p class="eyebrow">${esc(S.dati.comune || '')}</p><h1 class="title">Playa Grande</h1><hr class="rule">
+  <p class="lead">${esc(S.dati.nome || '')}${S.dati.indirizzo ? ' · ' + esc(S.dati.indirizzo) : ''}</p></div>
+  <nav class="tabs" role="tablist">${TABS.map(([k, l]) => `<button class="tab${k === tab ? ' on' : ''}" role="tab" data-tab="${k}">${l}${k === 'richieste' && nA ? ` <span class="n">${nA}</span>` : ''}${k === 'punti' && nP ? ` <span class="n">${nP}</span>` : ''}</button>`).join('')}</nav>
+  <section class="pane" id="pane"></section>`;
+  ({ quadro: vQuadro, unita: vUnita, costi: vCosti, richieste: vRichieste, punti: vPunti, agenda: vAgenda, contatti: vContatti, documenti: vDocumenti, dati: vDati })[tab]($('#pane'));
+  $('#bar').hidden = false;
+}
+function vai(t) { tab = t; lsSet('tab', t); sel = null; render(); window.scrollTo(0, 0); }
+
+/* Quadro */
+function vQuadro(el) {
+  const v = attiva(); const nU = Object.keys(S.unita).length;
+  const prossimi = S.agenda.filter(a => !a.fatto && a.data && a.data >= oggi()).sort((a, b) => a.data.localeCompare(b.data)).slice(0, 5);
+  const rich = S.richieste.filter(r => r.stato !== 'Chiusa' && r.stato !== 'Risposta inviata');
+  const punti = S.punti.filter(p => p.stato !== 'Risolto');
+  let h = '';
+  if (!v) h += `<div class="notice">Per vedere quote e totali importa il file <b>Riepilogo costi</b> (.ods o .xlsx), foglio RIPARTIZIONE TOTALE. Ogni importazione diventa una versione: puoi confrontarle e nessun dato inserito a mano viene cancellato.<div class="toolbar"><button class="btn solid" data-act="importa">Importa riepilogo costi</button></div></div>`;
+  h += `<div class="kpis">`;
+  h += `<div class="kpi"><small>Unità</small><b>${nU}</b><span>${['PG', 'PP'].map(f => FAB[f] + ' ' + Object.values(S.unita).filter(u => u.fab === f).length).join(' · ')}</span></div>`;
+  if (v) {
+    const t = totaliDi(v);
+    h += `<div class="kpi"><small>Totale ripartito</small><b>${eur(t.tot)}</b><span>Versione: ${esc(v.nome)}</span></div>`;
+    h += `<div class="kpi"><small>Playa Grande</small><b>${eur(totaliDi(v, 'PG').tot)}</b><span>${num2(totaliDi(v, 'PG').mill)} millesimi</span></div>`;
+    h += `<div class="kpi"><small>Playa Piccolo</small><b>${eur(totaliDi(v, 'PP').tot)}</b><span>${num2(totaliDi(v, 'PP').mill)} millesimi</span></div>`;
+  }
+  h += `<div class="kpi"><small>Richieste aperte</small><b>${rich.length}</b><span>condòmini e amministratore</span></div>`;
+  h += `<div class="kpi"><small>Punti aperti</small><b>${punti.length}</b><span>da verificare o fornire</span></div></div>`;
+  if (v) {
+    const t = totaliDi(v), p = precedente(v), tp = p ? totaliDi(p) : null;
+    h += `<div class="card" style="margin-top:18px"><h2>Ripartizione per voce</h2><div class="tw"><table class="t"><thead><tr><th>Voce</th><th>Playa Grande</th><th>Playa Piccolo</th><th>Totale</th>${tp ? '<th>Diff. su versione prec.</th>' : ''}</tr></thead><tbody>`;
+    const g = totaliDi(v, 'PG'), pp = totaliDi(v, 'PP');
+    for (const [k, l] of VOCI) h += `<tr class="${k === 'tot' ? 'tot' : ''}"><td>${l}</td><td>${eur(g[k])}</td><td>${eur(pp[k])}</td><td>${eur(t[k])}</td>${tp ? `<td class="${t[k] - tp[k] > 0.004 ? 'pos' : t[k] - tp[k] < -0.004 ? 'neg' : ''}">${sgn(r2(t[k] - tp[k]))}</td>` : ''}</tr>`;
+    h += `</tbody></table></div>${totaliDi(v, '?').n ? `<p class="hint" style="margin-top:10px">${totaliDi(v, '?').n} righe senza fabbricato: assegnale dalla scheda unità.</p>` : ''}</div>`;
+  }
+  h += `<div class="card"><h2>Prossime date</h2>${prossimi.length ? `<div class="stack">${prossimi.map(entryAgenda).join('')}</div>` : '<p class="muted small">Nessuna data in programma.</p>'}<div class="toolbar"><button class="btn quiet small" data-tab="agenda">Agenda</button></div></div>`;
+  h += `<div class="card"><h2>Richieste aperte</h2>${rich.length ? `<div class="stack">${rich.slice(0, 5).map(entryRich).join('')}</div>` : '<p class="muted small">Nessuna richiesta aperta.</p>'}<div class="toolbar"><button class="btn quiet small" data-tab="richieste">Tutte le richieste</button></div></div>`;
+  el.innerHTML = h;
+}
+
+/* Unità */
+function vUnita(el) {
+  if (sel) return vSchedaUnita(el, S.unita[sel]);
+  const v = attiva();
+  const q = F.q.toLowerCase();
+  let us = Object.values(S.unita).filter(u => (!F.fab || u.fab === F.fab) && (!q || [u.rif, u.sub, u.prop, u.email, u.note].join(' ').toLowerCase().includes(q))).sort(ordUnita);
+  let h = `<div class="filters"><input type="search" id="fq" placeholder="Cerca unità, sub, proprietario…" value="${esc(F.q)}">
+  <div class="seg">${[['', 'Tutte'], ['PG', 'Grande'], ['PP', 'Piccolo']].map(([k, l]) => `<button data-fab="${k}" class="${F.fab === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+  <button class="btn gold small" data-act="nuovaUnita">Nuova unità</button><button class="btn quiet small" data-act="csvUnita">CSV</button></div>`;
+  if (!Object.keys(S.unita).length) h += `<div class="empty">Nessuna unità. Importa il riepilogo costi dalla scheda <b>Costi</b>: le unità vengono create con riferimento, sub e millesimi.<div class="toolbar" style="justify-content:center"><button class="btn solid" data-act="importa">Importa riepilogo costi</button></div></div>`;
+  else {
+    h += `<p class="hint">${us.length} unità${v ? ' · quote della versione «' + esc(v.nome) + '»' : ''}</p><div class="tw"><table class="t"><thead><tr><th>Unità</th><th class="l">Sub</th><th class="l">Proprietario</th><th>Millesimi</th>${v ? VOCI.map(([, l]) => `<th>${l}</th>`).join('') : ''}</tr></thead><tbody>`;
+    for (const u of us) { const r = rigaDi(v, u); h += `<tr class="click" data-unita="${esc(u.key)}"><td>${esc(u.rif)} <span class="pill">${u.fab === '?' ? '?' : u.fab}</span></td><td class="l">${esc(u.sub)}</td><td class="l">${esc(u.prop || '')}</td><td>${num2(u.mill)}</td>${v ? VOCI.map(([k]) => `<td>${r ? eur(r[k]) : '—'}</td>`).join('') : ''}</tr>`; }
+    h += `</tbody></table></div>`;
+  }
+  el.innerHTML = h;
+  const fq = $('#fq'); if (fq) fq.oninput = () => { F.q = fq.value; const p = fq.selectionStart; vUnita(el); const n = $('#fq'); n.focus(); n.setSelectionRange(p, p); };
+}
+function vSchedaUnita(el, u) {
+  if (!u) { sel = null; return vUnita(el); }
+  const v = attiva(), r = rigaDi(v, u);
+  const rich = S.richieste.filter(x => x.rif && normRif(x.rif) === u.rif && (!x.fab || x.fab === u.fab));
+  const cont = S.contatti.filter(c => c.rif && normRif(c.rif) === u.rif);
+  let h = `<div class="toolbar" style="margin-top:0"><button class="btn quiet small" data-act="indietro">← Elenco unità</button><button class="btn gold small" data-act="stampaUnita">Scheda PDF</button><button class="btn quiet small" data-act="testoUnita">Copia riepilogo</button></div>
+  <div class="card" style="margin-top:16px"><h2>${esc(u.rif)} · ${esc(FAB[u.fab])}</h2>
+  <div class="grid">
+   ${fld('Riferimento', 'rif', u.rif, 'text', 'u')}${fld('Subalterno', 'sub', u.sub, 'text', 'u')}
+   <div class="fld"><label class="f">Fabbricato</label><select data-u="fab">${Object.entries(FAB).map(([k, l]) => `<option value="${k}"${u.fab === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
+   ${fld('Millesimi', 'mill', u.mill, 'number', 'u')}
+   ${fld('Proprietario', 'prop', u.prop, 'text', 'u')}${fld('Email', 'email', u.email, 'email', 'u')}${fld('Telefono', 'tel', u.tel, 'tel', 'u')}
+   <div class="fld wide"><label class="f">Note</label><textarea data-u="note">${esc(u.note || '')}</textarea></div>
+  </div><p class="hint" style="margin:12px 0 0">${esc(pianoDi(u.rif))}${u.daImport ? ' · creata dall\'importazione «' + esc(u.daImport) + '»' : ''}</p></div>`;
+  // costi per versione
+  h += `<div class="card"><h2>Quote di spesa</h2>`;
+  if (!S.versioni.length) h += '<p class="muted small">Importa il riepilogo costi per vedere le quote.</p>';
+  else {
+    h += `<div class="tw"><table class="t"><thead><tr><th>Versione</th>${VOCI.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>`;
+    for (const x of S.versioni.slice().reverse()) { const rr = rigaDi(x, u); h += `<tr${x === v ? ' class="tot"' : ''}><td>${esc(x.nome)}<br><span class="muted small">${dataIt(x.data)}</span></td>${VOCI.map(([k]) => `<td>${rr ? eur(rr[k]) : '—'}</td>`).join('')}</tr>`; }
+    h += `</tbody></table></div><p class="hint" style="margin:10px 0 0">In grassetto la versione attiva. Importi IVA e spese comprese, come nel foglio RIPARTIZIONE TOTALE.</p>`;
+  }
+  h += `</div>`;
+  h += `<div class="card"><h2>Richieste</h2>${rich.length ? `<div class="stack">${rich.map(entryRich).join('')}</div>` : '<p class="muted small">Nessuna richiesta per questa unità.</p>'}<div class="toolbar"><button class="btn quiet small" data-act="nuovaRich" data-rif="${esc(u.rif)}" data-fab="${u.fab}">Nuova richiesta</button></div></div>`;
+  if (cont.length) h += `<div class="card"><h2>Contatti collegati</h2><div class="stack">${cont.map(entryCont).join('')}</div></div>`;
+  h += `<div class="toolbar"><button class="btn danger small" data-act="eliminaUnita">Elimina unità</button></div>`;
+  el.innerHTML = h;
+  el.querySelectorAll('[data-u]').forEach(i => i.onchange = () => {
+    const k = i.dataset.u; let val = i.value;
+    if (k === 'mill') val = toNum(val);
+    if (k === 'rif') val = normRif(val);
+    if (k === 'sub') val = normSub(val);
+    u[k] = val;
+    if (k === 'rif' || k === 'sub' || k === 'fab') { // la chiave cambia: sposta il record senza perdere dati
+      const nk = chiave(u.fab, u.rif, u.sub);
+      if (nk !== u.key) { if (S.unita[nk]) { toast('Esiste già un\'unità con questi dati'); i.value = k === 'fab' ? u.fab : u[k]; return; } delete S.unita[u.key]; u.key = nk; S.unita[nk] = u; sel = nk; }
+    }
+    salva(); if (k === 'fab' || k === 'rif') vSchedaUnita(el, u);
+  });
+}
+function fld(lab, k, val, type, ns) { return `<div class="fld"><label class="f">${lab}</label><input type="${type}" ${type === 'number' ? 'step="any" inputmode="decimal" class="num"' : ''} data-${ns}="${k}" value="${esc(val ?? '')}"></div>`; }
+
+/* Costi */
+function vCosti(el) {
+  const v = attiva();
+  let h = `<div class="toolbar" style="margin-top:0"><button class="btn solid" data-act="importa">Importa riepilogo costi</button>${S.versioni.length > 1 ? '<button class="btn gold" data-act="vaiConfronto">Confronta versioni</button>' : ''}</div>`;
+  if (!S.versioni.length) { h += `<div class="empty">Nessuna versione importata.<br><span class="small">Accetta file .ods, .xlsx, .xls e .csv. Riconosce da solo le colonne del foglio RIPARTIZIONE TOTALE e ti fa controllare l'abbinamento prima di salvare.</span></div>`; el.innerHTML = h; return; }
+  h += `<div class="card" style="margin-top:18px"><h2>Versioni</h2><div class="stack">`;
+  for (const x of S.versioni.slice().reverse()) {
+    const t = totaliDi(x);
+    h += `<div class="entry"><div class="h"><b>${esc(x.nome)}</b>${x === v ? '<span class="pill gold">Attiva</span>' : ''}</div><p>Importata il ${dataIt(x.data)} · file ${esc(x.file || '')} · foglio ${esc(x.foglio || '')} · ${x.righe.length} righe · totale ${eur(t.tot)}${x.note ? '\n' + esc(x.note) : ''}</p>
+    <div class="acts">${x !== v ? `<button class="btn quiet small" data-act="attiva" data-id="${x.id}">Rendi attiva</button>` : ''}<button class="btn quiet small" data-act="rinominaV" data-id="${x.id}">Rinomina / note</button><button class="btn quiet small" data-act="csvV" data-id="${x.id}">CSV</button><button class="btn quiet small" data-act="eliminaV" data-id="${x.id}">Elimina versione</button></div></div>`;
+  }
+  h += `</div></div>`;
+  if (S.versioni.length > 1) h += vConfrontoHtml();
+  el.innerHTML = h;
+  bindConfronto(el);
+}
+function vConfrontoHtml() {
+  const vs = S.versioni;
+  const A = versione(F.cA) || vs[vs.length - 2], B = versione(F.cB) || vs[vs.length - 1];
+  F.cA = A.id; F.cB = B.id;
+  const ta = totaliDi(A), tb = totaliDi(B);
+  let h = `<div class="card" id="confronto"><h2>Confronto</h2><div class="grid">
+   <div class="fld"><label class="f">Precedente</label><select id="cA">${vs.map(x => `<option value="${x.id}"${x === A ? ' selected' : ''}>${esc(x.nome)}</option>`).join('')}</select></div>
+   <div class="fld"><label class="f">Attuale</label><select id="cB">${vs.map(x => `<option value="${x.id}"${x === B ? ' selected' : ''}>${esc(x.nome)}</option>`).join('')}</select></div></div>
+   <div class="tw" style="margin-top:14px"><table class="t"><thead><tr><th>Voce</th><th>Precedente</th><th>Attuale</th><th>Differenza</th><th>%</th></tr></thead><tbody>`;
+  for (const [k, l] of VOCI) { const d = r2(tb[k] - ta[k]); h += `<tr class="${k === 'tot' ? 'tot' : ''}"><td>${l}</td><td>${eur(ta[k])}</td><td>${eur(tb[k])}</td><td class="${d > 0 ? 'pos' : d < 0 ? 'neg' : ''}">${sgn(d)}</td><td>${ta[k] ? num2(d / ta[k] * 100, 1) + '%' : '—'}</td></tr>`; }
+  h += `</tbody></table></div>`;
+  const rows = abbina(A, B).map(([a, b]) => ({ a, b, u: b || a, d: r2((b ? b.tot : 0) - (a ? a.tot : 0)) }));
+  const nPiu = rows.filter(r => r.d > 0.004).length, nMeno = rows.filter(r => r.d < -0.004).length;
+  const q = F.cq.toLowerCase();
+  let vis = rows.filter(r => (!F.soloVar || Math.abs(r.d) > 0.004 || !r.a || !r.b) && (!q || (r.u.rif + ' ' + r.u.sub).toLowerCase().includes(q)));
+  vis.sort(F.ordC === 'diff' ? (x, y) => Math.abs(y.d) - Math.abs(x.d) : (x, y) => ordUnita(x.u, y.u));
+  h += `<p class="hint" style="margin:14px 0 8px">${nMeno} unità pagano meno, ${nPiu} pagano di più${rows.some(r => !r.a || !r.b) ? ', ' + rows.filter(r => !r.a || !r.b).length + ' presenti in una sola versione' : ''}.</p>
+  <div class="filters"><input type="search" id="cq" placeholder="Filtra unità…" value="${esc(F.cq)}">
+  <label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="soloVar" ${F.soloVar ? 'checked' : ''} style="accent-color:var(--gold)"> solo variate</label>
+  <div class="seg"><button data-ord="diff" class="${F.ordC === 'diff' ? 'on' : ''}">Per differenza</button><button data-ord="unita" class="${F.ordC === 'unita' ? 'on' : ''}">Per unità</button></div>
+  <button class="btn quiet small" data-act="csvConfronto">CSV</button></div>
+  <div class="tw"><table class="t"><thead><tr><th>Unità</th><th class="l">Sub</th>${VOCI.slice(0, 4).map(([, l]) => `<th>Δ ${l}</th>`).join('')}<th>Prec. totale</th><th>Att. totale</th><th>Differenza</th></tr></thead><tbody>`;
+  for (const r of vis.slice(0, 400)) {
+    h += `<tr><td>${esc(r.u.rif)} <span class="pill">${r.u.fab}</span>${!r.a ? ' <span class="pill gold">nuova</span>' : !r.b ? ' <span class="pill err">assente</span>' : ''}</td><td class="l">${esc(r.u.sub)}</td>${VOCI.slice(0, 4).map(([k]) => { const d = r2((r.b ? r.b[k] : 0) - (r.a ? r.a[k] : 0)); return `<td class="${d > 0.004 ? 'pos' : d < -0.004 ? 'neg' : 'muted'}">${Math.abs(d) > 0.004 ? sgn(d) : '—'}</td>`; }).join('')}<td>${r.a ? eur(r.a.tot) : '—'}</td><td>${r.b ? eur(r.b.tot) : '—'}</td><td class="${r.d > 0.004 ? 'pos' : r.d < -0.004 ? 'neg' : ''}">${sgn(r.d)}</td></tr>`;
+  }
+  h += `</tbody></table></div>${vis.length > 400 ? '<p class="hint">Mostrate le prime 400 righe: usa il filtro o il CSV.</p>' : ''}<p class="hint" style="margin-top:10px">Rosso: l'unità paga di più · verde: paga di meno.</p></div>`;
+  return h;
+}
+function bindConfronto(el) {
+  const re = () => { const y = window.scrollY; vCosti(el); window.scrollTo(0, y); };
+  const a = $('#cA'), b = $('#cB'); if (!a) return;
+  a.onchange = () => { F.cA = a.value; re(); }; b.onchange = () => { F.cB = b.value; re(); };
+  $('#soloVar').onchange = e => { F.soloVar = e.target.checked; re(); };
+  const cq = $('#cq'); cq.oninput = () => { F.cq = cq.value; const p = cq.selectionStart; re(); const n = $('#cq'); n.focus(); n.setSelectionRange(p, p); };
+  el.querySelectorAll('[data-ord]').forEach(x => x.onclick = () => { F.ordC = x.dataset.ord; re(); });
+}
+
+/* Richieste */
+function entryRich(r) {
+  const cl = r.stato === 'Chiusa' || r.stato === 'Risposta inviata';
+  return `<div class="entry${cl ? ' done' : ''}"><div class="h"><b>${esc(r.oggetto || '(senza oggetto)')}</b><span class="pill ${r.stato === 'Aperta' ? 'err' : cl ? 'ok' : 'gold'}">${esc(r.stato)}</span></div>
+  <p>${dataIt(r.data)}${r.rif ? ' · ' + esc(r.rif) : ''}${r.mittente ? ' · ' + esc(r.mittente) : ''}${r.canale ? ' · ' + esc(r.canale) : ''}</p>${r.testo ? `<p>${esc(r.testo)}</p>` : ''}${r.risposta ? `<p><b style="font-weight:400;color:var(--ink)">Risposta:</b> ${esc(r.risposta)}</p>` : ''}
+  <div class="acts"><button class="btn quiet small" data-act="modRich" data-id="${r.id}">Modifica</button></div></div>`;
+}
+function vRichieste(el) {
+  const filt = { aperte: r => r.stato !== 'Chiusa' && r.stato !== 'Risposta inviata', tutte: () => true };
+  const rs = S.richieste.filter(filt[F.rStato]).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+  el.innerHTML = `<div class="filters"><div class="seg">${[['aperte', 'Aperte'], ['tutte', 'Tutte']].map(([k, l]) => `<button data-rstato="${k}" class="${F.rStato === k ? 'on' : ''}">${l}</button>`).join('')}</div><button class="btn gold small" data-act="nuovaRich">Nuova richiesta</button></div>
+  ${rs.length ? `<div class="stack">${rs.map(entryRich).join('')}</div>` : '<div class="empty">Nessuna richiesta.</div>'}`;
+}
+function formRich(r) {
+  const nuovo = !r; r = r || { id: uid(), data: oggi(), stato: 'Aperta' };
+  dialogo(nuovo ? 'Nuova richiesta' : 'Richiesta', `
+   <div class="grid"><div class="fld"><label class="f">Data</label><input type="date" name="data" value="${esc(r.data)}"></div>
+   <div class="fld"><label class="f">Unità</label><input type="text" name="rif" value="${esc(r.rif || '')}" placeholder="es. A104"></div>
+   <div class="fld"><label class="f">Mittente</label><input type="text" name="mittente" value="${esc(r.mittente || '')}"></div>
+   <div class="fld"><label class="f">Canale</label><input type="text" name="canale" value="${esc(r.canale || '')}" placeholder="Email, telefono, assemblea…"></div></div>
+   <div class="fld"><label class="f">Oggetto</label><input type="text" name="oggetto" value="${esc(r.oggetto || '')}"></div>
+   <div class="fld"><label class="f">Richiesta</label><textarea name="testo">${esc(r.testo || '')}</textarea></div>
+   <div class="fld"><label class="f">Risposta / esito</label><textarea name="risposta">${esc(r.risposta || '')}</textarea></div>
+   <div class="grid"><div class="fld"><label class="f">Stato</label><select name="stato">${STATI_RICH.map(s => `<option${s === r.stato ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+   <div class="fld"><label class="f">Data risposta</label><input type="date" name="dataRisposta" value="${esc(r.dataRisposta || '')}"></div></div>`,
+    d => { Object.assign(r, d); r.rif = normRif(r.rif); if (nuovo) S.richieste.push(r); salva(); render(); },
+    nuovo ? null : () => { S.richieste = S.richieste.filter(x => x !== r); salva(); render(); });
+}
+
+/* Punti aperti */
+function vPunti(el) {
+  const q = F.pq.toLowerCase();
+  const ps = S.punti.filter(p => (F.pStato === 'tutti' || p.stato !== 'Risolto') && (!q || [p.titolo, p.testo, p.area].join(' ').toLowerCase().includes(q)));
+  const aree = [...new Set(ps.map(p => p.area || 'Altro'))];
+  let h = `<div class="filters"><input type="search" id="pq" placeholder="Cerca…" value="${esc(F.pq)}"><div class="seg">${[['aperti', 'Aperti'], ['tutti', 'Tutti']].map(([k, l]) => `<button data-pstato="${k}" class="${F.pStato === k ? 'on' : ''}">${l}</button>`).join('')}</div><button class="btn gold small" data-act="nuovoPunto">Nuovo punto</button></div>`;
+  if (!ps.length) h += '<div class="empty">Nessun punto.</div>';
+  for (const a of aree) h += `<p class="sec-title">${esc(a)}</p><div class="stack">${ps.filter(p => (p.area || 'Altro') === a).map(p => `<div class="entry${p.stato === 'Risolto' ? ' done' : ''}"><div class="h"><b>${esc(p.titolo)}</b><span class="pill ${p.stato === 'Risolto' ? 'ok' : p.stato === 'Aperto' ? 'err' : 'gold'}">${esc(p.stato)}</span></div>${p.testo ? `<p>${esc(p.testo)}</p>` : ''}<p class="small">${p.data ? dataIt(p.data) : ''}${p.fonte ? ' · fonte: ' + esc(p.fonte) : ''}${p.esito ? '\nEsito: ' + esc(p.esito) : ''}</p><div class="acts"><button class="btn quiet small" data-act="modPunto" data-id="${p.id}">Modifica</button>${p.stato !== 'Risolto' ? `<button class="btn quiet small" data-act="risolvi" data-id="${p.id}">Segna risolto</button>` : ''}</div></div>`).join('')}</div>`;
+  el.innerHTML = h;
+  const pq = $('#pq'); pq.oninput = () => { F.pq = pq.value; const p = pq.selectionStart; vPunti(el); const n = $('#pq'); n.focus(); n.setSelectionRange(p, p); };
+}
+function formPunto(p) {
+  const nuovo = !p; p = p || { id: uid(), data: oggi(), stato: 'Aperto', creato: oggi() };
+  dialogo(nuovo ? 'Nuovo punto aperto' : 'Punto aperto', `
+   <div class="fld"><label class="f">Titolo</label><input type="text" name="titolo" value="${esc(p.titolo || '')}" required></div>
+   <div class="fld"><label class="f">Descrizione</label><textarea name="testo">${esc(p.testo || '')}</textarea></div>
+   <div class="grid"><div class="fld"><label class="f">Area</label><input type="text" name="area" value="${esc(p.area || '')}" list="aree"><datalist id="aree">${[...new Set(S.punti.map(x => x.area).filter(Boolean))].map(a => `<option value="${esc(a)}">`).join('')}</datalist></div>
+   <div class="fld"><label class="f">Data</label><input type="date" name="data" value="${esc(p.data || '')}"></div>
+   <div class="fld"><label class="f">Stato</label><select name="stato">${STATI_PUNTO.map(s => `<option${s === p.stato ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+   <div class="fld"><label class="f">Fonte</label><input type="text" name="fonte" value="${esc(p.fonte || '')}"></div></div>
+   <div class="fld"><label class="f">Esito</label><textarea name="esito">${esc(p.esito || '')}</textarea></div>`,
+    d => { Object.assign(p, d); if (nuovo) S.punti.push(p); salva(); render(); },
+    nuovo ? null : () => { S.punti = S.punti.filter(x => x !== p); salva(); render(); });
+}
+
+/* Agenda */
+function entryAgenda(a) {
+  const pass = a.data && a.data < oggi();
+  return `<div class="entry${a.fatto ? ' done' : ''}"><div class="h"><b>${esc(a.titolo)}</b><span class="pill ${a.fatto ? 'ok' : pass ? 'err' : 'gold'}">${esc(a.tipo || '')}${a.fatto ? ' · fatto' : ''}</span></div><p>${a.data ? dataIt(a.data) : 'Data DA FORNIRE'}${a.ora ? ' · ' + esc(a.ora) : ''}${a.luogo ? ' · ' + esc(a.luogo) : ''}</p>${a.note ? `<p>${esc(a.note)}</p>` : ''}
+  <div class="acts"><button class="btn quiet small" data-act="modAgenda" data-id="${a.id}">Modifica</button>${a.data ? `<button class="btn quiet small" data-act="ics" data-id="${a.id}">Calendario</button>` : ''}</div></div>`;
+}
+function vAgenda(el) {
+  const fut = S.agenda.filter(a => !a.fatto && (!a.data || a.data >= oggi())).sort((a, b) => (a.data || '9').localeCompare(b.data || '9'));
+  const alt = S.agenda.filter(a => !fut.includes(a)).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+  el.innerHTML = `<div class="toolbar" style="margin-top:0"><button class="btn gold small" data-act="nuovaAgenda">Nuova data</button></div>
+  <p class="sec-title">In programma</p>${fut.length ? `<div class="stack">${fut.map(entryAgenda).join('')}</div>` : '<p class="muted small">Niente in programma.</p>'}
+  <p class="sec-title">Passate o fatte</p>${alt.length ? `<div class="stack">${alt.map(entryAgenda).join('')}</div>` : '<p class="muted small">Nessuna.</p>'}`;
+}
+function formAgenda(a) {
+  const nuovo = !a; a = a || { id: uid(), data: '', tipo: 'Scadenza', fatto: false };
+  dialogo(nuovo ? 'Nuova data' : 'Data', `
+   <div class="fld"><label class="f">Titolo</label><input type="text" name="titolo" value="${esc(a.titolo || '')}" required></div>
+   <div class="grid"><div class="fld"><label class="f">Data</label><input type="date" name="data" value="${esc(a.data || '')}"></div>
+   <div class="fld"><label class="f">Ora</label><input type="text" name="ora" value="${esc(a.ora || '')}" placeholder="es. 9:30"></div>
+   <div class="fld"><label class="f">Tipo</label><select name="tipo">${TIPI_AGENDA.map(s => `<option${s === a.tipo ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+   <div class="fld"><label class="f">Luogo</label><input type="text" name="luogo" value="${esc(a.luogo || '')}"></div></div>
+   <div class="fld"><label class="f">Note / ordine del giorno</label><textarea name="note">${esc(a.note || '')}</textarea></div>
+   <label class="chk"><input type="checkbox" name="fatto" ${a.fatto ? 'checked' : ''}><span class="t">Fatto</span></label>`,
+    d => { Object.assign(a, d); if (nuovo) S.agenda.push(a); salva(); render(); },
+    nuovo ? null : () => { S.agenda = S.agenda.filter(x => x !== a); salva(); render(); });
+}
+function ics(a) {
+  const d = a.data.replace(/-/g, ''); const m = /^(\d{1,2})[:.](\d{2})$/.exec(a.ora || '');
+  const pad = n => String(n).padStart(2, '0');
+  const t = m ? `DTSTART;TZID=Europe/Rome:${d}T${pad(m[1])}${m[2]}00\r\nDURATION:PT2H` : `DTSTART;VALUE=DATE:${d}`;
+  const e = s => String(s || '').replace(/[,;\\]/g, x => '\\' + x).replace(/\n/g, '\\n');
+  const txt = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Purarchitettura//Condominio Playa//IT\r\nBEGIN:VEVENT\r\nUID:${a.id}@condominio-playa\r\nDTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z\r\n${t}\r\nSUMMARY:${e('Playa · ' + a.titolo)}\r\nDESCRIPTION:${e(a.note)}\r\n${a.luogo ? 'LOCATION:' + e(a.luogo) + '\r\n' : ''}END:VEVENT\r\nEND:VCALENDAR\r\n`;
+  download('playa-' + d + '.ics', new Blob([txt], { type: 'text/calendar' }));
+}
+
+/* Contatti */
+function entryCont(c) {
+  return `<div class="entry"><div class="h"><b>${esc(c.nome || '(senza nome)')}</b><span class="pill">${esc(c.ruolo || '')}${c.rif ? ' · ' + esc(c.rif) : ''}</span></div>
+  <p>${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : '<span class="da">email DA FORNIRE</span>'}${c.tel ? ` · <a href="tel:${esc(c.tel.replace(/\s/g, ''))}">${esc(c.tel)}</a>` : ''}</p>${c.note ? `<p>${esc(c.note)}</p>` : ''}
+  <div class="acts"><button class="btn quiet small" data-act="modCont" data-id="${c.id}">Modifica</button></div></div>`;
+}
+function vContatti(el) {
+  const ruoli = [...new Set(S.contatti.map(c => c.ruolo || 'Altro'))];
+  el.innerHTML = `<div class="toolbar" style="margin-top:0"><button class="btn gold small" data-act="nuovoCont">Nuovo contatto</button></div>
+  ${ruoli.map(r => `<p class="sec-title">${esc(r)}</p><div class="stack">${S.contatti.filter(c => (c.ruolo || 'Altro') === r).map(entryCont).join('')}</div>`).join('') || '<div class="empty">Nessun contatto.</div>'}`;
+}
+function formCont(c) {
+  const nuovo = !c; c = c || { id: uid() };
+  dialogo(nuovo ? 'Nuovo contatto' : 'Contatto', `
+   <div class="grid"><div class="fld"><label class="f">Ruolo</label><input type="text" name="ruolo" value="${esc(c.ruolo || '')}" list="ruoli"><datalist id="ruoli">${['Amministratore', 'Impresa', 'Studio', 'Condòmino', 'Consigliere', 'Coordinatore sicurezza', 'Fornitore', 'Comune'].map(x => `<option value="${x}">`).join('')}</datalist></div>
+   <div class="fld"><label class="f">Nome</label><input type="text" name="nome" value="${esc(c.nome || '')}"></div>
+   <div class="fld"><label class="f">Email</label><input type="email" name="email" value="${esc(c.email || '')}"></div>
+   <div class="fld"><label class="f">Telefono</label><input type="tel" name="tel" value="${esc(c.tel || '')}"></div>
+   <div class="fld"><label class="f">Unità collegata</label><input type="text" name="rif" value="${esc(c.rif || '')}" placeholder="es. A104"></div></div>
+   <div class="fld"><label class="f">Note</label><textarea name="note">${esc(c.note || '')}</textarea></div>`,
+    d => { Object.assign(c, d); c.rif = normRif(c.rif); if (nuovo) S.contatti.push(c); salva(); render(); },
+    nuovo ? null : () => { S.contatti = S.contatti.filter(x => x !== c); salva(); render(); });
+}
+
+/* Documenti */
+function vDocumenti(el) {
+  const cats = [...new Set(S.documenti.map(d => d.cat || 'Altro'))];
+  el.innerHTML = `<div class="toolbar" style="margin-top:0"><button class="btn gold small" data-act="nuovoDoc">Nuovo documento</button></div>
+  <p class="hint" style="margin-top:12px">I percorsi dello studio (Y:\\…) non si aprono dal browser: usa «Copia percorso» e incollalo in Esplora file. I collegamenti web si aprono direttamente.</p>
+  ${cats.map(c => `<p class="sec-title">${esc(c)}</p><div class="stack">${S.documenti.filter(d => (d.cat || 'Altro') === c).map(d => {
+    const web = /^https?:\/\//i.test(d.percorso || '');
+    return `<div class="entry"><div class="h"><b>${esc(d.nome)}</b></div><p class="small">${esc(d.percorso || '')}</p>${d.note ? `<p>${esc(d.note)}</p>` : ''}<div class="acts">${web ? `<a class="btn gold small" href="${esc(d.percorso)}" target="_blank" rel="noopener">Apri</a>` : ''}<button class="btn quiet small" data-act="copia" data-txt="${esc(d.percorso || '')}">Copia percorso</button><button class="btn quiet small" data-act="modDoc" data-id="${d.id}">Modifica</button></div></div>`;
+  }).join('')}</div>`).join('') || '<div class="empty">Nessun documento.</div>'}`;
+}
+function formDoc(d0) {
+  const nuovo = !d0; const d = d0 || { id: uid(), cat: 'Altro' };
+  dialogo(nuovo ? 'Nuovo documento' : 'Documento', `
+   <div class="fld"><label class="f">Nome</label><input type="text" name="nome" value="${esc(d.nome || '')}" required></div>
+   <div class="fld"><label class="f">Percorso o collegamento</label><input type="text" name="percorso" value="${esc(d.percorso || '')}" placeholder="Y:\\… oppure https://…"></div>
+   <div class="fld"><label class="f">Categoria</label><select name="cat">${CAT_DOC.map(s => `<option${s === d.cat ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+   <div class="fld"><label class="f">Note</label><textarea name="note">${esc(d.note || '')}</textarea></div>`,
+    x => { Object.assign(d, x); if (nuovo) S.documenti.push(d); salva(); render(); },
+    nuovo ? null : () => { S.documenti = S.documenti.filter(y => y !== d); salva(); render(); });
+}
+
+/* Dati generali e backup */
+function vDati(el) {
+  const d = S.dati;
+  el.innerHTML = `<div class="card"><h2>Dati del condominio</h2><div class="grid">
+   ${fld('Denominazione', 'nome', d.nome, 'text', 'd')}${fld('Indirizzo', 'indirizzo', d.indirizzo, 'text', 'd')}${fld('Comune', 'comune', d.comune, 'text', 'd')}${fld('Dati catastali', 'mappali', d.mappali, 'text', 'd')}
+   ${fld('Amministratore', 'amministratore', d.amministratore, 'text', 'd')}${fld('Impresa', 'impresa', d.impresa, 'text', 'd')}${fld('Data contratto', 'contratto', d.contratto, 'date', 'd')}
+   <div class="fld wide"><label class="f">Lavori</label><textarea data-d="lavori">${esc(d.lavori || '')}</textarea></div>
+   <div class="fld wide"><label class="f">Note</label><textarea data-d="note">${esc(d.note || '')}</textarea></div></div></div>
+  <div class="card"><h2>Backup e trasferimento</h2><p class="hint">I dati restano solo su questo dispositivo. Con il backup li salvi in un file (per esempio nella cartella del lavoro o su Drive) e li ricarichi su un altro computer o telefono. Il ripristino unisce: aggiunge ciò che manca e non cancella i dati già presenti.</p>
+  <div class="toolbar"><button class="btn solid" data-act="backup">Scarica backup</button><button class="btn gold" data-act="ripristina">Carica backup</button></div>
+  <p class="hint" style="margin-top:14px">Ultima modifica: ${S.modificato ? new Date(S.modificato).toLocaleString('it-IT') : '—'} · ${S.versioni.length} versioni dei costi · ${Object.keys(S.unita).length} unità</p></div>
+  <p class="small muted">Condominio Playa · versione ${APP_VERSION}</p>`;
+  el.querySelectorAll('[data-d]').forEach(i => i.onchange = () => { S.dati[i.dataset.d] = i.value; salva(); });
+}
+function backup() { download('Condominio_Playa_backup_' + oggi().replace(/-/g, '') + '.json', new Blob([JSON.stringify({ app: 'condominio-playa', ...S }, null, 1)], { type: 'application/json' })); }
+function unisci(b) {
+  if (!b || b.app !== 'condominio-playa') throw new Error('Il file non è un backup di Condominio Playa');
+  let n = 0;
+  for (const [k, u] of Object.entries(b.unita || {})) { if (!S.unita[k]) { S.unita[k] = u; n++; } else { const t = S.unita[k]; for (const f of ['prop', 'email', 'tel', 'note']) if (!t[f] && u[f]) { t[f] = u[f]; n++; } } }
+  for (const lst of ['versioni', 'richieste', 'punti', 'agenda', 'contatti', 'documenti']) for (const x of (b[lst] || [])) if (!S[lst].some(y => y.id === x.id)) { S[lst].push(x); n++; }
+  S.versioni.sort((a, c) => (a.creato || a.data || '').localeCompare(c.creato || c.data || ''));
+  for (const [k, v] of Object.entries(b.dati || {})) if (!S.dati[k] && v) S.dati[k] = v;
+  if (!S.attiva && b.attiva) S.attiva = b.attiva;
+  return n;
+}
+
+/* ---------- importazione del riepilogo costi ---------- */
+let XLSXP;
+function caricaXLSX() { return XLSXP || (XLSXP = new Promise((ok, ko) => { if (window.XLSX) return ok(window.XLSX); const s = document.createElement('script'); s.src = 'xlsx.full.min.js'; s.onload = () => ok(window.XLSX); s.onerror = () => { XLSXP = null; ko(new Error('Lettore di fogli di calcolo non disponibile (serve connessione la prima volta)')); }; document.head.appendChild(s); })); }
+const low = s => String(s ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
+function trovaIntestazione(rows) {
+  let best = -1, bs = 0;
+  for (let i = 0; i < Math.min(rows.length, 40); i++) {
+    const r = rows[i] || []; let s = 0;
+    for (const c of r) { const t = low(c); if (!t || t.length > 80) continue; if (/millesim/.test(t)) s += 2; if (/terrazz|poggiol|pavimentaz|parti comuni|totale|sub\b|unit/.test(t)) s++; }
+    if (s > bs) { bs = s; best = i; }
+  }
+  return bs >= 3 ? best : -1;
+}
+function indovina(head, rows, hi) {
+  const m = {}; const usati = new Set();
+  const H = head.map(low);
+  const prova = (k, test) => { if (m[k] != null) return; const i = H.findIndex((t, j) => !usati.has(j) && t && test(t)); if (i >= 0) { m[k] = i; usati.add(i); } };
+  prova('mill', t => /millesim/.test(t));
+  prova('pav', t => /pavimentaz/.test(t) && /poggiol/.test(t));
+  prova('ter', t => /terrazz/.test(t));
+  prova('pog', t => /poggiol/.test(t) && !/pavimentaz/.test(t));
+  prova('pc', t => /parti comuni|spese comuni/.test(t));
+  prova('tot', t => /^totale|totale (generale|unit|complessivo)|^total/.test(t));
+  prova('sub', t => /\bsub/.test(t));
+  prova('fab', t => /fabbric|edificio|blocco/.test(t));
+  prova('rif', t => /unit|^rif|appart|immobile|interno|^u\.?i/.test(t));
+  if (m.rif == null) { // colonna con più codici tipo A104 / AT01 / N01
+    let best = -1, bs = 0; const w = Math.max(...rows.slice(hi + 1, hi + 80).map(r => (r || []).length), 0);
+    for (let j = 0; j < w; j++) { if (usati.has(j)) continue; let s = 0; for (const r of rows.slice(hi + 1, hi + 200)) if (/^(A\d{3}|AT\s?\d{1,2}|[NR]\d{1,2})$/i.test(String((r || [])[j] ?? '').trim())) s++; if (s > bs) { bs = s; best = j; } }
+    if (bs >= 3) m.rif = best;
+  }
+  return m;
+}
+function estrai(rows, hi, m) {
+  const out = []; let sez = null; const scarti = [];
+  for (let i = hi + 1; i < rows.length; i++) {
+    const r = rows[i] || [];
+    const testoRiga = low(r.filter(c => typeof c === 'string').join(' '));
+    if (/playa piccolo/.test(testoRiga)) sez = 'PP'; else if (/playa grande/.test(testoRiga)) sez = 'PG';
+    const rif = normRif(m.rif != null ? r[m.rif] : '');
+    if (!rif || /TOTAL|SOMMA|SUBTOT|RIPORT/.test(rif) || rif.length > 24) continue;
+    const val = k => m[k] != null ? toNum(r[m[k]]) : 0;
+    const x = { rif, sub: m.sub != null ? normSub(r[m.sub]) : '', mill: val('mill'), pc: val('pc'), ter: val('ter'), pog: val('pog'), pav: val('pav') };
+    x.tot = m.tot != null ? val('tot') : r2(x.pc + x.ter + x.pog + x.pav);
+    if (!x.mill && !x.pc && !x.ter && !x.pog && !x.pav && !x.tot) { scarti.push(rif); continue; }
+    let fh = null; if (m.fab != null) { const t = low(r[m.fab]); fh = /piccol|212/.test(t) ? 'PP' : /grand|211/.test(t) ? 'PG' : null; }
+    x.fab = fabDa(rif, x.sub, fh || null);
+    if (x.fab === '?' && sez) x.fab = sez;
+    for (const k of ['mill', 'pc', 'ter', 'pog', 'pav', 'tot']) x[k] = r2(x[k] * (k === 'mill' ? 1 : 1));
+    x.key = chiave(x.fab, x.rif, x.sub);
+    out.push(x);
+  }
+  // chiavi duplicate: tengo la prima e segnalo
+  const visti = new Set(), dup = [];
+  const righe = out.filter(x => { if (visti.has(x.key)) { dup.push(x.rif + (x.sub ? ' ' + x.sub : '')); return false; } visti.add(x.key); return true; });
+  return { righe, dup, scarti };
+}
+async function importa(file) {
+  let XLSX; try { XLSX = await caricaXLSX(); } catch (e) { return toast(e.message); }
+  let wb; try { wb = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: false }); } catch (e) { return toast('File non leggibile: ' + e.message); }
+  const nomi = wb.SheetNames;
+  let foglio = nomi.find(n => /ripartizione\s*totale/i.test(n)) || nomi.find(n => /ripartiz/i.test(n)) || nomi[0];
+  const stato = { foglio, m: null, hi: -1, rows: [] };
+  const carica = () => { stato.rows = XLSX.utils.sheet_to_json(wb.Sheets[stato.foglio], { header: 1, raw: true, defval: '' }); stato.hi = trovaIntestazione(stato.rows); stato.m = stato.hi >= 0 ? indovina(stato.rows[stato.hi], stato.rows, stato.hi) : {}; };
+  carica();
+  const dlg = $('#dlgImport');
+  const disegna = () => {
+    const head = stato.hi >= 0 ? stato.rows[stato.hi] : (stato.rows[0] || []);
+    const opz = sel => `<option value="">—</option>` + head.map((c, j) => `<option value="${j}"${sel === j ? ' selected' : ''}>${colName(j)} · ${esc(String(c).slice(0, 40)) || '(vuota)'}</option>`).join('');
+    const ex = stato.hi >= 0 && stato.m.rif != null ? estrai(stato.rows, stato.hi, stato.m) : { righe: [], dup: [], scarti: [] };
+    const t = { pc: 0, ter: 0, pog: 0, pav: 0, tot: 0, mill: 0 }; ex.righe.forEach(r => { for (const k in t) t[k] += r[k]; });
+    const nf = { PG: 0, PP: 0, '?': 0 }; ex.righe.forEach(r => nf[r.fab]++);
+    const v = attiva();
+    dlg.innerHTML = `<form method="dialog" id="fImp"><h3>Importa riepilogo costi</h3>
+     <p class="small muted" style="margin:0">${esc(file.name)}</p>
+     <div class="grid"><div class="fld"><label class="f">Foglio</label><select id="iFoglio">${nomi.map(n => `<option${n === stato.foglio ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select></div>
+     <div class="fld"><label class="f">Riga di intestazione</label><input type="number" id="iHead" min="1" value="${stato.hi + 1}"></div>
+     <div class="fld"><label class="f">Nome della versione</label><input type="text" id="iNome" value="${esc(file.name.replace(/\.[^.]+$/, ''))}"></div></div>
+     ${stato.hi < 0 ? '<div class="notice err">Non ho trovato l\'intestazione delle colonne in questo foglio. Scegli il foglio RIPARTIZIONE TOTALE o indica il numero della riga di intestazione.</div>' : ''}
+     <p class="sec-title" style="margin-top:4px">Colonne</p><div class="mapgrid">${VOCI_IMPORT.map(([k, l]) => `<div class="fld"><label class="f">${l}</label><select data-map="${k}">${opz(stato.m[k])}</select></div>`).join('')}</div>
+     <p class="sec-title">Anteprima</p>
+     ${ex.righe.length ? `<p class="small" style="margin:0">${ex.righe.length} unità lette · Playa Grande ${nf.PG} · Playa Piccolo ${nf.PP}${nf['?'] ? ` · <span class="da">${nf['?']} senza fabbricato</span>` : ''}</p>
+     <div class="tw" style="max-height:260px;overflow:auto"><table class="t"><thead><tr><th>Unità</th><th class="l">Sub</th><th>Mill.</th>${VOCI.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>
+     ${ex.righe.slice(0, 12).map(r => `<tr><td>${esc(r.rif)} <span class="pill">${r.fab}</span></td><td class="l">${esc(r.sub)}</td><td>${num2(r.mill)}</td>${VOCI.map(([k]) => `<td>${eur(r[k])}</td>`).join('')}</tr>`).join('')}
+     <tr class="tot"><td>Totale</td><td></td><td>${num2(t.mill)}</td>${VOCI.map(([k]) => `<td>${eur(t[k])}</td>`).join('')}</tr></tbody></table></div>
+     <p class="small muted" style="margin:0">Controlla che il totale coincida con quello del foglio (QE / RIPARTIZIONE TOTALE).${Math.abs(r2(t.pc + t.ter + t.pog + t.pav) - r2(t.tot)) > 1 && stato.m.tot != null ? ' <span class="da">La somma delle quattro voci (' + eur(t.pc + t.ter + t.pog + t.pav) + ') non coincide con la colonna Totale: verifica l\'abbinamento.</span>' : ''}${ex.dup.length ? ' <span class="da">Righe doppie ignorate: ' + esc(ex.dup.slice(0, 8).join(', ')) + '.</span>' : ''}</p>
+     ${v ? `<p class="small" style="margin:0">Rispetto alla versione attiva («${esc(v.nome)}», ${eur(totaliDi(v).tot)}): ${sgn(r2(t.tot - totaliDi(v).tot))}</p>` : ''}` : '<p class="small muted">Nessuna riga riconosciuta: indica almeno la colonna Unità.</p>'}
+     <p class="small muted" style="margin:0">L'importazione aggiunge una versione e crea le unità che mancano. Non modifica proprietari, contatti e note già inseriti e non elimina nulla.</p>
+     <div class="acts"><button class="btn quiet" value="no">Annulla</button><button class="btn solid" id="iOk" value="ok" ${ex.righe.length ? '' : 'disabled'}>Importa ${ex.righe.length} unità</button></div></form>`;
+    $('#iFoglio').onchange = e => { stato.foglio = e.target.value; carica(); disegna(); };
+    $('#iHead').onchange = e => { const n = parseInt(e.target.value, 10) - 1; if (n >= 0 && n < stato.rows.length) { stato.hi = n; stato.m = indovina(stato.rows[n], stato.rows, n); disegna(); } };
+    dlg.querySelectorAll('[data-map]').forEach(s => s.onchange = () => { const k = s.dataset.map; if (s.value === '') delete stato.m[k]; else stato.m[k] = +s.value; disegna(); });
+    $('#iOk').onclick = ev => {
+      ev.preventDefault();
+      const nome = $('#iNome').value.trim() || file.name;
+      const ver = { id: uid(), nome, file: file.name, foglio: stato.foglio, data: oggi(), creato: new Date().toISOString(), note: '', mappa: { ...stato.m, riga: stato.hi + 1 }, righe: ex.righe.map(({ key, fab, rif, sub, mill, pc, ter, pog, pav, tot }) => ({ key, fab, rif, sub, mill, pc, ter, pog, pav, tot })) };
+      let nuove = 0, agg = 0;
+      for (const r of ver.righe) {
+        const u = S.unita[r.key];
+        if (!u) { S.unita[r.key] = { key: r.key, fab: r.fab, rif: r.rif, sub: r.sub, mill: r.mill, prop: '', email: '', tel: '', note: '', daImport: nome }; nuove++; }
+        else if (r.mill && u.mill !== r.mill) { u.millPrec = u.mill; u.mill = r.mill; agg++; }
+      }
+      S.versioni.push(ver); S.attiva = ver.id; F.cA = null; F.cB = null;
+      salva(); dlg.close(); toast(`Importata «${nome}»: ${ver.righe.length} unità, ${nuove} nuove${agg ? ', millesimi aggiornati per ' + agg : ''}`); vai('costi');
+    };
+  };
+  disegna(); dlg.showModal();
+}
+function colName(j) { let s = ''; j++; while (j) { const m = (j - 1) % 26; s = String.fromCharCode(65 + m) + s; j = Math.floor((j - 1) / 26); } return s; }
+
+/* ---------- scheda unità stampabile ---------- */
+function testoUnita(u) {
+  const v = attiva(), r = rigaDi(v, u);
+  const L = [`${S.dati.nome || 'Condominio'} – ${FAB[u.fab]}`, `Unità ${u.rif}${u.sub ? ' – sub ' + u.sub : ''}${u.mill ? ' – ' + num2(u.mill) + ' millesimi' : ''}`];
+  if (r) { L.push(`Quote di spesa (versione «${v.nome}», IVA e spese comprese):`); for (const [k, l] of VOCI.slice(0, 4)) L.push(`- ${l}: ${eur(r[k])}`); L.push(`Totale: ${eur(r.tot)}`); }
+  return L.join('\n');
+}
+function stampaUnita(u) {
+  const v = attiva(), r = rigaDi(v, u), p = v && precedente(v), rp = p && rigaDi(p, u);
+  $('#print').innerHTML = `<h1>${esc(S.dati.nome || 'Condominio')}</h1><div>${esc(S.dati.indirizzo || '')} · ${esc(S.dati.comune || '')}</div>
+  <h2>Unità</h2><table><tr><td>Riferimento</td><td>${esc(u.rif)}</td></tr><tr><td>Fabbricato</td><td>${esc(FAB[u.fab])}</td></tr><tr><td>Subalterno</td><td>${esc(u.sub || '—')}</td></tr><tr><td>Millesimi</td><td>${num2(u.mill)}</td></tr>${u.prop ? `<tr><td>Proprietario</td><td>${esc(u.prop)}</td></tr>` : ''}</table>
+  ${r ? `<h2>Quote di spesa · ${esc(v.nome)}</h2><table><tr><th>Voce</th>${rp ? `<th>${esc(p.nome)}</th>` : ''}<th>${esc(v.nome)}</th>${rp ? '<th>Differenza</th>' : ''}</tr>${VOCI.map(([k, l]) => `<tr${k === 'tot' ? ' class="tot"' : ''}><td>${l}</td>${rp ? `<td>${eur(rp[k])}</td>` : ''}<td>${eur(r[k])}</td>${rp ? `<td>${sgn(r2(r[k] - rp[k]))}</td>` : ''}</tr>`).join('')}</table>` : '<p>Quote non disponibili: importare il riepilogo costi.</p>'}
+  <div class="foot">Importi IVA e spese comprese, dal riepilogo costi importato il ${v ? dataIt(v.data) : '—'} (file ${esc(v ? v.file : '—')}). Stampato il ${new Date().toLocaleDateString('it-IT')} · Purarchitettura</div>`;
+  window.print();
+}
+
+/* ---------- dialoghi ---------- */
+function dialogo(titolo, corpo, onOk, onDel) {
+  const d = $('#dlg');
+  d.className = 'wide';
+  d.innerHTML = `<form method="dialog"><h3>${esc(titolo)}</h3>${corpo}<div class="acts">${onDel ? '<button class="btn danger" value="del" type="button" id="dDel">Elimina</button><span style="flex:1"></span>' : ''}<button class="btn quiet" value="no" formnovalidate>Annulla</button><button class="btn solid" value="ok" id="dOk">Salva</button></div></form>`;
+  const f = d.querySelector('form');
+  f.onsubmit = e => {
+    if (e.submitter && e.submitter.value !== 'ok') return;
+    e.preventDefault(); if (!f.reportValidity()) return;
+    const o = {}; f.querySelectorAll('[name]').forEach(i => o[i.name] = i.type === 'checkbox' ? i.checked : i.value.trim());
+    d.close(); onOk(o);
+  };
+  if (onDel) $('#dDel').onclick = () => { if (confirm('Eliminare definitivamente?')) { d.close(); onDel(); } };
+  d.showModal();
+}
+function chiedi(titolo, campi, onOk) { dialogo(titolo, campi, onOk); }
+
+/* ---------- eventi ---------- */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-tab],[data-act],[data-unita],[data-fab],[data-rstato],[data-pstato]'); if (!t) return;
+  if (t.dataset.tab) return vai(t.dataset.tab);
+  if (t.dataset.unita) { sel = t.dataset.unita; render(); window.scrollTo(0, 0); return; }
+  if (t.dataset.fab !== undefined && !t.dataset.act) { F.fab = t.dataset.fab; lsSet('fab', F.fab); return render(); }
+  if (t.dataset.rstato) { F.rStato = t.dataset.rstato; return render(); }
+  if (t.dataset.pstato) { F.pStato = t.dataset.pstato; return render(); }
+  const id = t.dataset.id, a = t.dataset.act;
+  const trova = (l) => S[l].find(x => x.id === id);
+  switch (a) {
+    case 'importa': $('#fileXls').click(); break;
+    case 'vaiConfronto': $('#confronto')?.scrollIntoView({ behavior: 'smooth' }); break;
+    case 'attiva': S.attiva = id; salva(); render(); break;
+    case 'rinominaV': { const v = versione(id); dialogo('Versione', `<div class="fld"><label class="f">Nome</label><input type="text" name="nome" value="${esc(v.nome)}" required></div><div class="fld"><label class="f">Note</label><textarea name="note">${esc(v.note || '')}</textarea></div>`, o => { v.nome = o.nome; v.note = o.note; salva(); render(); }); break; }
+    case 'eliminaV': { const v = versione(id); if (confirm(`Eliminare la versione «${v.nome}»? Le unità e i dati inseriti a mano restano.`)) { S.versioni = S.versioni.filter(x => x !== v); if (S.attiva === id) S.attiva = S.versioni.length ? S.versioni[S.versioni.length - 1].id : null; salva(); render(); } break; }
+    case 'csvV': { const v = versione(id); download('Riepilogo_' + v.nome.replace(/[^\w-]+/g, '_') + '.csv', new Blob([csv([['Fabbricato', 'Unità', 'Sub', 'Millesimi', ...VOCI.map(x => x[1])], ...v.righe.slice().sort(ordUnita).map(r => [FAB[r.fab], r.rif, r.sub, r.mill, ...VOCI.map(([k]) => r[k])])])], { type: 'text/csv' })); break; }
+    case 'csvConfronto': {
+      const A = versione(F.cA), B = versione(F.cB);
+      const rows = abbina(A, B).map(([x, y]) => { const u = y || x; return [FAB[u.fab], u.rif, u.sub, ...VOCI.flatMap(([k]) => [x ? x[k] : '', y ? y[k] : '', r2((y ? y[k] : 0) - (x ? x[k] : 0))])]; });
+      download('Confronto_costi_' + oggi().replace(/-/g, '') + '.csv', new Blob([csv([['Fabbricato', 'Unità', 'Sub', ...VOCI.flatMap(([, l]) => [l + ' prec.', l + ' att.', l + ' diff.'])], ...rows])], { type: 'text/csv' })); break;
+    }
+    case 'csvUnita': { const v = attiva(); download('Unita_Playa_' + oggi().replace(/-/g, '') + '.csv', new Blob([csv([['Fabbricato', 'Unità', 'Sub', 'Millesimi', 'Proprietario', 'Email', 'Telefono', 'Note', ...(v ? VOCI.map(x => x[1]) : [])], ...Object.values(S.unita).sort(ordUnita).map(u => { const r = rigaDi(v, u); return [FAB[u.fab], u.rif, u.sub, u.mill, u.prop, u.email, u.tel, u.note, ...(v ? VOCI.map(([k]) => r ? r[k] : '') : [])]; })])], { type: 'text/csv' })); break; }
+    case 'nuovaUnita': dialogo('Nuova unità', `<div class="grid"><div class="fld"><label class="f">Riferimento</label><input type="text" name="rif" required placeholder="es. A104"></div><div class="fld"><label class="f">Subalterno</label><input type="text" name="sub" placeholder="es. 211/14"></div><div class="fld"><label class="f">Fabbricato</label><select name="fab"><option value="">Automatico</option><option value="PG">Playa Grande</option><option value="PP">Playa Piccolo</option></select></div><div class="fld"><label class="f">Millesimi</label><input type="text" name="mill" inputmode="decimal"></div></div>`,
+      o => { const rif = normRif(o.rif), sub = normSub(o.sub), fab = o.fab || fabDa(rif, sub); const k = chiave(fab, rif, sub); if (S.unita[k]) return toast('Unità già presente'); S.unita[k] = { key: k, fab, rif, sub, mill: toNum(o.mill), prop: '', email: '', tel: '', note: '' }; salva(); sel = k; render(); }); break;
+    case 'indietro': sel = null; render(); break;
+    case 'eliminaUnita': { const u = S.unita[sel]; if (u && confirm(`Eliminare l'unità ${u.rif}? Le versioni dei costi importate non cambiano.`)) { delete S.unita[sel]; sel = null; salva(); render(); } break; }
+    case 'stampaUnita': stampaUnita(S.unita[sel]); break;
+    case 'testoUnita': copia(testoUnita(S.unita[sel])); break;
+    case 'nuovaRich': { formRich(null); if (t.dataset.rif) { const f = $('#dlg form'); f.rif.value = t.dataset.rif; } break; }
+    case 'modRich': formRich(trova('richieste')); break;
+    case 'nuovoPunto': formPunto(null); break;
+    case 'modPunto': formPunto(trova('punti')); break;
+    case 'risolvi': { const p = trova('punti'); p.stato = 'Risolto'; p.dataRisolto = oggi(); salva(); render(); toast('Segnato come risolto'); break; }
+    case 'nuovaAgenda': formAgenda(null); break;
+    case 'modAgenda': formAgenda(trova('agenda')); break;
+    case 'ics': ics(trova('agenda')); break;
+    case 'nuovoCont': formCont(null); break;
+    case 'modCont': formCont(trova('contatti')); break;
+    case 'nuovoDoc': formDoc(null); break;
+    case 'modDoc': formDoc(trova('documenti')); break;
+    case 'copia': copia(t.dataset.txt); break;
+    case 'backup': backup(); break;
+    case 'ripristina': $('#fileJson').click(); break;
+  }
+});
+$('#goHome').onclick = () => vai('quadro');
+$('#btnBackup').onclick = backup;
+$('#btnImport').onclick = () => $('#fileXls').click();
+$('#fileXls').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) importa(f); };
+$('#fileJson').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { const n = unisci(JSON.parse(await f.text())); salva(); render(); toast(`Backup caricato: ${n} elementi aggiunti`); } catch (er) { toast(er.message); } };
+
+/* ---------- avvio ---------- */
+(async () => {
+  try { db = await dbOpen(); S = await dbGet('stato'); } catch (e) { toast('Archivio del dispositivo non disponibile: i dati non verranno salvati'); }
+  if (!S) { S = statoIniziale(); if (db) await dbPut('stato', S).catch(() => { }); }
+  S = migra(S);
+  try { navigator.storage?.persist?.(); } catch { }
+  render();
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => { });
+})();
+
+</script>
+</body>
+</html>
