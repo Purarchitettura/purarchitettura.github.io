@@ -155,7 +155,7 @@ dialog form{display:grid;gap:12px}
 #print{display:none}
 @media print{
   body{padding:0;background:#fff;color:#000}
-  header.top,#app,.bar,#toast,dialog{display:none!important}
+  header.top,#app,.bar,.bnav,#toast,dialog{display:none!important}
   #print{display:block;font:11pt/1.45 Arial,sans-serif;color:#000;padding:0}
   #print h1{font-size:15pt;font-weight:400;letter-spacing:.12em;text-transform:uppercase;margin:0 0 4px}
   #print h2{font-size:10pt;font-weight:400;letter-spacing:.18em;text-transform:uppercase;margin:16px 0 6px;border-bottom:1px solid #84754e;padding-bottom:3px}
@@ -165,6 +165,87 @@ dialog form{display:grid;gap:12px}
   #print tr.tot td{font-weight:700;border-top:1.5px solid #84754e}
   #print .foot{margin-top:18px;font-size:9pt;color:#555}
 }
+/* --- versione telefono --- */
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom));font-size:16px}
+.top-in{min-height:54px}
+.phead{padding:18px 0 4px}
+.phead h1{font-weight:400;font-size:24px;letter-spacing:.1em;text-transform:uppercase;margin:0;line-height:1.2;overflow-wrap:anywhere}
+.phead p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.back{background:none;border:0;padding:6px 0;margin:0 0 4px;color:var(--gold);font-size:15px;cursor:pointer;min-height:36px}
+section.pane{padding-block:10px 20px}
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:15;display:grid;grid-template-columns:repeat(5,1fr);background:var(--bg);border-top:1px solid var(--line);padding:4px max(4px,env(safe-area-inset-left)) calc(4px + env(safe-area-inset-bottom)) max(4px,env(safe-area-inset-right))}
+.bnav button{position:relative;display:grid;justify-items:center;gap:2px;background:none;border:0;padding:6px 2px 4px;min-height:56px;color:var(--muted);cursor:pointer;font-size:11px;letter-spacing:.04em}
+.bnav svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.bnav button.on{color:var(--gold)}
+.bnav button.on svg{stroke-width:2}
+.bnav i{position:absolute;top:3px;left:calc(50% + 6px);font-style:normal;background:var(--gold);color:var(--gold-ink);font-size:10.5px;min-width:18px;height:18px;line-height:18px;border-radius:9px;padding:0 5px}
+@media(min-width:900px){.bnav{max-width:640px;margin:0 auto;border:1px solid var(--line);border-bottom:0}}
+#toast{bottom:calc(80px + env(safe-area-inset-bottom))}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 14px}
+@media(min-width:700px){.tiles{grid-template-columns:repeat(4,1fr)}}
+.tile{display:grid;gap:2px;text-align:left;background:var(--surface);border:1px solid var(--line);padding:14px;cursor:pointer;min-width:0}
+.tile:active{background:var(--soft)}
+.tile small{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.tile b{font-weight:400;font-size:21px;color:var(--gold);font-variant-numeric:tabular-nums;overflow-wrap:anywhere;line-height:1.25}
+.tile span{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+h2.sec{font-weight:400;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin:24px 0 10px}
+.list{border:1px solid var(--line);background:var(--surface)}
+.li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 14px;border-top:1px solid var(--line);min-height:52px;width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;font-size:16px}
+.li:first-child{border-top:0}
+.list .li[role=button],.li.link{cursor:pointer}
+.list .li[role=button]:active,.li.link:active{background:var(--soft)}
+.li.link{border:1px solid var(--line);background:var(--surface);margin-bottom:10px}
+.li-l{min-width:0;overflow-wrap:anywhere}
+.li-l small{display:block;color:var(--muted);font-size:13px;margin-top:2px;line-height:1.45}
+.li-r{flex:none;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
+.searchbar input{width:100%;font-size:17px;border:1px solid var(--line);background:var(--bg);padding:12px 14px;min-height:50px;border-radius:0}
+.searchbar input:focus{border-color:var(--gold);outline:none}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:0 15px;min-height:38px;font-size:14px;color:var(--ink);cursor:pointer}
+.chip.on{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.ulist{display:grid;gap:8px}
+@media(min-width:760px){.ulist{grid-template-columns:1fr 1fr}}
+.ucard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:center;text-align:left;width:100%;background:var(--surface);border:1px solid var(--line);padding:12px 14px;min-height:64px;cursor:pointer}
+.ucard:active{background:var(--soft)}
+.ur{display:grid;justify-items:start;gap:3px;min-width:52px}
+.ur b{font-weight:400;font-size:18px;letter-spacing:.03em}
+.up{min-width:0;font-size:15px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.35}
+.up small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uv{font-size:15px;color:var(--gold);white-space:nowrap;font-variant-numeric:tabular-nums}
+.faint{color:var(--faint)}
+.sub-h{color:var(--muted);font-size:14px;margin:0 0 12px}
+.owner{border:1px solid var(--line);background:var(--surface);padding:14px;margin-bottom:12px}
+.owner small{display:block;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.owner b{display:block;font-weight:400;font-size:18px;margin-top:3px;overflow-wrap:anywhere}
+.owner .btns{margin-top:10px}
+.result{padding:16px;margin-bottom:10px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.btns.center{justify-content:center}
+.btns .btn{flex:1 1 auto;min-height:46px}
+.btns .btn.small{min-height:38px;flex:0 1 auto}
+details.box{border:1px solid var(--line);background:var(--surface);margin-top:12px}
+details.box>summary{list-style:none;cursor:pointer;padding:14px;min-height:50px;font-size:15px;display:flex;justify-content:space-between;align-items:center}
+details.box>summary::-webkit-details-marker{display:none}
+details.box>summary::after{content:"+";color:var(--gold);font-size:20px;line-height:1}
+details.box[open]>summary::after{content:"–"}
+details.box>.list{border-left:0;border-right:0;border-bottom:0}
+details.box>.form,details.box>ul,details.box>.hint{padding:0 14px 14px;margin:0}
+details.box ul{padding-left:30px}
+details.box ul li{margin:4px 0;overflow-wrap:anywhere}
+.pane>.hint{margin:10px 0 8px}
+.form{display:grid;gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.steps{margin:8px 0 0;padding-left:20px}
+.steps li{margin:4px 0}
+.steps li.ok{color:var(--ok);text-decoration:line-through}
+.notice .btns{margin-top:10px}
+.empty{padding:22px 16px}
+dialog{width:calc(100vw - 20px);max-width:620px;max-height:calc(100dvh - 20px);overflow:auto;padding:18px}
+dialog .list{margin:10px 0}
+.entry{padding:14px}
+.entry .acts .btn{min-height:38px}
+@media(max-width:420px){.phead h1{font-size:21px}.grid2{grid-template-columns:1fr}.word small{display:none}}
 </style>
 </head>
 <body>
@@ -178,23 +259,20 @@ dialog form{display:grid;gap:12px}
   </div>
 </header>
 <main class="wrap" id="app"><p class="muted" style="padding:30px 0">Caricamento…</p></main>
-<div class="bar" id="bar" hidden><div class="wrap in">
-  <span class="grow" id="saved">Dati solo su questo dispositivo</span>
-  <button type="button" class="btn quiet" id="btnBackup">Backup</button>
-  <button type="button" class="btn solid" id="btnImport">Importa costi</button>
-</div></div>
+<nav class="bnav" id="bnav" aria-label="Sezioni"></nav>
 <div id="toast" role="status" aria-live="polite"></div>
 <dialog id="dlg"></dialog>
 <dialog id="dlgImport" class="wide"></dialog>
 <div id="print"></div>
 <input type="file" id="fileXls" accept=".ods,.xlsx,.xls,.xlsm,.csv,application/vnd.oasis.opendocument.spreadsheet,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+<input type="file" id="fileAnag" multiple accept=".ods,.xlsx,.xls,.csv,application/vnd.oasis.opendocument.spreadsheet,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
 <input type="file" id="fileJson" accept="application/json,.json" hidden>
 <script>
 'use strict';
 /* Condominio Playa Grande · Purarchitettura
    Dati solo su questo dispositivo (IndexedDB "condominio-playa"). Nessun invio a server.
    Regola: importazioni e aggiornamenti non cancellano mai ciò che gli utenti hanno inserito. */
-const APP_VERSION = '1.0 · 26/11/2026';
+const APP_VERSION = '1.1 telefono e anagrafica · 26/11/2026';
 const DB_NAME = 'condominio-playa', LS = 'cpg_';
 const FAB = { PG: 'Playa Grande', PP: 'Playa Piccolo', '?': 'Da assegnare' };
 const VOCI = [
@@ -224,7 +302,7 @@ const oggi = () => new Date().toISOString().slice(0, 10);
 function fmt(n, d) { const neg = n < 0; let [i, f] = Math.abs(Number(n)).toFixed(d).split('.'); i = i.replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return (neg && Number(i.replace(/\./g, '') + '.' + (f || 0)) !== 0 ? '-' : '') + i + (d ? ',' + f : ''); }
 const eur = n => (n == null || isNaN(n)) ? '—' : '€ ' + fmt(n, 2);
 const num2 = (n, d = 2) => (n == null || isNaN(n)) ? '—' : fmt(n, d);
-const sgn = n => (n > 0.004 ? '+' : '') + eur(n);
+const sgn = n => n > 0.004 ? '+' + eur(n) : n < -0.004 ? '−' + eur(-n) : eur(0);
 const dataIt = s => s ? s.split('-').reverse().join('/') : '';
 const r2 = n => Math.round((Number(n) || 0) * 100) / 100;
 function toNum(v) {
@@ -278,7 +356,7 @@ function dbOpen() { return new Promise((ok, ko) => { const r = indexedDB.open(DB
 function dbGet(k) { return new Promise((ok, ko) => { const r = db.transaction('kv').objectStore('kv').get(k); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); }); }
 function dbPut(k, v) { return new Promise((ok, ko) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = () => ok(); tx.onerror = () => ko(tx.error); }); }
 let saveT;
-function salva() { S.modificato = new Date().toISOString(); clearTimeout(saveT); saveT = setTimeout(() => dbPut('stato', S).then(() => { $('#saved').textContent = 'Salvato sul dispositivo · ' + new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }); }).catch(e => toast('Salvataggio non riuscito: ' + e.message)), 250); }
+function salva() { S.modificato = new Date().toISOString(); clearTimeout(saveT); saveT = setTimeout(() => dbPut('stato', S).then(() => {  }).catch(e => toast('Salvataggio non riuscito: ' + e.message)), 250); }
 
 /* Stato iniziale vuoto: il codice della pagina è pubblico, quindi qui non ci sono dati del condominio.
    I dati di partenza (punti aperti, richieste, contatti, documenti) si caricano con «Carica backup». */
@@ -314,112 +392,136 @@ function abbina(a, b) { // a,b versioni → righe abbinate per chiave
   return out;
 }
 
-/* ---------- interfaccia ---------- */
-const TABS = [['quadro', 'Quadro'], ['unita', 'Unità'], ['costi', 'Costi'], ['richieste', 'Richieste'], ['punti', 'Punti aperti'], ['agenda', 'Agenda'], ['contatti', 'Contatti'], ['documenti', 'Documenti'], ['dati', 'Dati']];
+/* ---------- interfaccia (pensata prima per il telefono) ---------- */
+const ICO = {
+  quadro: '<path d="M4 11.5 12 5l8 6.5V20h-5.5v-5h-5v5H4z"/>',
+  unita: '<rect x="5" y="3.5" width="14" height="17" rx="1"/><path d="M9 8h2M13 8h2M9 12h2M13 12h2M10.5 20.5v-4h3v4"/>',
+  costi: '<path d="M16.5 7.2A6 6 0 1 0 16.5 16.8M5 10.5h8M5 13.5h8"/>',
+  richieste: '<path d="M4.5 5.5h15v10h-9l-4 3.5v-3.5h-2z"/>',
+  altro: '<circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/>'
+};
+const NAV = [['quadro', 'Quadro'], ['unita', 'Unità'], ['costi', 'Costi'], ['richieste', 'Richieste'], ['altro', 'Altro']];
+const SUB = { punti: 'Punti aperti', agenda: 'Agenda', contatti: 'Contatti', documenti: 'Documenti', dati: 'Dati e backup' };
+const TITOLI = { quadro: 'Playa Grande', unita: 'Unità', costi: 'Costi', richieste: 'Richieste', altro: 'Altro', ...SUB };
 let tab = lsGet('tab', 'quadro'), sel = null;
-const F = { q: '', fab: lsGet('fab', ''), cq: '', soloVar: true, cA: null, cB: null, ordC: 'diff', pq: '', pStato: 'aperti', rStato: 'aperte' };
+const F = { q: '', fab: lsGet('fab', ''), senzaProp: false, cq: '', soloVar: true, cA: null, cB: null, ordC: 'diff', pq: '', pStato: 'aperti', rStato: 'aperte' };
+const nAperte = () => S.richieste.filter(r => r.stato !== 'Chiusa' && r.stato !== 'Risposta inviata').length;
+const nPunti = () => S.punti.filter(p => p.stato !== 'Risolto').length;
 
 function render() {
-  if (!TABS.some(t => t[0] === tab)) tab = 'quadro';
+  if (!TITOLI[tab]) tab = 'quadro';
+  const navOn = SUB[tab] ? 'altro' : tab;
+  $('#bnav').innerHTML = NAV.map(([k, l]) => {
+    const n = k === 'richieste' ? nAperte() : k === 'altro' ? nPunti() : 0;
+    return `<button type="button" data-tab="${k}" class="${k === navOn ? 'on' : ''}" aria-label="${l}"${k === navOn ? ' aria-current="page"' : ''}><svg viewBox="0 0 24 24" aria-hidden="true">${ICO[k]}</svg><span>${l}</span>${n ? `<i>${n}</i>` : ''}</button>`;
+  }).join('');
   const app = $('#app');
-  const nA = S.richieste.filter(r => r.stato !== 'Chiusa' && r.stato !== 'Risposta inviata').length;
-  const nP = S.punti.filter(p => p.stato !== 'Risolto').length;
-  app.innerHTML = `
-  <div class="hero"><p class="eyebrow">${esc(S.dati.comune || '')}</p><h1 class="title">Playa Grande</h1><hr class="rule">
-  <p class="lead">${esc(S.dati.nome || '')}${S.dati.indirizzo ? ' · ' + esc(S.dati.indirizzo) : ''}</p></div>
-  <nav class="tabs" role="tablist">${TABS.map(([k, l]) => `<button class="tab${k === tab ? ' on' : ''}" role="tab" data-tab="${k}">${l}${k === 'richieste' && nA ? ` <span class="n">${nA}</span>` : ''}${k === 'punti' && nP ? ` <span class="n">${nP}</span>` : ''}</button>`).join('')}</nav>
-  <section class="pane" id="pane"></section>`;
-  ({ quadro: vQuadro, unita: vUnita, costi: vCosti, richieste: vRichieste, punti: vPunti, agenda: vAgenda, contatti: vContatti, documenti: vDocumenti, dati: vDati })[tab]($('#pane'));
-  $('#bar').hidden = false;
+  const back = SUB[tab] ? `<button class="back" data-tab="altro">‹ Altro</button>` : (tab === 'unita' && sel ? `<button class="back" data-act="indietro">‹ Unità</button>` : '');
+  const tit = tab === 'unita' && sel && S.unita[sel] ? S.unita[sel].rif : TITOLI[tab];
+  const sotto = tab === 'quadro' ? esc([S.dati.indirizzo, S.dati.comune].filter(Boolean).join(' · ') || S.dati.nome || '') : '';
+  app.innerHTML = `<div class="phead">${back}<h1>${esc(tit)}</h1>${sotto ? `<p>${sotto}</p>` : ''}</div><section class="pane" id="pane"></section>`;
+  ({ quadro: vQuadro, unita: vUnita, costi: vCosti, richieste: vRichieste, altro: vAltro, punti: vPunti, agenda: vAgenda, contatti: vContatti, documenti: vDocumenti, dati: vDati })[tab]($('#pane'));
 }
 function vai(t) { tab = t; lsSet('tab', t); sel = null; render(); window.scrollTo(0, 0); }
+const riga = (label, valore, extra = '', attr = '') => `<div class="li"${attr}><div class="li-l">${label}${extra ? `<small>${extra}</small>` : ''}</div><div class="li-r">${valore}</div></div>`;
+const diffCls = d => d > 0.004 ? 'pos' : d < -0.004 ? 'neg' : 'muted';
 
 /* Quadro */
 function vQuadro(el) {
-  const v = attiva(); const nU = Object.keys(S.unita).length;
-  const prossimi = S.agenda.filter(a => !a.fatto && a.data && a.data >= oggi()).sort((a, b) => a.data.localeCompare(b.data)).slice(0, 5);
+  const v = attiva(); const us = Object.values(S.unita);
+  const prossimi = S.agenda.filter(a => !a.fatto && a.data && a.data >= oggi()).sort((a, b) => a.data.localeCompare(b.data)).slice(0, 3);
   const rich = S.richieste.filter(r => r.stato !== 'Chiusa' && r.stato !== 'Risposta inviata');
-  const punti = S.punti.filter(p => p.stato !== 'Risolto');
+  const senzaProp = us.filter(u => !u.prop).length;
   let h = '';
-  if (!v) h += `<div class="notice">Per vedere quote e totali importa il file <b>Riepilogo costi</b> (.ods o .xlsx), foglio RIPARTIZIONE TOTALE. Ogni importazione diventa una versione: puoi confrontarle e nessun dato inserito a mano viene cancellato.<div class="toolbar"><button class="btn solid" data-act="importa">Importa riepilogo costi</button><button class="btn gold" data-act="ripristina">Carica backup / dati iniziali</button></div></div>`;
-  h += `<div class="kpis">`;
-  h += `<div class="kpi"><small>Unità</small><b>${nU}</b><span>${['PG', 'PP'].map(f => FAB[f] + ' ' + Object.values(S.unita).filter(u => u.fab === f).length).join(' · ')}</span></div>`;
-  if (v) {
-    const t = totaliDi(v);
-    h += `<div class="kpi"><small>Totale ripartito</small><b>${eur(t.tot)}</b><span>Versione: ${esc(v.nome)}</span></div>`;
-    h += `<div class="kpi"><small>Playa Grande</small><b>${eur(totaliDi(v, 'PG').tot)}</b><span>${num2(totaliDi(v, 'PG').mill)} millesimi</span></div>`;
-    h += `<div class="kpi"><small>Playa Piccolo</small><b>${eur(totaliDi(v, 'PP').tot)}</b><span>${num2(totaliDi(v, 'PP').mill)} millesimi</span></div>`;
+  if (!v || !us.length || (!S.punti.length && !S.richieste.length)) {
+    h += `<div class="notice"><b>Per iniziare</b><ol class="steps">
+      <li class="${v ? 'ok' : ''}">Importa il <b>Riepilogo costi</b> (.ods o .xlsx): crea le unità con millesimi e quote.</li>
+      <li class="${us.some(u => u.prop) ? 'ok' : ''}">Importa l'<b>anagrafica</b> dei proprietari.</li>
+      <li class="${S.punti.length || S.richieste.length ? 'ok' : ''}">Carica il file <b>Playa_dati_iniziali.json</b> con punti aperti, contatti e documenti.</li></ol>
+      <div class="btns"><button class="btn solid" data-act="importa">Riepilogo costi</button><button class="btn gold" data-act="anagrafica">Anagrafica</button><button class="btn quiet" data-act="ripristina">Dati iniziali</button></div></div>`;
   }
-  h += `<div class="kpi"><small>Richieste aperte</small><b>${rich.length}</b><span>condòmini e amministratore</span></div>`;
-  h += `<div class="kpi"><small>Punti aperti</small><b>${punti.length}</b><span>da verificare o fornire</span></div></div>`;
+  h += `<div class="tiles">
+    <button class="tile" data-tab="unita"><small>Unità</small><b>${us.length}</b><span>${us.length ? `Grande ${us.filter(u => u.fab === 'PG').length} · Piccolo ${us.filter(u => u.fab === 'PP').length}` : 'da importare'}</span></button>
+    <button class="tile" data-tab="costi"><small>Totale ripartito</small><b>${v ? eur(totaliDi(v).tot) : '—'}</b><span>${v ? esc(v.nome) : 'nessuna versione'}</span></button>
+    <button class="tile" data-tab="richieste"><small>Richieste aperte</small><b>${rich.length}</b><span>condòmini e amministratore</span></button>
+    <button class="tile" data-tab="punti"><small>Punti aperti</small><b>${nPunti()}</b><span>da verificare</span></button></div>`;
+  if (us.length && senzaProp) h += `<button class="li link" data-act="filtroSenzaProp"><div class="li-l">Unità senza proprietario</div><div class="li-r">${senzaProp} ›</div></button>`;
   if (v) {
-    const t = totaliDi(v), p = precedente(v), tp = p ? totaliDi(p) : null;
-    h += `<div class="card" style="margin-top:18px"><h2>Ripartizione per voce</h2><div class="tw"><table class="t"><thead><tr><th>Voce</th><th>Playa Grande</th><th>Playa Piccolo</th><th>Totale</th>${tp ? '<th>Diff. su versione prec.</th>' : ''}</tr></thead><tbody>`;
-    const g = totaliDi(v, 'PG'), pp = totaliDi(v, 'PP');
-    for (const [k, l] of VOCI) h += `<tr class="${k === 'tot' ? 'tot' : ''}"><td>${l}</td><td>${eur(g[k])}</td><td>${eur(pp[k])}</td><td>${eur(t[k])}</td>${tp ? `<td class="${t[k] - tp[k] > 0.004 ? 'pos' : t[k] - tp[k] < -0.004 ? 'neg' : ''}">${sgn(r2(t[k] - tp[k]))}</td>` : ''}</tr>`;
-    h += `</tbody></table></div>${totaliDi(v, '?').n ? `<p class="hint" style="margin-top:10px">${totaliDi(v, '?').n} righe senza fabbricato: assegnale dalla scheda unità.</p>` : ''}</div>`;
+    const t = totaliDi(v), g = totaliDi(v, 'PG'), pp = totaliDi(v, 'PP'), p = precedente(v), tp = p ? totaliDi(p) : null;
+    h += `<h2 class="sec">Ripartizione per voce</h2><div class="list">`;
+    for (const [k, l] of VOCI) { const d = tp ? r2(t[k] - tp[k]) : 0; h += riga(k === 'tot' ? '<b>Totale</b>' : l, k === 'tot' ? `<b>${eur(t[k])}</b>` : eur(t[k]), `Grande ${eur(g[k])} · Piccolo ${eur(pp[k])}${tp && Math.abs(d) > 0.004 ? ` · <span class="${diffCls(d)}">${sgn(d)}</span>` : ''}`); }
+    h += `</div>${tp ? `<p class="hint">Differenze rispetto a «${esc(p.nome)}».</p>` : ''}`;
   }
-  h += `<div class="card"><h2>Prossime date</h2>${prossimi.length ? `<div class="stack">${prossimi.map(entryAgenda).join('')}</div>` : '<p class="muted small">Nessuna data in programma.</p>'}<div class="toolbar"><button class="btn quiet small" data-tab="agenda">Agenda</button></div></div>`;
-  h += `<div class="card"><h2>Richieste aperte</h2>${rich.length ? `<div class="stack">${rich.slice(0, 5).map(entryRich).join('')}</div>` : '<p class="muted small">Nessuna richiesta aperta.</p>'}<div class="toolbar"><button class="btn quiet small" data-tab="richieste">Tutte le richieste</button></div></div>`;
+  h += `<h2 class="sec">Prossime date</h2>${prossimi.length ? `<div class="stack">${prossimi.map(entryAgenda).join('')}</div>` : '<p class="muted small">Nessuna data in programma.</p>'}`;
+  if (rich.length) h += `<h2 class="sec">Richieste aperte</h2><div class="stack">${rich.slice(0, 3).map(entryRich).join('')}</div>`;
   el.innerHTML = h;
 }
 
 /* Unità */
 function vUnita(el) {
   if (sel) return vSchedaUnita(el, S.unita[sel]);
-  const v = attiva();
-  const q = F.q.toLowerCase();
-  let us = Object.values(S.unita).filter(u => (!F.fab || u.fab === F.fab) && (!q || [u.rif, u.sub, u.prop, u.email, u.note].join(' ').toLowerCase().includes(q))).sort(ordUnita);
-  let h = `<div class="filters"><input type="search" id="fq" placeholder="Cerca unità, sub, proprietario…" value="${esc(F.q)}">
-  <div class="seg">${[['', 'Tutte'], ['PG', 'Grande'], ['PP', 'Piccolo']].map(([k, l]) => `<button data-fab="${k}" class="${F.fab === k ? 'on' : ''}">${l}</button>`).join('')}</div>
-  <button class="btn gold small" data-act="nuovaUnita">Nuova unità</button><button class="btn quiet small" data-act="csvUnita">CSV</button></div>`;
-  if (!Object.keys(S.unita).length) h += `<div class="empty">Nessuna unità. Importa il riepilogo costi dalla scheda <b>Costi</b>: le unità vengono create con riferimento, sub e millesimi.<div class="toolbar" style="justify-content:center"><button class="btn solid" data-act="importa">Importa riepilogo costi</button></div></div>`;
+  const v = attiva(), q = F.q.toLowerCase().trim();
+  const tutte = Object.values(S.unita);
+  const us = tutte.filter(u => (!F.fab || u.fab === F.fab) && (!F.senzaProp || !u.prop) && (!q || [u.rif, u.sub, u.prop, u.email, u.tel, u.note, (u.owners || []).map(o => o.cf).join(' ')].join(' ').toLowerCase().includes(q))).sort(ordUnita);
+  let h = `<div class="searchbar"><input type="search" id="fq" placeholder="Cerca A104, sub, nome…" value="${esc(F.q)}" autocomplete="off"></div>
+  <div class="chips">${[['', 'Tutte'], ['PG', 'Grande'], ['PP', 'Piccolo']].map(([k, l]) => `<button data-fab="${k}" class="chip${F.fab === k ? ' on' : ''}">${l}</button>`).join('')}<button data-act="toggleSenzaProp" class="chip${F.senzaProp ? ' on' : ''}">Senza proprietario</button></div>`;
+  if (!tutte.length) h += `<div class="empty">Nessuna unità.<br>Importa il riepilogo costi o l'anagrafica: le unità vengono create da sole.<div class="btns center"><button class="btn solid" data-act="importa">Riepilogo costi</button><button class="btn gold" data-act="anagrafica">Anagrafica</button></div></div>`;
   else {
-    h += `<p class="hint">${us.length} unità${v ? ' · quote della versione «' + esc(v.nome) + '»' : ''}</p><div class="tw"><table class="t"><thead><tr><th>Unità</th><th class="l">Sub</th><th class="l">Proprietario</th><th>Millesimi</th>${v ? VOCI.map(([, l]) => `<th>${l}</th>`).join('') : ''}</tr></thead><tbody>`;
-    for (const u of us) { const r = rigaDi(v, u); h += `<tr class="click" data-unita="${esc(u.key)}"><td>${esc(u.rif)} <span class="pill">${u.fab === '?' ? '?' : u.fab}</span></td><td class="l">${esc(u.sub)}</td><td class="l">${esc(u.prop || '')}</td><td>${num2(u.mill)}</td>${v ? VOCI.map(([k]) => `<td>${r ? eur(r[k]) : '—'}</td>`).join('') : ''}</tr>`; }
-    h += `</tbody></table></div>`;
+    h += `<p class="hint">${us.length} di ${tutte.length} unità${v ? ' · totale per unità dalla versione «' + esc(v.nome) + '»' : ''}</p><div class="ulist">`;
+    for (const u of us) {
+      const r = rigaDi(v, u);
+      h += `<button class="ucard" data-unita="${esc(u.key)}"><span class="ur"><b>${esc(u.rif)}</b><span class="pill">${u.fab === '?' ? '?' : u.fab}</span></span><span class="up">${u.prop ? esc(u.prop) : '<span class="faint">Proprietario non inserito</span>'}<small>${u.sub ? 'sub ' + esc(u.sub) + ' · ' : ''}${num2(u.mill)} mill.</small></span><span class="uv">${r ? eur(r.tot) : ''}</span></button>`;
+    }
+    h += `</div>`;
   }
+  h += `<div class="btns"><button class="btn quiet small" data-act="anagrafica">Importa anagrafica</button><button class="btn quiet small" data-act="nuovaUnita">Nuova unità</button><button class="btn quiet small" data-act="csvUnita">Esporta CSV</button></div>`;
   el.innerHTML = h;
   const fq = $('#fq'); if (fq) fq.oninput = () => { F.q = fq.value; const p = fq.selectionStart; vUnita(el); const n = $('#fq'); n.focus(); n.setSelectionRange(p, p); };
 }
 function vSchedaUnita(el, u) {
   if (!u) { sel = null; return vUnita(el); }
-  const v = attiva(), r = rigaDi(v, u);
+  const v = attiva(), r = rigaDi(v, u), p = v && precedente(v), rp = p && rigaDi(p, u);
   const rich = S.richieste.filter(x => x.rif && normRif(x.rif) === u.rif && (!x.fab || x.fab === u.fab));
   const cont = S.contatti.filter(c => c.rif && normRif(c.rif) === u.rif);
-  let h = `<div class="toolbar" style="margin-top:0"><button class="btn quiet small" data-act="indietro">← Elenco unità</button><button class="btn gold small" data-act="stampaUnita">Scheda PDF</button><button class="btn quiet small" data-act="testoUnita">Copia riepilogo</button></div>
-  <div class="card" style="margin-top:16px"><h2>${esc(u.rif)} · ${esc(FAB[u.fab])}</h2>
-  <div class="grid">
-   ${fld('Riferimento', 'rif', u.rif, 'text', 'u')}${fld('Subalterno', 'sub', u.sub, 'text', 'u')}
-   <div class="fld"><label class="f">Fabbricato</label><select data-u="fab">${Object.entries(FAB).map(([k, l]) => `<option value="${k}"${u.fab === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
-   ${fld('Millesimi', 'mill', u.mill, 'number', 'u')}
-   ${fld('Proprietario', 'prop', u.prop, 'text', 'u')}${fld('Email', 'email', u.email, 'email', 'u')}${fld('Telefono', 'tel', u.tel, 'tel', 'u')}
-   <div class="fld wide"><label class="f">Note</label><textarea data-u="note">${esc(u.note || '')}</textarea></div>
-  </div><p class="hint" style="margin:12px 0 0">${esc(pianoDi(u.rif))}${u.daImport ? ' · creata dall\'importazione «' + esc(u.daImport) + '»' : ''}</p></div>`;
-  // costi per versione
-  h += `<div class="card"><h2>Quote di spesa</h2>`;
-  if (!S.versioni.length) h += '<p class="muted small">Importa il riepilogo costi per vedere le quote.</p>';
-  else {
-    h += `<div class="tw"><table class="t"><thead><tr><th>Versione</th>${VOCI.map(([, l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody>`;
-    for (const x of S.versioni.slice().reverse()) { const rr = rigaDi(x, u); h += `<tr${x === v ? ' class="tot"' : ''}><td>${esc(x.nome)}<br><span class="muted small">${dataIt(x.data)}</span></td>${VOCI.map(([k]) => `<td>${rr ? eur(rr[k]) : '—'}</td>`).join('')}</tr>`; }
-    h += `</tbody></table></div><p class="hint" style="margin:10px 0 0">In grassetto la versione attiva. Importi IVA e spese comprese, come nel foglio RIPARTIZIONE TOTALE.</p>`;
+  const tel = (u.tel || '').split(/[;,/]/).map(s => s.trim()).filter(Boolean);
+  const mail = (u.email || '').split(/[;,\s]+/).map(s => s.trim()).filter(s => s.includes('@'));
+  let h = `<p class="sub-h">${esc(FAB[u.fab])}${pianoDi(u.rif) ? ' · ' + esc(pianoDi(u.rif)) : ''}${u.sub ? ' · sub ' + esc(u.sub) : ''} · ${num2(u.mill)} millesimi</p>`;
+  h += `<div class="owner"><small>Proprietario</small><b>${u.prop ? esc(u.prop) : '<span class="faint">non inserito</span>'}</b>
+   <div class="btns">${tel.map(t => `<a class="btn gold" href="tel:${esc(t.replace(/[^\d+]/g, ''))}">Chiama ${esc(t)}</a>`).join('')}${mail.map(m => `<a class="btn gold" href="mailto:${esc(m)}">Email</a>`).join('')}${!tel.length && !mail.length ? '<span class="faint small">Nessun recapito</span>' : ''}</div></div>`;
+  if (r) {
+    h += `<div class="result"><small>Quota totale · ${esc(v.nome)}</small><div class="big">${eur(r.tot)}</div>${rp ? `<small>Prima (${esc(p.nome)}): ${eur(rp.tot)} · <span class="${diffCls(r.tot - rp.tot)}">${sgn(r2(r.tot - rp.tot))}</span></small>` : ''}</div>
+    <div class="list">${VOCI.slice(0, 4).map(([k, l]) => riga(l, eur(r[k]), rp && Math.abs(r[k] - rp[k]) > 0.004 ? `prima ${eur(rp[k])} · <span class="${diffCls(r[k] - rp[k])}">${sgn(r2(r[k] - rp[k]))}</span>` : '')).join('')}</div>
+    <p class="hint">Importi IVA e spese comprese, come nel foglio RIPARTIZIONE TOTALE.</p>`;
+  } else h += `<p class="muted small">${S.versioni.length ? 'Questa unità non è nella versione attiva del riepilogo costi.' : 'Importa il riepilogo costi per vedere le quote.'}</p>`;
+  h += `<div class="btns"><button class="btn solid" data-act="testoUnita">Copia riepilogo</button><button class="btn gold" data-act="stampaUnita">Scheda PDF</button><button class="btn quiet" data-act="nuovaRich" data-rif="${esc(u.rif)}" data-fab="${u.fab}">Nuova richiesta</button></div>`;
+  if (rich.length) h += `<h2 class="sec">Richieste</h2><div class="stack">${rich.map(entryRich).join('')}</div>`;
+  if (cont.length) h += `<h2 class="sec">Contatti collegati</h2><div class="stack">${cont.map(entryCont).join('')}</div>`;
+  h += htmlOwners(u);
+  if (S.versioni.length > 1) {
+    h += `<details class="box"><summary>Storico quote (${S.versioni.length} versioni)</summary><div class="list">`;
+    for (const x of S.versioni.slice().reverse()) { const rr = rigaDi(x, u); h += riga(esc(x.nome), rr ? eur(rr.tot) : '—', dataIt(x.data)); }
+    h += `</div></details>`;
   }
-  h += `</div>`;
-  h += `<div class="card"><h2>Richieste</h2>${rich.length ? `<div class="stack">${rich.map(entryRich).join('')}</div>` : '<p class="muted small">Nessuna richiesta per questa unità.</p>'}<div class="toolbar"><button class="btn quiet small" data-act="nuovaRich" data-rif="${esc(u.rif)}" data-fab="${u.fab}">Nuova richiesta</button></div></div>`;
-  if (cont.length) h += `<div class="card"><h2>Contatti collegati</h2><div class="stack">${cont.map(entryCont).join('')}</div></div>`;
-  h += `<div class="toolbar"><button class="btn danger small" data-act="eliminaUnita">Elimina unità</button></div>`;
+  h += `<details class="box"${u.prop ? '' : ' open'}><summary>Modifica dati</summary><div class="form">
+   ${fld('Proprietario', 'prop', u.prop, 'text', 'u')}${fld('Telefono', 'tel', u.tel, 'tel', 'u')}${fld('Email', 'email', u.email, 'email', 'u')}
+   <div class="fld"><label class="f">Note</label><textarea data-u="note">${esc(u.note || '')}</textarea></div>
+   <div class="grid2">${fld('Riferimento', 'rif', u.rif, 'text', 'u')}${fld('Subalterno', 'sub', u.sub, 'text', 'u')}
+   <div class="fld"><label class="f">Fabbricato</label><select data-u="fab">${Object.entries(FAB).map(([k, l]) => `<option value="${k}"${u.fab === k ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
+   ${fld('Millesimi', 'mill', u.mill, 'number', 'u')}</div>
+   <p class="hint">Le modifiche si salvano da sole.${u.daImport ? ' Unità creata dall\'importazione «' + esc(u.daImport) + '».' : ''}</p>
+   <button class="btn danger small" data-act="eliminaUnita">Elimina unità</button></div></details>`;
   el.innerHTML = h;
   el.querySelectorAll('[data-u]').forEach(i => i.onchange = () => {
-    const k = i.dataset.u; let val = i.value;
+    const k = i.dataset.u; let val = i.value.trim();
     if (k === 'mill') val = toNum(val);
     if (k === 'rif') val = normRif(val);
     if (k === 'sub') val = normSub(val);
-    u[k] = val;
-    if (k === 'rif' || k === 'sub' || k === 'fab') { // la chiave cambia: sposta il record senza perdere dati
-      const nk = chiave(u.fab, u.rif, u.sub);
-      if (nk !== u.key) { if (S.unita[nk]) { toast('Esiste già un\'unità con questi dati'); i.value = k === 'fab' ? u.fab : u[k]; return; } delete S.unita[u.key]; u.key = nk; S.unita[nk] = u; sel = nk; }
-    }
-    salva(); if (k === 'fab' || k === 'rif') vSchedaUnita(el, u);
+    if (k === 'rif' || k === 'sub' || k === 'fab') {
+      const nk = chiave(k === 'fab' ? val : u.fab, k === 'rif' ? val : u.rif, k === 'sub' ? val : u.sub);
+      if (nk !== u.key && S.unita[nk]) { toast('Esiste già un\'unità con questi dati'); i.value = u[k]; return; }
+      u[k] = val; delete S.unita[u.key]; u.key = nk; S.unita[nk] = u; sel = nk;
+    } else u[k] = val;
+    salva(); toast('Salvato'); if (k !== 'note') { const y = window.scrollY; render(); window.scrollTo(0, y); }
   });
 }
 function fld(lab, k, val, type, ns) { return `<div class="fld"><label class="f">${lab}</label><input type="${type}" ${type === 'number' ? 'step="any" inputmode="decimal" class="num"' : ''} data-${ns}="${k}" value="${esc(val ?? '')}"></div>`; }
@@ -427,16 +529,15 @@ function fld(lab, k, val, type, ns) { return `<div class="fld"><label class="f">
 /* Costi */
 function vCosti(el) {
   const v = attiva();
-  let h = `<div class="toolbar" style="margin-top:0"><button class="btn solid" data-act="importa">Importa riepilogo costi</button>${S.versioni.length > 1 ? '<button class="btn gold" data-act="vaiConfronto">Confronta versioni</button>' : ''}</div>`;
-  if (!S.versioni.length) { h += `<div class="empty">Nessuna versione importata.<br><span class="small">Accetta file .ods, .xlsx, .xls e .csv. Riconosce da solo le colonne del foglio RIPARTIZIONE TOTALE e ti fa controllare l'abbinamento prima di salvare.</span></div>`; el.innerHTML = h; return; }
-  h += `<div class="card" style="margin-top:18px"><h2>Versioni</h2><div class="stack">`;
-  for (const x of S.versioni.slice().reverse()) {
-    const t = totaliDi(x);
-    h += `<div class="entry"><div class="h"><b>${esc(x.nome)}</b>${x === v ? '<span class="pill gold">Attiva</span>' : ''}</div><p>Importata il ${dataIt(x.data)} · file ${esc(x.file || '')} · foglio ${esc(x.foglio || '')} · ${x.righe.length} righe · totale ${eur(t.tot)}${x.note ? '\n' + esc(x.note) : ''}</p>
-    <div class="acts">${x !== v ? `<button class="btn quiet small" data-act="attiva" data-id="${x.id}">Rendi attiva</button>` : ''}<button class="btn quiet small" data-act="rinominaV" data-id="${x.id}">Rinomina / note</button><button class="btn quiet small" data-act="csvV" data-id="${x.id}">CSV</button><button class="btn quiet small" data-act="eliminaV" data-id="${x.id}">Elimina versione</button></div></div>`;
-  }
-  h += `</div></div>`;
+  let h = `<div class="btns" style="margin-top:0"><button class="btn solid" data-act="importa">Importa riepilogo costi</button></div>`;
+  if (!S.versioni.length) { h += `<div class="empty">Nessuna versione importata.<br><span class="small">Accetta .ods, .xlsx, .xls e .csv. Riconosce da solo le colonne del foglio RIPARTIZIONE TOTALE e ti fa controllare l'abbinamento prima di salvare.</span></div>`; el.innerHTML = h; return; }
   if (S.versioni.length > 1) h += vConfrontoHtml();
+  h += `<h2 class="sec">Versioni importate</h2><div class="stack">`;
+  for (const x of S.versioni.slice().reverse()) {
+    h += `<div class="entry"><div class="h"><b>${esc(x.nome)}</b>${x === v ? '<span class="pill gold">Attiva</span>' : ''}</div><p>${dataIt(x.data)} · ${x.righe.length} unità · ${eur(totaliDi(x).tot)}</p><p class="small">File ${esc(x.file || '')} · foglio ${esc(x.foglio || '')}${x.note ? '\n' + esc(x.note) : ''}</p>
+    <div class="acts">${x !== v ? `<button class="btn gold small" data-act="attiva" data-id="${x.id}">Rendi attiva</button>` : ''}<button class="btn quiet small" data-act="rinominaV" data-id="${x.id}">Rinomina</button><button class="btn quiet small" data-act="csvV" data-id="${x.id}">CSV</button><button class="btn quiet small" data-act="eliminaV" data-id="${x.id}">Elimina</button></div></div>`;
+  }
+  h += `</div>`;
   el.innerHTML = h;
   bindConfronto(el);
 }
@@ -445,36 +546,49 @@ function vConfrontoHtml() {
   const A = versione(F.cA) || vs[vs.length - 2], B = versione(F.cB) || vs[vs.length - 1];
   F.cA = A.id; F.cB = B.id;
   const ta = totaliDi(A), tb = totaliDi(B);
-  let h = `<div class="card" id="confronto"><h2>Confronto</h2><div class="grid">
-   <div class="fld"><label class="f">Precedente</label><select id="cA">${vs.map(x => `<option value="${x.id}"${x === A ? ' selected' : ''}>${esc(x.nome)}</option>`).join('')}</select></div>
-   <div class="fld"><label class="f">Attuale</label><select id="cB">${vs.map(x => `<option value="${x.id}"${x === B ? ' selected' : ''}>${esc(x.nome)}</option>`).join('')}</select></div></div>
-   <div class="tw" style="margin-top:14px"><table class="t"><thead><tr><th>Voce</th><th>Precedente</th><th>Attuale</th><th>Differenza</th><th>%</th></tr></thead><tbody>`;
-  for (const [k, l] of VOCI) { const d = r2(tb[k] - ta[k]); h += `<tr class="${k === 'tot' ? 'tot' : ''}"><td>${l}</td><td>${eur(ta[k])}</td><td>${eur(tb[k])}</td><td class="${d > 0 ? 'pos' : d < 0 ? 'neg' : ''}">${sgn(d)}</td><td>${ta[k] ? num2(d / ta[k] * 100, 1) + '%' : '—'}</td></tr>`; }
-  h += `</tbody></table></div>`;
+  let h = `<h2 class="sec" id="confronto">Confronto</h2><div class="grid2">
+   <div class="fld"><label class="f">Prima</label><select id="cA">${vs.map(x => `<option value="${x.id}"${x === A ? ' selected' : ''}>${esc(x.nome)}</option>`).join('')}</select></div>
+   <div class="fld"><label class="f">Ora</label><select id="cB">${vs.map(x => `<option value="${x.id}"${x === B ? ' selected' : ''}>${esc(x.nome)}</option>`).join('')}</select></div></div><div class="list">`;
+  for (const [k, l] of VOCI) { const d = r2(tb[k] - ta[k]); h += riga(k === 'tot' ? '<b>Totale</b>' : l, `<span class="${diffCls(d)}">${sgn(d)}</span>`, `${eur(ta[k])} → ${eur(tb[k])}${ta[k] ? ' · ' + num2(d / ta[k] * 100, 1) + '%' : ''}`); }
+  h += `</div>`;
   const rows = abbina(A, B).map(([a, b]) => ({ a, b, u: b || a, d: r2((b ? b.tot : 0) - (a ? a.tot : 0)) }));
   const nPiu = rows.filter(r => r.d > 0.004).length, nMeno = rows.filter(r => r.d < -0.004).length;
-  const q = F.cq.toLowerCase();
+  const q = F.cq.toLowerCase().trim();
   let vis = rows.filter(r => (!F.soloVar || Math.abs(r.d) > 0.004 || !r.a || !r.b) && (!q || (r.u.rif + ' ' + r.u.sub).toLowerCase().includes(q)));
   vis.sort(F.ordC === 'diff' ? (x, y) => Math.abs(y.d) - Math.abs(x.d) : (x, y) => ordUnita(x.u, y.u));
-  h += `<p class="hint" style="margin:14px 0 8px">${nMeno} unità pagano meno, ${nPiu} pagano di più${rows.some(r => !r.a || !r.b) ? ', ' + rows.filter(r => !r.a || !r.b).length + ' presenti in una sola versione' : ''}.</p>
-  <div class="filters"><input type="search" id="cq" placeholder="Filtra unità…" value="${esc(F.cq)}">
-  <label class="small muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="soloVar" ${F.soloVar ? 'checked' : ''} style="accent-color:var(--gold)"> solo variate</label>
-  <div class="seg"><button data-ord="diff" class="${F.ordC === 'diff' ? 'on' : ''}">Per differenza</button><button data-ord="unita" class="${F.ordC === 'unita' ? 'on' : ''}">Per unità</button></div>
-  <button class="btn quiet small" data-act="csvConfronto">CSV</button></div>
-  <div class="tw"><table class="t"><thead><tr><th>Unità</th><th class="l">Sub</th>${VOCI.slice(0, 4).map(([, l]) => `<th>Δ ${l}</th>`).join('')}<th>Prec. totale</th><th>Att. totale</th><th>Differenza</th></tr></thead><tbody>`;
-  for (const r of vis.slice(0, 400)) {
-    h += `<tr><td>${esc(r.u.rif)} <span class="pill">${r.u.fab}</span>${!r.a ? ' <span class="pill gold">nuova</span>' : !r.b ? ' <span class="pill err">assente</span>' : ''}</td><td class="l">${esc(r.u.sub)}</td>${VOCI.slice(0, 4).map(([k]) => { const d = r2((r.b ? r.b[k] : 0) - (r.a ? r.a[k] : 0)); return `<td class="${d > 0.004 ? 'pos' : d < -0.004 ? 'neg' : 'muted'}">${Math.abs(d) > 0.004 ? sgn(d) : '—'}</td>`; }).join('')}<td>${r.a ? eur(r.a.tot) : '—'}</td><td>${r.b ? eur(r.b.tot) : '—'}</td><td class="${r.d > 0.004 ? 'pos' : r.d < -0.004 ? 'neg' : ''}">${sgn(r.d)}</td></tr>`;
+  h += `<p class="hint"><span class="neg">${nMeno} pagano meno</span> · <span class="pos">${nPiu} pagano di più</span>${rows.some(r => !r.a || !r.b) ? ' · ' + rows.filter(r => !r.a || !r.b).length + ' in una sola versione' : ''}</p>
+  <div class="searchbar"><input type="search" id="cq" placeholder="Filtra unità…" value="${esc(F.cq)}" autocomplete="off"></div>
+  <div class="chips"><button class="chip${F.soloVar ? ' on' : ''}" data-act="toggleSoloVar">Solo variate</button><button data-ord="diff" class="chip${F.ordC === 'diff' ? ' on' : ''}">Per differenza</button><button data-ord="unita" class="chip${F.ordC === 'unita' ? ' on' : ''}">Per unità</button></div><div class="list">`;
+  for (const r of vis.slice(0, 300)) {
+    const det = VOCI.slice(0, 4).map(([k, l]) => { const d = r2((r.b ? r.b[k] : 0) - (r.a ? r.a[k] : 0)); return Math.abs(d) > 0.004 ? `${l} ${sgn(d)}` : ''; }).filter(Boolean).join(' · ');
+    const u = S.unita[r.u.key];
+    h += riga(`<b>${esc(r.u.rif)}</b> <span class="pill">${r.u.fab}</span>${!r.a ? ' <span class="pill gold">nuova</span>' : !r.b ? ' <span class="pill err">assente</span>' : ''}`, `<span class="${diffCls(r.d)}">${sgn(r.d)}</span>`, `${r.a ? eur(r.a.tot) : '—'} → ${r.b ? eur(r.b.tot) : '—'}${det ? '<br>' + det : ''}`, u ? ` data-unita="${esc(u.key)}" role="button" tabindex="0"` : '');
   }
-  h += `</tbody></table></div>${vis.length > 400 ? '<p class="hint">Mostrate le prime 400 righe: usa il filtro o il CSV.</p>' : ''}<p class="hint" style="margin-top:10px">Rosso: l'unità paga di più · verde: paga di meno.</p></div>`;
+  h += `</div>${vis.length > 300 ? '<p class="hint">Mostrate le prime 300: usa il filtro o il CSV.</p>' : ''}<div class="btns"><button class="btn quiet small" data-act="csvConfronto">Esporta confronto CSV</button></div>`;
   return h;
 }
 function bindConfronto(el) {
   const re = () => { const y = window.scrollY; vCosti(el); window.scrollTo(0, y); };
   const a = $('#cA'), b = $('#cB'); if (!a) return;
   a.onchange = () => { F.cA = a.value; re(); }; b.onchange = () => { F.cB = b.value; re(); };
-  $('#soloVar').onchange = e => { F.soloVar = e.target.checked; re(); };
   const cq = $('#cq'); cq.oninput = () => { F.cq = cq.value; const p = cq.selectionStart; re(); const n = $('#cq'); n.focus(); n.setSelectionRange(p, p); };
   el.querySelectorAll('[data-ord]').forEach(x => x.onclick = () => { F.ordC = x.dataset.ord; re(); });
+}
+
+/* Altro */
+function vAltro(el) {
+  const prossima = S.agenda.filter(a => !a.fatto && a.data && a.data >= oggi()).sort((a, b) => a.data.localeCompare(b.data))[0];
+  el.innerHTML = `<div class="list">
+   ${riga('Punti aperti', nPunti() + ' ›', 'verifiche e dati da fornire', ' data-tab="punti" role="button" tabindex="0"')}
+   ${riga('Agenda', (prossima ? dataIt(prossima.data) : '') + ' ›', prossima ? esc(prossima.titolo) : 'assemblee e scadenze', ' data-tab="agenda" role="button" tabindex="0"')}
+   ${riga('Contatti', S.contatti.length + ' ›', 'amministratore, impresa, condòmini', ' data-tab="contatti" role="button" tabindex="0"')}
+   ${riga('Documenti', S.documenti.length + ' ›', 'cartelle e file del lavoro', ' data-tab="documenti" role="button" tabindex="0"')}
+   ${riga('Dati e backup', '›', 'dati del condominio, backup, ripristino', ' data-tab="dati" role="button" tabindex="0"')}</div>
+   <h2 class="sec">Importazioni</h2><div class="list">
+   ${riga('Riepilogo costi', '›', 'foglio RIPARTIZIONE TOTALE', ' data-act="importa" role="button" tabindex="0"')}
+   ${riga('Anagrafica proprietari', '›', 'unità, nominativi, telefono, email', ' data-act="anagrafica" role="button" tabindex="0"')}
+   ${riga('Carica backup / dati iniziali', '›', 'file .json', ' data-act="ripristina" role="button" tabindex="0"')}</div>
+   <p class="small muted" style="margin-top:22px">I dati restano solo su questo dispositivo. Condominio Playa · versione ${APP_VERSION}</p>`;
 }
 
 /* Richieste */
@@ -629,7 +743,7 @@ function backup() { download('Condominio_Playa_backup_' + oggi().replace(/-/g, '
 function unisci(b) {
   if (!b || b.app !== 'condominio-playa') throw new Error('Il file non è un backup di Condominio Playa');
   let n = 0;
-  for (const [k, u] of Object.entries(b.unita || {})) { if (!S.unita[k]) { S.unita[k] = u; n++; } else { const t = S.unita[k]; for (const f of ['prop', 'email', 'tel', 'note']) if (!t[f] && u[f]) { t[f] = u[f]; n++; } } }
+  for (const [k, u] of Object.entries(b.unita || {})) { const t = S.unita[k] || trovaUnita(u.fab, u.rif, u.sub); if (!t) { S.unita[k] = u; n++; } else { for (const [f, v] of Object.entries(u)) if (f !== 'key' && (t[f] == null || t[f] === '' || (Array.isArray(t[f]) && !t[f].length)) && v != null && v !== '') { t[f] = v; n++; } } }
   for (const lst of ['versioni', 'richieste', 'punti', 'agenda', 'contatti', 'documenti']) for (const x of (b[lst] || [])) if (!S[lst].some(y => y.id === x.id)) { S[lst].push(x); n++; }
   S.versioni.sort((a, c) => (a.creato || a.data || '').localeCompare(c.creato || c.data || ''));
   for (const [k, v] of Object.entries(b.dati || {})) if (!S.dati[k] && v) S.dati[k] = v;
@@ -735,7 +849,8 @@ async function importa(file) {
       const ver = { id: uid(), nome, file: file.name, foglio: stato.foglio, data: oggi(), creato: new Date().toISOString(), note: '', mappa: { ...stato.m, riga: stato.hi + 1 }, righe: ex.righe.map(({ key, fab, rif, sub, mill, pc, ter, pog, pav, tot }) => ({ key, fab, rif, sub, mill, pc, ter, pog, pav, tot })) };
       let nuove = 0, agg = 0;
       for (const r of ver.righe) {
-        const u = S.unita[r.key];
+        let u = S.unita[r.key] || trovaUnita(r.fab, r.rif, r.sub);
+        if (u && u.key !== r.key) r.key = u.key;
         if (!u) { S.unita[r.key] = { key: r.key, fab: r.fab, rif: r.rif, sub: r.sub, mill: r.mill, prop: '', email: '', tel: '', note: '', daImport: nome }; nuove++; }
         else if (r.mill && u.mill !== r.mill) { u.millPrec = u.mill; u.mill = r.mill; agg++; }
       }
@@ -746,6 +861,175 @@ async function importa(file) {
   disegna(); dlg.showModal();
 }
 function colName(j) { let s = ''; j++; while (j) { const m = (j - 1) % 26; s = String.fromCharCode(65 + m) + s; j = Math.floor((j - 1) / 26); } return s; }
+
+/* ---------- abbinamento unità tra file diversi ---------- */
+function subNum(s) { const m = String(s ?? '').match(/(\d+)\s*\/?\s*$/); return m ? +m[1] : null; }
+function trovaUnita(fab, rif, sub) {
+  const us = Object.values(S.unita).filter(u => u.fab === fab), sn = subNum(sub);
+  if (sn != null) {
+    const m = us.filter(u => subNum(u.sub) === sn);
+    if (m.length === 1) return m[0];
+    if (m.length > 1) { const k = m.find(u => u.rif === rif); if (k) return k; }
+  }
+  if (rif && rif !== 'P') {
+    const m = us.filter(u => u.rif === rif);
+    if (m.length === 1 && (sn == null || subNum(m[0].sub) == null || subNum(m[0].sub) === sn)) return m[0];
+  }
+  return null;
+}
+const titolo = s => String(s || '').toLowerCase().replace(/(^|[\s'\-(])(\p{L})/gu, (a, b, c) => b + c.toUpperCase()).replace(/\((\p{L}{2})\)/gu, (a, b) => '(' + b.toUpperCase() + ')');
+const pulisci = s => String(s ?? '').replace(/\s+/g, ' ').trim();
+function nomeProp(o) { return [pulisci(o.cognome).toUpperCase(), titolo(pulisci(o.nome))].filter(Boolean).join(' '); }
+function riassuntoProp(owners) { return owners.map(nomeProp).filter(Boolean).join('; '); }
+
+/* ---------- importazione anagrafica proprietari ---------- */
+const CAMPI_ANAG = [
+  ['mapp', 'Foglio / mappale', t => /mapp|foglio/.test(t)],
+  ['sub', 'Subalterno', t => /^sub/.test(t)],
+  ['rif', 'Unità (interno / rif.)', t => /civico|interno|^rif|unit/.test(t)],
+  ['piano', 'Piano', t => /^p\.?$|^piano/.test(t)],
+  ['cat', 'Categoria catastale', t => /categ/.test(t)],
+  ['cognome', 'Cognome / nominativo', t => /cognome|nominativ|proprietar|intestatar/.test(t)],
+  ['nome', 'Nome', t => /^nome/.test(t)],
+  ['cf', 'Codice fiscale', t => /fiscale|^c\.?f/.test(t)],
+  ['mill', 'Millesimi', t => /millesim/.test(t)],
+  ['nascita', 'Data di nascita', t => /data di nascita|nato il|nascita$/.test(t) && !/luogo/.test(t)],
+  ['luogo', 'Luogo di nascita', t => /luogo/.test(t)],
+  ['indirizzo', 'Indirizzo di residenza', t => /indirizzo/.test(t)],
+  ['comune', 'Comune di residenza', t => /comune/.test(t)],
+  ['tel', 'Telefono', t => /^tel|cell/.test(t)],
+  ['email', 'Email', t => /mail|pec/.test(t)],
+  ['sopr', 'Data sopralluogo', t => /sopralluogo/.test(t) && /data/.test(t)],
+  ['noteSopr', 'Note sopralluogo', t => /note/.test(t)]
+];
+function headAnag(rows) {
+  for (let i = 0; i < Math.min(rows.length, 30); i++) {
+    const H = (rows[i] || []).map(low);
+    if (H.some(t => /cognome|nominativ|proprietar/.test(t)) && H.some(t => /^sub|interno|civico|^rif/.test(t))) return i;
+  }
+  return -1;
+}
+function mappaAnag(head) {
+  const H = head.map(low), m = {}, usati = new Set();
+  for (const [k, , test] of CAMPI_ANAG) { const j = H.findIndex((t, x) => t && !usati.has(x) && test(t)); if (j >= 0) { m[k] = j; usati.add(j); } }
+  return m;
+}
+function dataCella(v) {
+  if (v == null || v === '') return '';
+  if (typeof v === 'number' && window.XLSX) { const d = XLSX.SSF.parse_date_code(v); if (d) return `${d.y}-${String(d.m).padStart(2, '0')}-${String(d.d).padStart(2, '0')}`; }
+  const s = pulisci(v); const m = /^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/.exec(s); return m ? `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}` : s;
+}
+function leggiAnag(XLSX, wb, nomeFile) {
+  const out = [], avvisi = [];
+  for (const nome of wb.SheetNames) {
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[nome], { header: 1, raw: true, defval: '' });
+    const hi = headAnag(rows); if (hi < 0) continue;
+    const m = mappaAnag(rows[hi]); let cur = null;
+    const val = (r, k) => m[k] != null ? r[m[k]] : '';
+    for (let i = hi + 1; i < rows.length; i++) {
+      const r = rows[i] || [], dove = `${nomeFile} · ${nome} · riga ${i + 1}`;
+      const sub = pulisci(val(r, 'sub')), cog = pulisci(val(r, 'cognome')), nom = pulisci(val(r, 'nome'));
+      if (sub) {
+        const mapp = pulisci(val(r, 'mapp')); const mm = /(\d+)\s*$/.exec(mapp);
+        const mappale = mm ? mm[1] : '';
+        let rif = normRif(val(r, 'rif'));
+        const fab = mappale === '211' ? 'PG' : mappale === '212' ? 'PP' : fabDa(rif, '');
+        const subN = mappale ? mappale + '/' + sub : sub;
+        if (!rif) avvisi.push(`${dove}: sub ${subN} senza riferimento dell'unità (importata come «SUB ${sub}»)`);
+        else if (!/^(A\d{3}|AT\d{2}|[NR]\d{2}|P)$/.test(rif)) avvisi.push(`${dove}: sub ${subN} ha un riferimento insolito «${rif}»`);
+        const mill = toNum(val(r, 'mill'));
+        if (!mill) avvisi.push(`${dove}: sub ${subN} (${rif || 'senza rif.'}) senza millesimi`);
+        cur = { fab, rif: rif || 'SUB ' + sub, sub: subN, piano: pulisci(val(r, 'piano')), cat: pulisci(val(r, 'cat')), mill, sopr: dataCella(val(r, 'sopr')), noteSopr: pulisci(val(r, 'noteSopr')), owners: [], foglio: nome, file: nomeFile.replace(/^[0-9a-f]{8}-/, '') };
+        out.push(cur);
+      } else if ((cog || nom) && !cur) { avvisi.push(`${dove}: proprietario senza unità, ignorato`); continue; }
+      else if (!(cog || nom)) continue;
+      else if (toNum(val(r, 'mill'))) avvisi.push(`${dove}: millesimi (${num2(toNum(val(r, 'mill')))}) sulla riga del cointestatario ${cog} ${nom} dell'unità ${cur.rif}: non importati`);
+      if (cog || nom) {
+        const tel = pulisci(val(r, 'tel')), email = pulisci(val(r, 'email'));
+        cur.owners.push({ cognome: cog, nome: nom, cf: pulisci(val(r, 'cf')).toUpperCase(), nascita: dataCella(val(r, 'nascita')), luogo: pulisci(val(r, 'luogo')), indirizzo: pulisci(val(r, 'indirizzo')), comune: pulisci(val(r, 'comune')), tel: tel === '0' ? '' : tel, email: email === '0' ? '' : email });
+      }
+    }
+  }
+  return { unita: out, avvisi };
+}
+async function importaAnagrafica(files) {
+  let XLSX; try { XLSX = await caricaXLSX(); } catch (e) { return toast(e.message); }
+  const tutte = [], avvisi = [], nomi = [];
+  for (const f of files) {
+    try { const wb = XLSX.read(await f.arrayBuffer(), { type: 'array' }); const r = leggiAnag(XLSX, wb, f.name); tutte.push(...r.unita); avvisi.push(...r.avvisi); nomi.push(f.name); }
+    catch (e) { avvisi.push(`${f.name}: file non leggibile (${e.message})`); }
+  }
+  // piano: abbinamento con le unità già presenti
+  const piano = tutte.map(a => { const u = trovaUnita(a.fab, a.rif, a.sub); return { a, u }; });
+  const dlg = $('#dlgImport');
+  let sovrascrivi = false;
+  const conta = () => {
+    let nuove = 0, abb = 0, aggiorna = 0, diversi = [];
+    for (const { a, u } of piano) {
+      if (!u) { nuove++; continue; } abb++;
+      const nuovo = riassuntoProp(a.owners);
+      if (!u.owners || !u.owners.length) { if (!u.prop || u.prop === nuovo) aggiorna++; else diversi.push(`${u.rif}: «${u.prop}» → «${nuovo}»`); }
+      else if (riassuntoProp(u.owners) !== nuovo) diversi.push(`${u.rif}: «${riassuntoProp(u.owners)}» → «${nuovo}»`);
+      if (u.mill && a.mill && Math.abs(u.mill - a.mill) > 0.004) diversi.push(`${u.rif}: millesimi ${num2(u.mill)} nell'app, ${num2(a.mill)} nell'anagrafica (non modificati)`);
+    }
+    return { nuove, abb, aggiorna, diversi };
+  };
+  const disegna = () => {
+    const c = conta(), nf = { PG: 0, PP: 0, '?': 0 }; tutte.forEach(a => nf[a.fab]++);
+    const nOwn = tutte.reduce((s, a) => s + a.owners.length, 0);
+    const nTel = tutte.reduce((s, a) => s + a.owners.filter(o => o.tel || o.email).length, 0);
+    dlg.innerHTML = `<form method="dialog"><h3>Importa anagrafica</h3>
+     <p class="small muted" style="margin:0;overflow-wrap:anywhere">${nomi.map(esc).join(' · ')}</p>
+     ${tutte.length ? `<div class="list">
+      ${riga('Unità lette', tutte.length, `Grande ${nf.PG} · Piccolo ${nf.PP}${nf['?'] ? ' · senza fabbricato ' + nf['?'] : ''}`)}
+      ${riga('Proprietari', nOwn, `${nTel ? nTel + ' con telefono o email' : 'nei file non ci sono telefoni né email'}`)}
+      ${riga('Già presenti nell\'app', c.abb, 'abbinate per fabbricato e subalterno')}
+      ${riga('Nuove unità', c.nuove, '')}</div>` : '<div class="notice err">Non ho trovato unità: servono le colonne SUB e COGNOME (o nominativo).</div>'}
+     ${avvisi.length ? `<details class="box" open><summary>Da controllare nei file (${avvisi.length})</summary><ul class="small">${avvisi.map(x => `<li>${esc(x)}</li>`).join('')}</ul></details>` : ''}
+     ${c.diversi.length ? `<details class="box"><summary>Differenze con i dati già nell'app (${c.diversi.length})</summary><ul class="small">${c.diversi.slice(0, 60).map(x => `<li>${esc(x)}</li>`).join('')}</ul></details>
+       <label class="chk"><input type="checkbox" id="aSovr" ${sovrascrivi ? 'checked' : ''}><span class="t">Sostituisci i proprietari diversi con quelli dell'anagrafica<br><span class="small muted">Se non lo spunti, i proprietari già inseriti restano come sono.</span></span></label>` : ''}
+     <p class="small muted" style="margin:0">Riempie solo i campi vuoti: non cancella note, telefoni, email o altri dati già inseriti. Millesimi e quote restano quelli del riepilogo costi.</p>
+     <div class="acts"><button class="btn quiet" value="no">Annulla</button><button class="btn solid" id="aOk" value="ok" ${tutte.length ? '' : 'disabled'}>Importa</button></div></form>`;
+    const s = $('#aSovr'); if (s) s.onchange = () => { sovrascrivi = s.checked; };
+    $('#aOk').onclick = ev => {
+      ev.preventDefault();
+      let nuove = 0, agg = 0;
+      const fonte = nomi.join(', ');
+      for (const { a, u: u0 } of piano) {
+        let u = u0;
+        if (!u) {
+          let key = chiave(a.fab, a.rif, a.sub); let n = 2; while (S.unita[key]) key = chiave(a.fab, a.rif + ' (' + n++ + ')', a.sub);
+          u = S.unita[key] = { key, fab: a.fab, rif: a.rif, sub: a.sub, mill: a.mill, prop: '', email: '', tel: '', note: '', daImport: 'anagrafica' }; nuove++;
+        }
+        const nuovo = riassuntoProp(a.owners);
+        const vuoto = !u.owners || !u.owners.length;
+        if (vuoto || sovrascrivi) {
+          if (!vuoto && riassuntoProp(u.owners) !== nuovo) u.ownersPrec = u.owners;
+          u.owners = a.owners;
+          if (!u.prop || sovrascrivi || u.prop === nuovo) u.prop = nuovo;
+          agg++;
+        }
+        const tels = [...new Set(a.owners.map(o => o.tel).filter(Boolean))].join('; ');
+        const mails = [...new Set(a.owners.map(o => o.email).filter(Boolean))].join('; ');
+        if (!u.tel && tels) u.tel = tels;
+        if (!u.email && mails) u.email = mails;
+        if (!u.mill && a.mill) u.mill = a.mill;
+        if (!u.cat && a.cat) u.cat = a.cat;
+        if (!u.piano && a.piano) u.piano = a.piano;
+        if (!u.sopralluogo && a.sopr) u.sopralluogo = a.sopr;
+        if (a.noteSopr && !(u.note || '').includes(a.noteSopr)) u.note = [u.note, 'Sopralluogo: ' + a.noteSopr].filter(Boolean).join('\n');
+        u.anagrafica = { file: a.file || fonte, foglio: a.foglio, data: oggi() };
+      }
+      salva(); dlg.close(); toast(`Anagrafica importata: ${agg} unità aggiornate, ${nuove} nuove`); vai('unita');
+    };
+  };
+  disegna(); dlg.showModal();
+}
+function htmlOwners(u) {
+  if (!u.owners || !u.owners.length) return '';
+  return `<details class="box"><summary>Anagrafica (${u.owners.length} ${u.owners.length === 1 ? 'proprietario' : 'proprietari'})</summary><div class="list">${u.owners.map(o => riga(esc(nomeProp(o)), '', [o.cf ? 'C.F. ' + esc(o.cf) : '', o.nascita || o.luogo ? 'nato/a ' + [o.luogo ? 'a ' + esc(titolo(o.luogo)) : '', o.nascita ? 'il ' + dataIt(o.nascita) : ''].filter(Boolean).join(' ') : '', o.indirizzo || o.comune ? 'residenza ' + esc(titolo([o.indirizzo, o.comune].filter(Boolean).join(', '))) : '', o.tel ? 'tel. ' + esc(o.tel) : '', o.email ? esc(o.email) : ''].filter(Boolean).join('<br>'))).join('')}</div>
+  <p class="hint">${u.cat ? 'Categoria ' + esc(u.cat) + ' · ' : ''}${u.piano ? 'piano ' + esc(u.piano) + ' · ' : ''}${u.sopralluogo ? 'sopralluogo ' + dataIt(u.sopralluogo) + ' · ' : ''}${u.anagrafica ? 'da ' + esc(u.anagrafica.file) + ' (' + dataIt(u.anagrafica.data) + ')' : ''}</p>${u.ownersPrec ? '<p class="hint">Proprietari precedenti conservati: ' + esc(riassuntoProp(u.ownersPrec)) + '</p>' : ''}</details>`;
+}
 
 /* ---------- scheda unità stampabile ---------- */
 function testoUnita(u) {
@@ -784,7 +1068,7 @@ function chiedi(titolo, campi, onOk) { dialogo(titolo, campi, onOk); }
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-tab],[data-act],[data-unita],[data-fab],[data-rstato],[data-pstato]'); if (!t) return;
   if (t.dataset.tab) return vai(t.dataset.tab);
-  if (t.dataset.unita) { sel = t.dataset.unita; render(); window.scrollTo(0, 0); return; }
+  if (t.dataset.unita) { tab = 'unita'; lsSet('tab', tab); sel = t.dataset.unita; render(); window.scrollTo(0, 0); return; }
   if (t.dataset.fab !== undefined && !t.dataset.act) { F.fab = t.dataset.fab; lsSet('fab', F.fab); return render(); }
   if (t.dataset.rstato) { F.rStato = t.dataset.rstato; return render(); }
   if (t.dataset.pstato) { F.pStato = t.dataset.pstato; return render(); }
@@ -792,6 +1076,10 @@ document.addEventListener('click', e => {
   const trova = (l) => S[l].find(x => x.id === id);
   switch (a) {
     case 'importa': $('#fileXls').click(); break;
+    case 'anagrafica': $('#fileAnag').click(); break;
+    case 'filtroSenzaProp': F.senzaProp = true; F.q = ''; vai('unita'); break;
+    case 'toggleSenzaProp': F.senzaProp = !F.senzaProp; render(); break;
+    case 'toggleSoloVar': { F.soloVar = !F.soloVar; const y = window.scrollY; render(); window.scrollTo(0, y); break; }
     case 'vaiConfronto': $('#confronto')?.scrollIntoView({ behavior: 'smooth' }); break;
     case 'attiva': S.attiva = id; salva(); render(); break;
     case 'rinominaV': { const v = versione(id); dialogo('Versione', `<div class="fld"><label class="f">Nome</label><input type="text" name="nome" value="${esc(v.nome)}" required></div><div class="fld"><label class="f">Note</label><textarea name="note">${esc(v.note || '')}</textarea></div>`, o => { v.nome = o.nome; v.note = o.note; salva(); render(); }); break; }
@@ -827,8 +1115,8 @@ document.addEventListener('click', e => {
   }
 });
 $('#goHome').onclick = () => vai('quadro');
-$('#btnBackup').onclick = backup;
-$('#btnImport').onclick = () => $('#fileXls').click();
+$('#fileAnag').onchange = e => { const f = [...e.target.files]; e.target.value = ''; if (f.length) importaAnagrafica(f); };
+document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[role=button]')) { e.preventDefault(); e.target.click(); } });
 $('#fileXls').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) importa(f); };
 $('#fileJson').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { const n = unisci(JSON.parse(await f.text())); salva(); render(); toast(`Backup caricato: ${n} elementi aggiunti`); } catch (er) { toast(er.message); } };
 
