@@ -1,6 +1,6 @@
 {
   "formato": 1,
-  "aggiornato": "2026-11-17",
+  "aggiornato": "2026-11-26",
   "sale": "purastrumenti/v1/",
   "gruppi": [
     {
@@ -77,6 +77,18 @@
         "*"
       ],
       "sigla": "PP"
+    },
+    {
+      "id": "condominio-playa",
+      "nome": "Condominio Playa Grande",
+      "descrizione": "Playa Grande e Playa Piccolo: unità e millesimi, quote di spesa dal riepilogo costi, confronto tra versioni, richieste dei condòmini, punti aperti e agenda. Dati solo sul dispositivo.",
+      "url": "https://purarchitettura.github.io/condominio-playa/",
+      "tipo": "app",
+      "sezione": "App dello studio",
+      "gruppi": [
+        "*"
+      ],
+      "sigla": "PG"
     }
   ]
 }
